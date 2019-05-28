@@ -1,0 +1,160 @@
+---
+title: "Pathway analysis using SBGNview gene set and visualization"
+author: "Xiaoxi Dong, Weijun Luo"
+date:  "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    bookdown::html_document2:
+      fig_caption: yes
+      number_sections: yes
+      toc: yes
+editor_options: 
+  chunk_output_type: console
+bibliography: REFERENCES.bib
+vignette: >
+  %\VignetteIndexEntry{Pathway analysis using SBGNview gene set}
+  %\VignetteEngine{knitr}
+  \usepackage[utf8]{inputenc}
+---
+
+# IFNg dataset
+
+In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice. It contains normalized RNA-seq gene expression data described in this study: Greer, Renee L., Xiaoxi Dong, et al. "Akkermansia muciniphila mediates negative effects of IFNg on glucose metabolism." Nature communications 2016.
+
+## Load RNA-seq data
+The RNA abundance data was quantile normalized and log2 transformed, stored in a "SummarizedExperiment" object
+
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+library(SummarizedExperiment)
+library(SBGNview)
+library(SBGNview.data)
+data("IFNg")
+count.data <- assays(IFNg)$counts
+wt <- colnames(IFNg)[IFNg$group == "wt"]
+ko <- colnames(IFNg)[IFNg$group == "ko"]
+head(count.data)
+
+```
+
+## Pathway enrichment analysis: run SBGNview gene set
+### Load gene list: mouse ensemble IDs.
+```{r , echo = TRUE , results = 'hide',   message = FALSE, warning = FALSE}
+ensemble.to.pathway <- get.mol.list(
+    database = "pathwayCommons"
+    ,mol.list.ID.type = "ENSEMBL"
+    ,org = "mmu"
+    ,cpd.or.gene = "gene"
+    ,output.pathway.name = TRUE
+)
+head(ensemble.to.pathway[[2]])
+```
+
+
+### Run gage
+gage is an R package for pathway enrichment analysis.
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+library(gage)
+degs <- gage(exprs = count.data
+           ,gsets = ensemble.to.pathway
+           ,ref = which(colnames(count.data) %in% wt)
+           ,samp = which(colnames(count.data) %in% ko)
+           ,compare = "as.group"
+           )
+head(degs$greater)[,c(1,4:5)]
+head(degs$less)
+down.pathways <- degs$less
+head(down.pathways)
+```
+
+## Visualize fold change on pathway maps
+### Generate fold change data for visualization.
+The abundance table was log2 transformed. Here we calculate the fold change of KO group v.s. WT group. 
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+mean.wt <- apply(count.data[,wt] ,1 ,"mean")
+head(mean.wt)
+mean.ko <- apply(count.data[,ko],1,"mean")
+head(mean.ko)
+ensemble.to.koVsWt <- mean.ko - mean.wt
+head(ensemble.to.koVsWt)
+```
+
+
+
+### Visualize fold change data
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+
+down.pathways <- do.call(rbind,strsplit(row.names(down.pathways),"::"))[,1]
+head(down.pathways)
+sbgnview.obj <- SBGNview(
+    gene.data = ensemble.to.koVsWt,
+    gene.id.type = "ENSEMBL",
+    input.sbgn = down.pathways[1],
+    output.file = "ifn.sbgnview.less",
+    show.pathway.name = TRUE,
+    max.gene.value = 2,
+    min.gene.value = -2,
+    mid.gene.value = 0,
+    node.sum = "mean",
+    label.spliting.string = c("-","_"," "), 
+    output.format = c("png"),
+    
+    inhibition.edge.end.shift = 1,
+    font.size = 2,
+    logic.node.font.scale = 6,
+    font.size.scale.compartment = 1.5,
+    org = "mmu",
+    
+    text.length.factor.macromolecule = 0.8,
+    text.length.factor.compartment = 2,
+    text.length.factor.complex = 3,
+    if.scale.compartment.font.size = TRUE,
+    node.width.adjust.factor.compartment = 0.058 
+)
+sbgnview.obj
+```
+```{r ifnSBGNview, echo = FALSE,fig.cap="\\label{fig:SBGNview map from sbgnview}SBGNview"}
+library(knitr)
+include_graphics("ifn.sbgnview.less_R-HSA-877300_Interferon gamma signaling.svg")
+```
+
+
+
+
+### Visualize RNA abundance data: SummarizedExperiment object as input.
+```{r , eval=FALSE, echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+data("cancer.ds")
+sbgnview.obj <- SBGNview(
+    gene.data = cancer.ds,
+    gene.id.type = "ENTREZID",
+    input.sbgn = "R-HSA-877300",
+    output.file = "demo.SummarizedExperiment",
+    show.pathway.name = TRUE,
+    max.gene.value = 1,
+    min.gene.value = -1,
+    mid.gene.value = 0,
+    node.sum = "mean",
+    label.spliting.string = c("-","_"," "), 
+    output.format = c("png"),
+    
+    inhibition.edge.end.shift = 1,
+    font.size = 2,
+    logic.node.font.scale = 6,
+    font.size.scale.compartment = 1.5,
+    org = "hsa",
+    
+    text.length.factor.macromolecule = 0.8,
+    text.length.factor.compartment = 2,
+    text.length.factor.complex = 3,
+    if.scale.compartment.font.size = TRUE,
+    node.width.adjust.factor.compartment = 0.058 
+   )
+sbgnview.obj
+
+```
+```{r cancerds,eval=FALSE, echo = FALSE,fig.cap="\\label{fig:cancerds}SBGNview of a cancer dataset gse16873"}
+include_graphics("demo.SummarizedExperiment_R-HSA-877300_Interferon gamma signaling.svg")
+```
+
+
+``` {r, eval = FALSE, echo=FALSE}
+rmarkdown::render("C:/xiaoxi/work/papers/SBGNview/package/SBGNview/vignettes/pathway.enrichment.analysis.Rmd")
+```

@@ -1,0 +1,534 @@
+
+highlight.edges = function(node.set,arcs = NULL   # needs improvement. Currently, input in a set of nodes, it will highlight all edges among the input nodes
+                           ,node.set.id.type = NULL
+                           ,arc.node.id.type = NULL
+                             ,cpd.or.gene = NULL
+                             ,arc.highlight.stroke.color = "red"
+                             ,arc.highlight.stroke.width = 4
+                             ,arc.highlight.tip.size = 4
+                             ){
+    if( node.set.id.type != node.set.id.type){
+        new.ids = change.ids(input.ids = node.set 
+                                    ,input.type = node.set.id.type
+                                    ,output.type = node.set.id.type
+                                    # ,limit.to.pathways = names(glyphs)
+                                    )
+        unique.n.ids = c()
+        for(i in seq_len(length.out = length(new.ids))){
+            n.ids = new.ids[[i]]
+            if(length(n.ids) == 0){
+                warning("\n",names(new.ids[i])," can't be mapped to ",node.set.id.type,"!!!")
+            }else if(length(n.ids)>1){
+                warning("\n",names(new.ids[i])," is mapped to multiple ",node.set.id.type," IDs!!!\nUsing the first one!!")
+                print(paste(n.ids,collapse = "\t"))
+                unique.n.ids = c(unique.n.ids,n.ids[1])
+            }
+        }
+        new.ids = unique.n.ids
+        new.ids
+    }else{
+        new.ids = node.set
+    }
+        
+    for(i in seq_along(arcs)){
+        arc = arcs[[i]]
+        source.id = try(arc@source)
+        target.id = arc@target
+        if(all(c(source.id,target.id) %in% new.ids)){
+            arcs[[i]]@edge$line.width =  arc.highlight.stroke.width
+            arcs[[i]]@edge$line.stroke.color =  arc.highlight.stroke.color
+            arcs[[i]]@edge$tip.stroke.color = arc.highlight.stroke.color
+            arcs[[i]]@edge$tip.fill.color = arc.highlight.stroke.color
+            arcs[[i]]@global.parameters.list$edge.tip.size = arc.highlight.tip.size
+        }
+    }
+    return(arcs)
+}
+
+#' Highlight input nodes
+#' 
+#' Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function \code{\link{+.SBGNview}}. 
+#' 
+#' @param node.set A vector of character strings. Input node set that need to be highlighted. It can be any ID types supported by SBGNview. 
+#' @param node.set.id.type A character string. ID type of input nodes.
+#' @param glyphs.id.type A character string. ID type of nodes in SBGN-ML file, which is used as node IDs in the SBGNview object returned by the SBGNview() function.
+#' @param cpd.or.gene A character string. One of "gene" or "compound". Currently highlight.node() only supports highlighting macromolecule and simple chemical nodes. This parameter is used to find the ID mapping between input node set IDs and glyph IDs.
+#' @param stroke.color A character string. The vorder color of highlighted nodes.
+#' @param stroke.width A character string. The border width of highlighted nodes.
+#' @param stroke.opacity Numeric
+#' @param show.glyph.id  Logic
+#' @param select.glyph.class Character
+#' @param label.x.shift Numeric
+#' @param label.y.shift  Numeric
+#' @param label.color  Character
+#' @param label.font.size  Numeric
+#' @param label.spliting.string  Character
+#' @param labels  Character
+#' @return A SBGNview obj
+#' @examples 
+#'  data(SBGNview.obj)
+#' \dontrun{
+#' data("SBGNview.obj" )
+#' obj.new = SBGNview.obj + 
+#'        highlight.nodes(node.set = c("tyrosine", "(+-)-epinephrine"),
+#'                       stroke.width = 4, stroke.color = "green") 
+#'  }
+#' @export
+#' 
+highlight.nodes = function(
+                           node.set = "all"
+                           ,node.set.id.type = "CompoundName"
+                           ,glyphs.id.type = "pathwayCommons"
+                           ,cpd.or.gene = "compound"
+                           ,stroke.color = "black"
+                           ,stroke.width = 10
+                           ,stroke.opacity = 1
+                           ,show.glyph.id = FALSE
+                           ,select.glyph.class = c()
+                           ,label.x.shift = 0
+                           ,label.y.shift = 0
+                           ,label.color = "black"
+                           ,label.font.size = NULL
+                           ,label.spliting.string = NULL
+                           ,labels = NULL
+                           ){
+    function(SBGNview.obj){
+        glyphs.arcs.list = SBGNview.obj$data
+        sbgns = names(glyphs.arcs.list)
+        for(s in seq_len(length.out = length(glyphs.arcs.list))){ # for each  sbgn file
+            glyphs = glyphs.arcs.list[[s]]$glyphs.list
+            glyphs = highlight.nodes.each.sbgn(
+                        node.set = node.set
+                        ,select.glyph.class = select.glyph.class
+                        ,glyphs = glyphs
+                        ,pathway.id = sbgns[s]
+                        ,node.set.id.type = node.set.id.type
+                        ,glyphs.id.type = glyphs.id.type
+                        ,cpd.or.gene = cpd.or.gene
+                        ,stroke.width = stroke.width
+                        ,stroke.color = stroke.color
+                        ,stroke.opacity = stroke.opacity
+                        ,show.glyph.id = show.glyph.id
+                        ,label.x.shift = label.x.shift
+                        ,label.y.shift = label.y.shift
+                        ,label.color = label.color
+                        ,label.font.size = label.font.size
+                        ,label.spliting.string = label.spliting.string
+                        ,labels = labels
+                    )
+            glyphs.arcs.list[[s]]$glyphs.list = glyphs
+        }
+        SBGNview.obj$data = glyphs.arcs.list
+        return(SBGNview.obj)
+    }
+}
+
+highlight.nodes.each.sbgn = function(
+                            node.set = "all"
+                            ,select.glyph.class = c()
+                            ,glyphs = NULL
+                            ,pathway.id = NULL
+                            ,node.set.id.type = NULL
+                            ,glyphs.id.type = NULL
+                            ,cpd.or.gene = NULL
+                            ,stroke.width = 4
+                            ,stroke.color = "red"
+                            ,stroke.opacity = 1
+                            ,show.glyph.id = FALSE
+                            ,label.x.shift = 0
+                            ,label.y.shift = 0
+                            ,label.color = "black"
+                            ,label.font.size = NULL
+                            ,label.spliting.string = NULL
+                            ,labels = NULL
+                            ){
+    if(!identical(node.set, "all")){ # if we are not interested in all nodes, we need to get the node IDs for input IDs
+        if( node.set.id.type != glyphs.id.type ){ # if 1. input id type is not glyph id type, we need to change ids
+            input.to.node.ids = change.ids(input.ids = node.set 
+                                        ,input.type = node.set.id.type
+                                        ,output.type = glyphs.id.type
+                                        ,cpd.or.gene = cpd.or.gene
+                                        # ,limit.to.pathways = pathway.id
+                                        )
+            input.to.node.ids
+            if(!is.null(labels)){
+                input.ids = names(input.to.node.ids)
+                input.ids
+                input.node.id.to.user.labels = matrix(ncol=2,nrow=0)
+                for(i in seq_len(length.out = length(input.to.node.ids))){
+                    node.ids = input.to.node.ids[[i]]
+                    node.ids
+                    input.id = input.ids[i]
+                    input.id
+                    user.label = labels[input.id]
+                    user.label
+                    input.node.id.to.user.labels = rbind(input.node.id.to.user.labels,cbind(node.ids,user.label))
+                }
+                input.node.id.to.user.labels
+                row.names(input.node.id.to.user.labels) = input.node.id.to.user.labels[,"node.ids"]
+            }
+            input.node.ids = unlist(input.to.node.ids)
+            input.node.ids
+        }else{ # if input ids are node ids, we don't need to change them
+            input.node.ids = node.set
+        }
+    }else { # if we are interested in all nodes
+        input.node.ids = "all"
+    }
+        
+    
+    for(i in seq_len(length.out = length(glyphs))){
+        # i=49
+        glyph = glyphs[[i]]
+        glyph.id = glyph@id
+        if(length(glyph.id)==0){
+            glyph.id = paste("no.id;x=",glyph@x,",y=",glyph@y,sep="")
+        }
+        glyph.class = glyph@glyph.class
+        if(length(glyph.class) == 0){ # some nodes don't have class
+            glyph.class = "no.class"
+        }
+        glyph.id = gsub("_Complex.+","",glyph.id,perl= TRUE) # id-to-pathwayCommons mapping file was generated from pathwayCommons Biopax file, the ID is "SmallMolecule_80910e7b27a1c71cb89e71508781c018". But in the SBGN-ML file (P00001.sbgn), the ID is this "SmallMolecule_80910e7b27a1c71cb89e71508781c018_Complex_33b98f178303ceef166819f17daaed43". Complex ID is added, so we need to 
+        if(glyph.id %in% input.node.ids |
+           glyph.class %in% select.glyph.class| 
+           (length(select.glyph.class) ==0 & "all" %in% node.set )
+       ){ # if this is the node we are interested in, or, we are interested in all nodes
+            if(glyphs[[i]]@label == "SBGNhub Pathway Collection"){
+            }else{
+                glyphs[[i]]@shape$stroke.width = stroke.width
+                glyphs[[i]]@shape$stroke.color =  stroke.color
+                glyphs[[i]]@shape$stroke.opacity =  stroke.opacity
+                glyphs[[i]]@text$x.shift = label.x.shift
+                glyphs[[i]]@text$y.shift = label.y.shift
+                if(!is.null(label.font.size)){
+                    glyphs[[i]]@text$font.size = label.font.size
+                }
+                glyphs[[i]]@text$color = label.color
+                if(!is.null(label.spliting.string)){
+                    glyphs[[i]]@global.parameters.list$label.spliting.string = label.spliting.string
+                }
+                if(!is.null(labels)){
+                    glyphs[[i]]@label = input.node.id.to.user.labels[glyph.id,"user.label"]
+                }
+                if(show.glyph.id){
+                    if(glyphs[[i]]@glyph.class  %in% c("process","uncertain process", "omitted process")){
+                        glyphs[[i]]@if.show.label = TRUE
+                    }
+                    glyphs[[i]]@label = glyph.id
+                }
+            }
+        }
+    }
+    return(glyphs)
+}
+
+
+arcs.to.graph = function(arcs
+                         ,if.directed = TRUE
+                         ){
+    edge.df = lapply(arcs
+                     ,function(arc){
+                         return(
+                             c( source = arc@source ,target = arc@target)
+                         )})
+    edge.df = as.data.frame(do.call(rbind,edge.df),stringsAsFactors = FALSE)
+    grf = igraph::graph_from_data_frame(edge.df
+                                ,directed = if.directed
+                                )
+}
+
+
+################################################################
+
+#' Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.
+
+#' @param from.node A character string. The ID of source node.
+#' @param to.node A character string. The ID of target node.
+#' @param directed.graph Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from "source" node to "target" node.
+#' @param node.set.id.type A character string. ID type of input nodes.
+#' @param glyphs.id.type A character string. ID type of nodes in SBGN-ML file, which is used as node IDs in the SBGNview object returned by the SBGNview() function.
+#' @param cpd.or.gene A character string. One of "gene" or "compound". Currently highlight.node() only supports highlighting macromolecule and simple chemical nodes. This parameter is used to find the ID mapping between input node set IDs and glyph IDs.
+#' @param path.node.color String
+#' @param path.node.stroke.width Numeric
+#' @param input.node.stroke.width A character string. Border stroke width of input nodes (affects both from.node and to.node)
+#' @param from.node.color A character string. Color of "source"/from.node
+#' @param to.node.color A character string. Color of "target"/to.node
+#' @param n.shortest.paths.plot Integer. There could be more than one shortest paths between two nodes. User can choose how many of them to plot.
+#' @param shortest.paths.cols A character string. The colors of arcs in different shortest paths. The length of this vector (number of colors) should be the value of n.shortest.paths.plot. If one arc is in multiple shortest paths, its color will be set to the color that appears later in the vector.
+#' @param path.stroke.width Numeric. The width of line in edges in the shortest paths.
+#' @param tip.size Numeric. The size of arc tips in edges of the shortest paths.
+#' @return A SBGNview obj.
+#' @examples 
+#'  data(SBGNview.obj)
+#' \dontrun{
+#' data("SBGNview.obj" )
+#' obj.new = SBGNview.obj + 
+#'               highlight.path(from.node = c("tyrosine")
+#'                  , to.node = c("dopamine")
+#'                 ,from.node.color = "red"
+#'                 ,to.node.color = "blue"
+#'   )
+#'}
+#' @export
+
+highlight.path = function(
+                      from.node = NULL
+                      ,to.node = NULL
+                      ,directed.graph = TRUE
+                      
+                      ,node.set.id.type = "CompoundName"
+                      ,glyphs.id.type = "pathwayCommons"
+                      ,cpd.or.gene = "compound"
+                      
+                      ,input.node.stroke.width = 10
+                      ,from.node.color = "red"
+                      ,to.node.color = "blue"
+                      ,path.node.color = "black"
+                      ,path.node.stroke.width = 10
+                      
+                      ,n.shortest.paths.plot = 1
+                      ,shortest.paths.cols = c("purple")
+                      ,path.stroke.width = 2
+                      ,tip.size = 4
+                      ){
+    function(SBGNview.obj){
+        glyphs.arcs.list = SBGNview.obj$data
+        sbgns = names(glyphs.arcs.list)
+        for(s in seq_len(length.out = length(glyphs.arcs.list))){ # for each  sbgn file
+            arcs = glyphs.arcs.list[[s]]$arcs.list
+            glyphs = glyphs.arcs.list[[s]]$glyphs.list
+            result.list = highlight.path.each.sbgn(
+                              from.node = from.node
+                              ,to.node = to.node
+                              ,glyphs = glyphs
+                              ,arcs = arcs
+                              ,pathway.id = sbgns[s]
+                              
+                              ,directed.graph = directed.graph
+                              
+                              ,node.set.id.type = node.set.id.type
+                              ,glyphs.id.type = glyphs.id.type
+                              ,cpd.or.gene = cpd.or.gene
+                              
+                              ,from.node.color = from.node.color
+                              ,to.node.color = to.node.color
+                              ,input.node.stroke.width = input.node.stroke.width
+                              ,path.node.color = path.node.color
+                              ,path.node.stroke.width = path.node.stroke.width
+                              
+                              ,n.shortest.paths.plot = n.shortest.paths.plot
+                              ,path.stroke.width = path.stroke.width
+                              ,shortest.paths.cols = shortest.paths.cols
+                              ,tip.size = tip.size
+            )
+            
+            glyphs.arcs.list[[s]]$arcs.list = result.list$arcs
+            glyphs.arcs.list[[s]]$glyphs.list = result.list$glyphs
+        }
+        SBGNview.obj$data = glyphs.arcs.list
+        return(SBGNview.obj)
+    }
+}
+
+
+shortest.path.from.arcs = function(arcs  # generate a new node set containing shortest paths connecting all nodes in the input nodeset
+                                   ,from.node
+                                   ,to.node
+                                   ,directed.graph = TRUE
+                                   ){
+    grf = arcs.to.graph(arcs,if.directed = directed.graph)
+    from.node.ids = which(igraph::V(grf)$name %in% from.node)
+    from.node.ids = unique(from.node.ids)
+    from.node.ids
+    to.node.ids = which(igraph::V(grf)$name %in% to.node)
+    to.node.ids = unique(to.node.ids)
+    to.node.ids
+    node.names = igraph::V(grf)$name
+    
+    node.paths = list()
+    for(i in seq_len(length.out = length(from.node.ids))){
+        from.node.name = node.names[from.node.ids[i]]
+        from.node.name
+        for(j in seq_len(length.out = length(to.node.ids))){
+            to.node.name = node.names[to.node.ids[j]]
+            to.node.name
+            pair.name = paste(from.node.name,to.node.name,sep = "__to__")
+            node.paths[[pair.name]] = list()
+            
+            all.paths = igraph::all_shortest_paths(grf 
+                                           ,from = from.node.ids[i]
+                                           ,to = to.node.ids[j]
+                                           # ,to = from.node.ids[i]
+                                           # ,from = to.node.ids[j]
+                                           )
+            node.paths[[pair.name]][["from.node"]] = from.node.name
+            node.paths[[pair.name]][["to.node"]] = to.node.name
+            node.paths[[pair.name]][["path"]] = all.paths
+        }
+    }
+    names(node.paths)
+    return(node.paths)
+}
+
+
+highlight.path.each.sbgn = function(
+                            from.node
+                            ,to.node
+                          
+                          ,glyphs=NULL
+                          ,arcs = NULL
+                          ,pathway.id = NULL
+                          
+                          ,directed.graph = TRUE
+                          
+                          ,node.set.id.type = NULL
+                          ,glyphs.id.type = NULL
+                          ,cpd.or.gene = NULL
+                          
+                          ,from.node.color = "red"
+                          ,to.node.color = "blue"
+                          ,input.node.stroke.width = 4
+                          ,path.node.color = "black"
+                          ,path.node.stroke.width = 10
+                          
+                          ,n.shortest.paths.plot = 1
+                          ,path.stroke.width = 3
+                          ,shortest.paths.cols = c("purple","green")
+                          ,tip.size = 4
+                             ){
+    
+    if( node.set.id.type != glyphs.id.type){
+        
+        from.node = change.ids(
+                                        input.ids = from.node 
+                                        ,input.type = node.set.id.type
+                                        ,output.type = glyphs.id.type
+                                        ,cpd.or.gene = cpd.or.gene
+                                        # ,limit.to.pathways = pathway.id
+        )
+        from.node = from.node[[1]]
+        to.node = change.ids(
+                                        input.ids = to.node 
+                                        ,input.type = node.set.id.type
+                                        ,output.type = glyphs.id.type
+                                        ,cpd.or.gene = cpd.or.gene
+                                        # ,limit.to.pathways = pathway.id
+        )
+        to.node = to.node[[1]]
+        from.node
+        to.node
+        # new.ids = c("SmallMolecule_96737c854fd379b17cb3b7715570b733","SmallMolecule_7753c3822ee83d806156d21648c931e6")
+    }else{ }
+    all.pairs = shortest.path.from.arcs(arcs = arcs
+                                        ,from.node = from.node
+                                        ,to.node = to.node
+                                        ,directed.graph = directed.graph
+                                        )
+    names(all.pairs)
+    if.printed = 0 # sometimes one pair of input ids can map to multiple pairs of nodes in SBGN map, we want to plot only one pair that a shortest path can be found.
+    for (i in seq_len(length.out = length(all.pairs))){
+        all.paths = all.pairs[[i]]$path # when only dealing with two nodes, just pick the paths for the first node is good
+        if(length(all.paths$res) ==0){
+            warning("no shortest path found!")
+            print(names(all.pairs)[i])
+            next()
+        }else{
+            if(if.printed == 1){
+                next()
+            }
+            if.printed = 1
+            message("\n found shortest paths for" ,names(all.pairs)[i],"\n")
+            for(p in seq_len(length.out = min(n.shortest.paths.plot,length(all.paths$res)))){
+                  vs = all.paths$res[[p]]
+                  path.nodes = vs$name
+                  arcs = highlight.edges(
+                        node.set = path.nodes
+                        ,arcs = arcs
+                        ,node.set.id.type = glyphs.id.type
+                        ,arc.node.id.type = glyphs.id.type
+                        ,arc.highlight.stroke.width =  path.stroke.width
+                        ,arc.highlight.stroke.color = shortest.paths.cols[p]
+                        ,arc.highlight.tip.size = tip.size
+                  )
+            }
+            glyphs = highlight.nodes.each.sbgn(
+                node.set = path.nodes
+                ,glyphs = glyphs
+                ,node.set.id.type = glyphs.id.type
+                ,glyphs.id.type = glyphs.id.type
+                ,stroke.color = path.node.color
+                ,stroke.width = path.node.stroke.width
+            )
+            glyphs = highlight.nodes.each.sbgn(
+                node.set = all.pairs[[i]]$to.node
+                ,glyphs = glyphs
+                ,node.set.id.type = glyphs.id.type
+                ,glyphs.id.type = glyphs.id.type
+                ,stroke.color = to.node.color
+                ,stroke.width = input.node.stroke.width
+            )
+            glyphs = highlight.nodes.each.sbgn(
+                node.set = all.pairs[[i]]$from.node
+                ,glyphs = glyphs
+                ,node.set.id.type = glyphs.id.type
+                ,glyphs.id.type = glyphs.id.type
+                ,stroke.color = from.node.color
+                ,stroke.width = input.node.stroke.width
+            )
+        }
+    }
+    
+    return(list(glyphs=glyphs,arcs=arcs))
+}
+
+#' Highlight arcs by arc class
+#' 
+#' This function creates another function that can modify a SBGNview object and modify arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
+#' 
+#' @param class String. The arc class to modify.
+#' @param color String. 
+#' @param line.width Numeric.
+#' @param tip.size Numeric
+#' @return A function that modify a SBGNview object to change arc color.
+#' @examples
+#'  data(SBGNview.obj)
+#' \dontrun{
+#' data("SBGNview.obj" )
+#' obj.new = SBGNview.obj + 
+#'             highlight.arcs(class = "production",color = "red") 
+#'             
+#' }
+#' @export
+
+highlight.arcs = function(
+                    class = "all"
+                    ,color = "black"
+                    ,line.width = 2
+                    ,tip.size = 6
+){
+    function(SBGNview.obj){
+        glyphs.arcs.list = SBGNview.obj$data
+        sbgns = names(glyphs.arcs.list)
+        f=0
+        for(s in seq_len(length.out = length(glyphs.arcs.list))){ # for each sbgn file
+            arcs = glyphs.arcs.list[[s]]$arcs.list
+            message("\n Setting edge color for",sbgns[s],"\n")
+            a=0
+            for (i in seq_len(length.out = length(arcs))){
+                if(arcs[[i]]@arc.class %in% class | class == "all"){
+                    arcs[[i]]@edge$line.stroke.color = color
+                    arcs[[i]]@edge$tip.stroke.color = color
+                    arcs[[i]]@edge$tip.fill.color = color
+                    arcs[[i]]@edge$line.width = line.width
+                    arcs[[i]]@edge$tip.stroke.width = line.width
+                    arcs[[i]]@global.parameters.list$edge.tip.size = tip.size
+                }
+            }
+            glyphs.arcs.list[[s]]$arcs.list = arcs
+            glyphs.arcs.list[[s]]$render.sbgn.parameters.list$arcs.user = arcs
+        }
+        SBGNview.obj$data = glyphs.arcs.list
+        return(SBGNview.obj)
+    }
+}
+
