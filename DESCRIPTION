@@ -8,7 +8,7 @@ Description:
     (e.g. color, line width etc.). To facilitate pathway based analysis,
     SBGNview also provides functions to extract molecule sets from SBGN-ML files.
     SBGNview can map a large collection of gene, protein and compound ID typs to glyphs. 
-Version: 0.99.32
+Version: 0.99.33
 Author:
     Xiaoxi Dong, Weijun Luo
 Maintainer: Xiaoxi Dong <dfdongxiaoxi@gmail.com>
