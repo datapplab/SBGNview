@@ -46,4 +46,4 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 biocViews: Pathways, GraphAndNetwork, Visualization, GeneSetEnrichment,
         DifferentialExpression, GeneExpression, Microarray, RNASeq,
-        Genetics, Metabolomics, Proteomics, SystemsBiology, Sequencing
+        Genetics, Metabolomics, Proteomics, SystemsBiology, Sequencing, GeneTarget

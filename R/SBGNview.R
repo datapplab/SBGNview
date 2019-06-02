@@ -240,6 +240,7 @@ SBGNview = function(
         user.data.recorded = parsed.data$user.data.recorded  # Update user data list, recording data with different glyph ID types. The names of this list are glyph ID types. Each element is the list 'user.data'. It was updated if 'input.sbgn' has a new glyph ID type: a new 'user.data' with this new glyph ID type is added.
         
         # extract arc information and compartment layer information
+        message("reading SBGN-ML file for arcs info: ",input.sbgn.full.path)
         sbgn.xml = read_xml(input.sbgn.full.path)
         xml_attrs(sbgn.xml) = NULL # Remove root glyph attribute. This is necessary. Otherwise xml2 won't find the glyphs with xml_find_all() function.
         arcs.info = get.arcs.info( sbgn.xml)

@@ -50,7 +50,9 @@ parse.input.sbgn = function(
           
           sbgn.gene.id.type = pathways.info[is.input,"macromolecule.ID.type"]
           sbgn.cpd.id.type = pathways.info[is.input,"simple.chemical.ID.type"]
-          input.sbgn.full.path = download.sbgn.file(pathway.id = input.sbgn, download.folder = sbgn.dir)
+          input.sbgn.full.path = download.sbgn.file(pathway.id = input.sbgn
+                                                    , download.folder = sbgn.dir)
+          message("SBGN-ML files downloaded to: ",input.sbgn.full.path)
         }
     }else{ # if the SBGN-ML file is downloaded. In this way input.sbgn is file.name
         pathway.name.on.graph = input.sbgn
@@ -301,13 +303,14 @@ download.mapping.file = function(input.type
         }
     }
     if(!if.mapping.in.data.package){
+        message("Can't map this pair of IDs with SBGNview.data!",type.pair.name.try,"\n")
         for(i in seq_len(length(try.file.names))){
             type.pair.name.try = try.file.names[i]
             mapping.file.name = paste(SBGNview.data.folder,"/",type.pair.name.try,".RData",sep="")
             if(!file.exists(mapping.file.name)){
                 online.mapping.file = paste( "https://github.com/datapplab/SBGNhub/raw/master/data/id.mapping/", type.pair.name.try,".RData",sep="" )
                 if.downloaded = try(download.file(online.mapping.file, mapping.file.name),silent  = TRUE )
-                
+
                 if(is(if.downloaded,"try-error")){
                     print(online.mapping.file)
                     mapping.file.name = "online mapping not available"
@@ -378,8 +381,9 @@ load.mapping.table = function(
             if(file.exists(mapping.file.name)){
                 load(mapping.file.name)
             }else{
-                data(list = mapping.file.name)
+                # data(list = mapping.file.name)
             }
+            message("Finished loading")
             if(!is.null(mapping.list)){ # if one of "output.type" or "input.type" is NOT "pathway.id", then the data's names is "mapping.list"
                 id.map = mapping.list[[1]][[1]]
             }else if(!is.null(mapping.table)){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
@@ -470,6 +474,7 @@ load.mapping.table = function(
         id.map = as.matrix(id.map)
         mapping.list[[cpd.or.gene]]= list()
         mapping.list[[cpd.or.gene]][[type.pair.name]] = id.map
+        message("Generated ID mapping list")
             
         return(mapping.list)
 }
@@ -838,7 +843,9 @@ sbgn.nodes = function(input.sbgn,
             if(!file.exists(input.sbgn.full.path)){
                 message("\n",input.sbgn," does not look like an existing local file.\n Using it as pathway ID in 'pathways.info'\n\n ")
                 database = pathways.info[pathways.info[,"pathway.id"] == input.sbgn,"database"]
-                input.sbgn = download.sbgn.file(pathway.id = input.sbgn, download.folder = sbgn.dir)
+                input.sbgn = download.sbgn.file(pathway.id = input.sbgn
+                                                , download.folder = sbgn.dir)
+                message("SBGN-ML files downloaded to: ",input.sbgn.full.path)
             }else{
                 message("\n",input.sbgn,"looks like an existing local file. Using it directly. \n\n ")
                 if(input.sbgn %in% pathways.info[,"file.name"]){
@@ -863,6 +870,7 @@ sbgn.nodes = function(input.sbgn,
             SBGN.file.gene.id.type = all.id.mapping.result$SBGN.file.gene.id.type
         }
         
+        message("reading SBGN-ML file for node set: ",input.sbgn)
         sbgn = xml2::read_xml(input.sbgn)
         xml2::xml_attrs(sbgn) = NULL # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
         node.set.list = get.all.nodes.info(sbgn
@@ -1658,6 +1666,7 @@ generate.user.data = function(user.data){
 
 
 node.ids.from.sbgn = function(sbgn.file,output.glyph.class = c("macromolecule","simple chemical"),if.include.complex.member = FALSE){
+    message("reading SBGN-ML file for node ids: ",sbgn.file)
     sbgn = xml2::read_xml(sbgn.file)
     xml2::xml_attrs(sbgn) = NULL # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
     # glyph.info = do.call(rbind,xml_attr(xml_find_all(sbgn,".//glyph"),"id"))
@@ -1699,17 +1708,17 @@ mol.sum.multiple.mapping = function(mol.data,id.map,sum.method,input.sbgn.file="
         mol.data = as.matrix(mol.data)
     }
     
-    mol.data = mol.data[!duplicated(tolower(row.names(mol.data))),]
+    # mol.data = mol.data[!duplicated(tolower(row.names(mol.data))),]
     if(!is.matrix(mol.data)){
         mol.data = as.matrix(mol.data)
     }
-    row.names(mol.data) = tolower(row.names(mol.data))
+    # row.names(mol.data) = tolower(row.names(mol.data))
     input.ids = row.names(mol.data)
     if(is.vector(id.map)){
         id.map = as.matrix(t(id.map))
     }
-    id.map[,1] = tolower(as.character(id.map[,1]))
-    id.map[,2] = as.character(id.map[,2])
+    # id.map[,1] = tolower(as.character(id.map[,1]))
+    # id.map[,2] = as.character(id.map[,2])
     
     # if input sbgn file is provided, we just convert the ids that are in the file, to speed up
     if(input.sbgn.file != "na"){
@@ -1729,23 +1738,79 @@ mol.sum.multiple.mapping = function(mol.data,id.map,sum.method,input.sbgn.file="
     if(is.vector(id.map.in.target)){
         id.map.in.target = as.matrix(t(id.map.in.target))
     }
-    if.id.mapping.in.source = tolower(id.map.in.target[,1]) %in% tolower(input.ids)
-    any(if.id.mapping.in.source)
+    # if.id.mapping.in.source = tolower(id.map.in.target[,1]) %in% tolower(input.ids)
+    if.id.mapping.in.source = id.map.in.target[,1] %in% input.ids
     if(!any(if.id.mapping.in.source)){
         print("no source ids in mapping file!")
         return("no.id.mapped")
     }
     id.map.in.target.and.source = id.map.in.target[if.id.mapping.in.source,]
-    id.map.in.target.and.source
     if(is.vector(id.map.in.target.and.source)){
         id.map.in.target.and.source = as.matrix(t(id.map.in.target.and.source))
     }
-    id.map.in.target.and.source
-    # in.data.source.id = mol.data[tolower(row.names(mol.data)) %in% tolower(id.map.in.target.and.source[,1]),]  # the rows are in sequence of sbgn.id
     in.data.source.id = mol.data[id.map.in.target.and.source[,1],]  # the rows are in sequence of sbgn.id
     if(is.vector(in.data.source.id)){
         in.data.source.id = as.matrix(in.data.source.id)
     }
+    message("Merging molecules with the same output ID")
+    in.data.target.id = merge.molecule.data(in.data.source.id
+                                            ,id.map.in.target.and.source
+                                            ,sum.method
+                                            )
+    message("Merging finished")
+    return(in.data.target.id)
+}
+
+merge.molecule.data.0 = function(in.data.source.id
+                               ,id.map.in.target.and.source
+                               ,sum.method
+                               ){
+    target.ids = id.map.in.target.and.source[,2]
+    target.id.count = table(target.ids)
+    
+    if.target.id.single = target.id.count[target.ids] == 1
+    if.target.id.multi = target.id.count[target.ids] > 1
+    
+    in.data.single.target.id = in.data.source.id[if.target.id.single,]
+    single.target.ids = target.ids[if.target.id.single]
+    row.names(in.data.single.target.id) = single.target.ids
+    
+    # handel multiple output IDs to a single input ID
+    in.data.multi.target.id = in.data.source.id[if.target.id.multi,]
+    multi.target.ids = target.ids[if.target.id.multi]
+    in.data.target.id = by(
+        in.data.multi.target.id  # the rows are in sequence of sbgn.id
+        ,as.factor(multi.target.ids)  # the rows are in sequence of sbgn.id
+        ,function(data.same.id){
+            # data.same.id = as.numeric(data.same.id)
+            if(is.vector(data.same.id)){
+                return(data.same.id)
+            }else{
+                apply(
+                    data.same.id,2
+                    ,FUN = sum.method
+                )
+            }
+        }
+        ,simplify= TRUE
+    )
+    in.data.target.id = as.list(in.data.target.id)
+    if(!is.list(in.data.target.id)){
+        message("No data mapped! From ",colnames(id.map),"\n")
+        return("no.id.mapped")
+    }
+    message("Combinding merging result")
+    in.data.target.id = do.call(rbind,in.data.target.id)
+    
+    in.data.target.id = rbind(in.data.target.id,in.data.single.target.id)
+    return(in.data.target.id)
+}
+
+
+merge.molecule.data = function(in.data.source.id
+                               ,id.map.in.target.and.source
+                               ,sum.method
+                               ){
     in.data.target.id = by(
         in.data.source.id  # the rows are in sequence of sbgn.id
         ,as.factor(id.map.in.target.and.source[,2])  # the rows are in sequence of sbgn.id
@@ -1767,11 +1832,11 @@ mol.sum.multiple.mapping = function(mol.data,id.map,sum.method,input.sbgn.file="
         message("No data mapped! From ",colnames(id.map),"\n")
         return("no.id.mapped")
     }
+    message("Combinding merging result")
     in.data.target.id = do.call(rbind,in.data.target.id)
+    
     return(in.data.target.id)
 }
-
-
 
 
 #' Download pre-generated SBGN-ML file from GitHub
@@ -1790,11 +1855,10 @@ mol.sum.multiple.mapping = function(mol.data,id.map,sum.method,input.sbgn.file="
 
 
 download.sbgn.file = function(pathway.id,download.folder = "."){
-        if(!file.exists(download.folder)){
-            dir.create(download.folder)
-        }
+    if(!file.exists(download.folder)){
+        dir.create(download.folder)
+    }
     sbgn.file.names = pathways.info[pathways.info[,"pathway.id"] %in% pathway.id,"file.name"]
-    sbgn.file.names
     if(length(sbgn.file.names) == 0){
         print("pathway.id")
         stop("Only pathway IDs in pathways.info[,\"pathway.id\"] are supported!!!\n ")
@@ -1805,21 +1869,36 @@ download.sbgn.file = function(pathway.id,download.folder = "."){
         sbgn.file.name = gsub("\"","",sbgn.file.names[i])
         output.file = paste(download.folder,"/",sbgn.file.name,sep="")
         if(!file.exists(output.file)){
-            options(warn = -1)
-            message("Downloading SBGN-ML file:",sbgn.file.name,"\n")
-            online.sbgn.file = paste( "https://raw.githubusercontent.com/datapplab/SBGNhub/master/data/SBGN.with.stamp/",database.name[i],"/",sbgn.file.name,sep="" )
-            online.sbgn.file = URLencode(online.sbgn.file)
-            message("\ndownloading to file:\n\n",output.file,"\n\n")
-            download.file(online.sbgn.file, output.file)
-            options(warn = 1)
+            # options(warn = -1)
+            # message("Downloading SBGN-ML file:",sbgn.file.name,"\n")
+            # online.sbgn.file = paste( "https://raw.githubusercontent.com/datapplab/SBGNhub/master/data/SBGN.with.stamp/",database.name[i],"/",sbgn.file.name,sep="" )
+            # online.sbgn.file = URLencode(online.sbgn.file)
+            # message("\ndownloading to file:\n\n",output.file,"\n\n")
+            # download.file(online.sbgn.file, output.file)
+            # options(warn = 1)
+            # sbgn.data = paste0(sbgn.file.name,".RData")
+            # print("name is")
+            # print(sbgn.file.name)
+            ################################
+            # data(list = sbgn.file.name)
+            # write(sbgn.xml,file = output.file)
+            ################################
+            # data("sbgn.xmls")
+            if(sbgn.file.name %in% names(sbgn.xmls)){
+                write(sbgn.xmls[[sbgn.file.name]],file = output.file)
+            }else{
+                stop(sbgn.file.name," is not included in SBGNview.data package!")
+            }
+          
         }else{
+            message("SBGN file exists:")
+            message(output.file)
         }
         output.files = c(output.files,(as.character(output.file)))
     }
     output.files
     return(output.files)
 }
-
 
 
 
@@ -1910,7 +1989,9 @@ change.data.id = function(data.input.id
         }
         id.map = id.mapping.table
     }
+    message("Changing data IDs")
     in.data.target.id <- mol.sum.multiple.mapping(mol.data = data.input.id, id.map = id.map,sum.method = sum.method)
+    message("Finished changing data IDs")
     return(in.data.target.id)
 }
 
@@ -2088,12 +2169,13 @@ filter.pathways.by.org = function(
     org = tolower(org)
     org.pathway.completeness.file = "https://github.com/datapplab/SBGNhub/raw/master/data/species.specifid.pathway_pathwayCommons/pathway.species.pct_Mapped.RData"
     local.species.cov.file = paste(pathways.info.file.folder, "/pathway.species.pct_Mapped.RData",sep="")
-    if(!file.exists(local.species.cov.file)){
-        options(warn = -1)
-        if.downloaded = try(download.file(org.pathway.completeness.file, local.species.cov.file),silent = TRUE)
-        options(warn = 1)
-    }
-    load(paste0("./",pathways.info.file.folder,"/pathway.species.pct_Mapped.RData"))
+    # if(!file.exists(local.species.cov.file)){
+    #     options(warn = -1)
+    #     if.downloaded = try(download.file(org.pathway.completeness.file, local.species.cov.file),silent = TRUE)
+    #     options(warn = 1)
+    # }
+    # load(paste0("./",pathways.info.file.folder,"/pathway.species.pct_Mapped.RData"))
+    load("pathway.species.pct_Mapped")
     if(org=="all"){
         org = unique(pathway.species.pct_Mapped$species)
     }
@@ -2115,12 +2197,13 @@ filter.pathways.by.org = function(
                                   ,]
         pathway.completeness.cutoff.info.file = "https://github.com/datapplab/SBGNhub/raw/master/data/species.specifid.pathway_pathwayCommons/pathway.completeness.cutoff.info.RData"
         local.species.cov.file = paste(pathways.info.file.folder,"/pathway.completeness.cutoff.info.RData",sep="")
-        if(!file.exists(local.species.cov.file)){
-            options(warn = -1)
-            if.downloaded = try(download.file(pathway.completeness.cutoff.info.file, local.species.cov.file),silent = TRUE)
-            options(warn = 1)
-        }
-        load(paste0("./",pathways.info.file.folder,"/pathway.completeness.cutoff.info.RData"))
+        # if(!file.exists(local.species.cov.file)){
+        #     options(warn = -1)
+        #     if.downloaded = try(download.file(pathway.completeness.cutoff.info.file, local.species.cov.file),silent = TRUE)
+        #     options(warn = 1)
+        # }
+        # load(paste0("./",pathways.info.file.folder,"/pathway.completeness.cutoff.info.RData"))
+        load("pathway.completeness.cutoff.info")
         pathway.specific.cutoff = pathway.completeness.cutoff.info$cutoff
         names(pathway.specific.cutoff) = pathway.completeness.cutoff.info$pathway
         if.pass.cutoff = pathway.ids$pct.mapped.species.pathway >pathway.specific.cutoff[pathway.ids$pathway]

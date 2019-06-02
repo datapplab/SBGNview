@@ -1,4 +1,5 @@
 library(SBGNview)
+library(testthat)
 context("test-ID.mapping")
 test.id.mapping = function(
                   species 
@@ -28,6 +29,9 @@ test.id.mapping = function(
                               )[[1]][[1]]
                               ,silent = TRUE
                           )
+                # if(!nrow(id.map)>0){
+                #     stop()
+                # }
                 expect_that(nrow(id.map)>0, is_true() )
            }
        }
