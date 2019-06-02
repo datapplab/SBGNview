@@ -56,9 +56,12 @@ example.ids = list(
 )
 
 test.gene = function(){
-    species = c("hsa","mmu")
-    input.types = c("ENTREZID","KO","ENSEMBL")
-    output.types = c("pathwayCommons","metacyc.SBGN","pathway.id")
+    # species = c("hsa","mmu")
+    # input.types = c("ENTREZID","KO","ENSEMBL")
+    # output.types = c("pathwayCommons","metacyc.SBGN","pathway.id")
+    species = c("hsa")
+    input.types = c("ENTREZID")
+    output.types = c("pathwayCommons")
     mol.type = "gene"
     test.id.mapping(
         species  = species
@@ -85,4 +88,4 @@ test.compound = function(){
 
 
 test.gene()
-test.compound()
+# test.compound()

@@ -303,28 +303,28 @@ download.mapping.file = function(input.type
         }
     }
     if(!if.mapping.in.data.package){
-        message("Can't map this pair of IDs with SBGNview.data!",type.pair.name.try,"\n")
-        for(i in seq_len(length(try.file.names))){
-            type.pair.name.try = try.file.names[i]
-            mapping.file.name = paste(SBGNview.data.folder,"/",type.pair.name.try,".RData",sep="")
-            if(!file.exists(mapping.file.name)){
-                online.mapping.file = paste( "https://github.com/datapplab/SBGNhub/raw/master/data/id.mapping/", type.pair.name.try,".RData",sep="" )
-                if.downloaded = try(download.file(online.mapping.file, mapping.file.name),silent  = TRUE )
-
-                if(is(if.downloaded,"try-error")){
-                    print(online.mapping.file)
-                    mapping.file.name = "online mapping not available"
-                    next()
-                }else{
-                    message("Downloading ID mapping file:")
-                    if.online.mapping.avai = TRUE
-                    print(online.mapping.file)
-                    break()
-                }
-            }else{
-                break()
-            }
-        }
+        stop("Can't map this pair of IDs with SBGNview.data!",type.pair.name.try,"\n")
+        # for(i in seq_len(length(try.file.names))){
+        #     type.pair.name.try = try.file.names[i]
+        #     mapping.file.name = paste(SBGNview.data.folder,"/",type.pair.name.try,".RData",sep="")
+        #     if(!file.exists(mapping.file.name)){
+        #         online.mapping.file = paste( "https://github.com/datapplab/SBGNhub/raw/master/data/id.mapping.unique.pair.name/", type.pair.name.try,".RData",sep="" )
+        #         if.downloaded = try(download.file(online.mapping.file, mapping.file.name),silent  = TRUE )
+        # 
+        #         if(is(if.downloaded,"try-error")){
+        #             print(online.mapping.file)
+        #             mapping.file.name = "online mapping not available"
+        #             next()
+        #         }else{
+        #             message("Downloading ID mapping file:")
+        #             if.online.mapping.avai = TRUE
+        #             print(online.mapping.file)
+        #             break()
+        #         }
+        #     }else{
+        #         break()
+        #     }
+        # }
     }
     options(warn = 1)
     return(mapping.file.name)
@@ -378,19 +378,26 @@ load.mapping.table = function(
            ){
             message("Loading ID mapping file: ",mapping.file.name," \n")
             .GlobalEnv$mapping.list = NULL; .GlobalEnv$mapping.table = NULL
+            if.from.file = FALSE
             if(file.exists(mapping.file.name)){
-                load(mapping.file.name)
+                if.from.file = TRUE
+                var.name = load(mapping.file.name)
             }else{
                 # data(list = mapping.file.name)
             }
-            message("Finished loading")
             if(!is.null(mapping.list)){ # if one of "output.type" or "input.type" is NOT "pathway.id", then the data's names is "mapping.list"
                 id.map = mapping.list[[1]][[1]]
             }else if(!is.null(mapping.table)){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
                 id.map = mapping.table
+            }else if(if.from.file){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
+                id.map = get(var.name)
             }else{
+                print("loading mapping file from data package")
+                print(mapping.file.name)
+                data(list = mapping.file.name)
                 id.map = get(mapping.file.name)
             }
+            message("Finished loading")
             
             if("species" %in% colnames(id.map) & !is.null(id.map)){
                 id.map = id.map[id.map[,"species"] %in% species,c(input.type,output.type)]
