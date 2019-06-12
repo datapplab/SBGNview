@@ -8,7 +8,7 @@ highlight.edges = function(node.set,arcs = NULL   # needs improvement. Currently
                              ,arc.highlight.tip.size = 4
                              ){
     if( node.set.id.type != node.set.id.type){
-        new.ids = change.ids(input.ids = node.set 
+        new.ids = changeIds(input.ids = node.set 
                                     ,input.type = node.set.id.type
                                     ,output.type = node.set.id.type
                                     # ,limit.to.pathways = names(glyphs)
@@ -66,16 +66,13 @@ highlight.edges = function(node.set,arcs = NULL   # needs improvement. Currently
 #' @param labels  Character
 #' @return A SBGNview obj
 #' @examples 
-#'  data(SBGNview.obj)
-#' \dontrun{
-#' data("SBGNview.obj" )
+#' data(SBGNview.obj)
 #' obj.new = SBGNview.obj + 
-#'        highlight.nodes(node.set = c("tyrosine", "(+-)-epinephrine"),
+#'        highlightNodes(node.set = c("tyrosine", "(+-)-epinephrine"),
 #'                       stroke.width = 4, stroke.color = "green") 
-#'  }
 #' @export
 #' 
-highlight.nodes = function(
+highlightNodes = function(
                            node.set = "all"
                            ,node.set.id.type = "CompoundName"
                            ,glyphs.id.type = "pathwayCommons"
@@ -144,7 +141,7 @@ highlight.nodes.each.sbgn = function(
                             ){
     if(!identical(node.set, "all")){ # if we are not interested in all nodes, we need to get the node IDs for input IDs
         if( node.set.id.type != glyphs.id.type ){ # if 1. input id type is not glyph id type, we need to change ids
-            input.to.node.ids = change.ids(input.ids = node.set 
+            input.to.node.ids = changeIds(input.ids = node.set 
                                         ,input.type = node.set.id.type
                                         ,output.type = glyphs.id.type
                                         ,cpd.or.gene = cpd.or.gene
@@ -263,7 +260,7 @@ arcs.to.graph = function(arcs
 #' \dontrun{
 #' data("SBGNview.obj" )
 #' obj.new = SBGNview.obj + 
-#'               highlight.path(from.node = c("tyrosine")
+#'               highlightPath(from.node = c("tyrosine")
 #'                  , to.node = c("dopamine")
 #'                 ,from.node.color = "red"
 #'                 ,to.node.color = "blue"
@@ -271,7 +268,7 @@ arcs.to.graph = function(arcs
 #'}
 #' @export
 
-highlight.path = function(
+highlightPath = function(
                       from.node = NULL
                       ,to.node = NULL
                       ,directed.graph = TRUE
@@ -399,7 +396,7 @@ highlight.path.each.sbgn = function(
     
     if( node.set.id.type != glyphs.id.type){
         
-        from.node = change.ids(
+        from.node = changeIds(
                                         input.ids = from.node 
                                         ,input.type = node.set.id.type
                                         ,output.type = glyphs.id.type
@@ -407,7 +404,7 @@ highlight.path.each.sbgn = function(
                                         # ,limit.to.pathways = pathway.id
         )
         from.node = from.node[[1]]
-        to.node = change.ids(
+        to.node = changeIds(
                                         input.ids = to.node 
                                         ,input.type = node.set.id.type
                                         ,output.type = glyphs.id.type
@@ -491,16 +488,13 @@ highlight.path.each.sbgn = function(
 #' @param tip.size Numeric
 #' @return A function that modify a SBGNview object to change arc color.
 #' @examples
-#'  data(SBGNview.obj)
-#' \dontrun{
-#' data("SBGNview.obj" )
+#' data(SBGNview.obj)
 #' obj.new = SBGNview.obj + 
-#'             highlight.arcs(class = "production",color = "red") 
+#'             highlightArcs(class = "production",color = "red") 
 #'             
-#' }
 #' @export
 
-highlight.arcs = function(
+highlightArcs = function(
                     class = "all"
                     ,color = "black"
                     ,line.width = 2

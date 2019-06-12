@@ -9,7 +9,7 @@
 \arguments{
 \item{SBGNview.obj}{An object of class SBGNview}
 
-\item{fn}{A character string. The name of any funtion that modifies and returns a SBGNview object. Some functions are available in SBGNview package: \code{\link{highlight.path}}, \code{\link{highlight.nodes}}.}
+\item{fn}{A character string. The name of any funtion that modifies and returns a SBGNview object. Some functions are available in SBGNview package: \code{\link{highlightPath}}, \code{\link{highlightNodes}}.}
 }
 \value{
 The returned value of *fn*
@@ -18,11 +18,8 @@ The returned value of *fn*
 This binary operator ("+") modifies a SBGNview object(first argument) using a function (second argument)
 }
 \examples{
- data(SBGNview.obj)
-\dontrun{
-data("SBGNview.obj" )
+data(SBGNview.obj)
 obj.new = SBGNview.obj + 
-            highlight.arcs(class = "production",color = "red") 
+            highlightArcs(class = "production",color = "red") 
 
-}
 }

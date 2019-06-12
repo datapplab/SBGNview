@@ -12,9 +12,22 @@ editor_options:
 bibliography: REFERENCES.bib
 vignette: >
   %\VignetteIndexEntry{Pathway analysis using SBGNview gene set}
-  %\VignetteEngine{knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
+
+# Install R packages
+## Install SBGNview
+Install **SBGNview** through Bioconductor 
+```{r install, eval = FALSE}
+BiocManager::install(c("SBGNview"))
+```
+
+## Install package 'gage' for pathway enrichment analysis
+Install **gage** through Bioconductor 
+```{r installGage, eval = FALSE}
+BiocManager::install(c("gage"))
+```
 
 # IFNg dataset
 
@@ -24,8 +37,8 @@ In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice
 The RNA abundance data was quantile normalized and log2 transformed, stored in a "SummarizedExperiment" object
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-library(SummarizedExperiment)
 library(SBGNview)
+library(SummarizedExperiment)
 library(SBGNview.data)
 data("IFNg")
 count.data <- assays(IFNg)$counts
@@ -38,7 +51,7 @@ head(count.data)
 ## Pathway enrichment analysis: run SBGNview gene set
 ### Load gene list: mouse ensemble IDs.
 ```{r , echo = TRUE , results = 'hide',   message = FALSE, warning = FALSE}
-ensemble.to.pathway <- get.mol.list(
+ensemble.to.pathway <- getMolList(
     database = "pathwayCommons"
     ,mol.list.ID.type = "ENSEMBL"
     ,org = "mmu"
@@ -155,6 +168,8 @@ include_graphics("demo.SummarizedExperiment_R-HSA-877300_Interferon gamma signal
 ```
 
 
-``` {r, eval = FALSE, echo=FALSE}
-rmarkdown::render("C:/xiaoxi/work/papers/SBGNview/package/SBGNview/vignettes/pathway.enrichment.analysis.Rmd")
+# Session Info
+
+```{r}
+sessionInfo()
 ```

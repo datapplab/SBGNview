@@ -4,11 +4,14 @@
 \name{mapped.ids}
 \alias{mapped.ids}
 \title{IDs mappable by SBGNview}
-\format{A list}
+\format{A list with two elements: A vector of mappable gene ID types, a vector of mappable compound ID types.}
 \usage{
 mapped.ids
 }
 \description{
 IDs mappable by SBGNview
+}
+\details{
+ID types mappable to glyph IDs in SBGNhub SBGN-ML file collection: https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp
 }
 \keyword{datasets}

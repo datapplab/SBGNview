@@ -12,7 +12,7 @@ editor_options:
 bibliography: REFERENCES.bib
 vignette: >
   %\VignetteIndexEntry{SBGNview functions}
-  %\VignetteEngine{knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
 ```{r , echo = FALSE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
@@ -32,7 +32,7 @@ Pathway maps use different glyphs shapes to represent different types of molecul
 
 * Supports major pathway databases and user defined pathways. 
 
-As a community standard, SBGN is adopted by major pathway databases, including Reactome, Panther, PathwayCommons, MetaCrop etc. Therefore, users can use **SBGNview** to visualize and interpret their omics data on any pathways from these databases. In additions, molecular biologists often summarize new discoveries or literature knowledge in pathways, and create their own pathway maps. This can be done in [SBGN editing/drawing tools](http://sbgn.github.io/sbgn/software_support/) and the pathways can be saved as SBGN-ML files as input for SBGNview. This makes **SBGNview** much more flexible than existing tools such as Pathview and PaintOmics, which only support KEGG pathways.
+As a community standard, SBGN is adopted by major pathway databases, including Reactome, Panther, PathwayCommons, MetaCrop etc. Therefore, users can use **SBGNview** to visualize and interpret their omics data on any pathways from these databases. In additions, molecular biologists often summarize new discoveries or literature knowledge in pathways, and create their own pathway maps. This can be done in SBGN editing/drawing tools: https://sbgn.github.io/software and the pathways can be saved as SBGN-ML files as input for SBGNview. This makes **SBGNview** much more flexible than existing tools such as Pathview and PaintOmics, which only support KEGG pathways.
 
 
 * Extensive choices for graphical control. 
@@ -45,40 +45,9 @@ Like **Pathview**, **SBGNview** supports multiple samples for each gene/compound
 
 # Installation
 
-## Prerequisites
-*SBGNview* depends on the following packages:
-
-* *xml2*: parse SBGN-ML files
-* *rsvg*: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
-* *pathview*: map between different ID types for gene and chemical compound.
-* *igraph*: find shortest paths
-* *SummarizedExperiment*: parse SummarizedExperiment objects
-* *SBGNview.data*: Demo gene expression datasets and ID mapping tables
-
 ## Install SBGNview
-```{r setup, eval = FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE)){
-     install.packages("BiocManager")
-}
-BiocManager::install( c("pathview", "xml2", "igraph", "rsvg", "SummarizedExperiment"))
-```
-## Install **SBGNview.data** package through GitHub:
-```{r install.SBGNview.data, eval = FALSE}
-devtools::install_github("datapplab/SBGNview.data")
-```
 
-Install **SBGNview** through GitHub:
-```{r install.SBGNview, eval = FALSE}
-install.packages("devtools")
-devtools::install_github("datapplab/SBGNview")
-```
-Clone the Git repository:
-```{r clone.git, eval = FALSE}
-git clone  https://github.com/datapplab/SBGNview.git
-```
-
-
-Install **SBGNview** itself through Bioconductor (Currently submitting to Bioconductor, this will be available soon) 
+Install **SBGNview** through Bioconductor.
 ```{r install, eval = FALSE}
 BiocManager::install(c("SBGNview"))
 ```
@@ -98,11 +67,12 @@ Given these two inputs, **SBGNview** will parse SBGN-ML file and render a .svg g
 A quick example to visualize a demo gene expression dataset on pathway "Adrenaline and noradrenaline biosynthesis" and highlight several interesting nodes, edges and path.
 
 ```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-# load demo dataset and pathway information of built-in collection of SBGN-ML files
+# load demo dataset and pathway information of built-in collection of SBGN-ML files. 
+# We use a cancer microarray dataset 'gse16837.d' from package 'pathview'
 library(SBGNview)
-data("gse16873.d","pathways.info")
+data("gse16873.d","pathways.info","sbgn.xmls")
 # search for pathways with user defined keywords
-input.pathways <- find.pathways("Adrenaline and noradrenaline biosynthesis")
+input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
 # render SBGN pathway graph and output image files
 SBGNview.obj <- SBGNview(
           gene.data = gse16873.d[,1:3], 
@@ -128,13 +98,13 @@ In this example, the [original pathway SBGN-ML file is from pathwayCommons ](htt
 We can highlight nodes, edges and path:
 
 ```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-output.file(SBGNview.obj) <- "quick.start.highlight.elements"
+outputFile(SBGNview.obj) <- "quick.start.highlight.elements"
 SBGNview.obj + 
-        highlight.arcs(class = "production",color = "red") +
-        highlight.arcs(class = "consumption",color = "blue") +
-        highlight.nodes(node.set = c("tyrosine", "(+-)-epinephrine"),
+        highlightArcs(class = "production",color = "red") +
+        highlightArcs(class = "consumption",color = "blue") +
+        highlightNodes(node.set = c("tyrosine", "(+-)-epinephrine"),
                        stroke.width = 4, stroke.color = "green") + 
-        highlight.path(from.node = "tyrosine", to.node = "dopamine",
+        highlightPath(from.node = "tyrosine", to.node = "dopamine",
                       from.node.color = "green",
                       to.node.color = "blue",
                       shortest.paths.cols = "purple",
@@ -152,13 +122,13 @@ The color of consumption arcs and production arcs are set to blue and red, respe
 
 Tyrosine and epinephrine are highlighted by thicker border (stroke width) and green color. Note that there are four nodes mapped to (+-)-epinephrine. 
 
-A shortest path from tyrosine to dopamine is highlighted with purple arcs and nodes. The start (Tyrosine) and end (epinephrine) nodes have thicker border and different colors. Since there are multiple dopamines in the map, a random dopamine node is selected.  If user wants a specific node, function *change.ids* can help find the node IDs corresponding to input IDs. Then user can run *highlight.nodes* and/or *highlight.path* again with "node IDs" instead of "compound name". See [this example](#findNode) for details.
+A shortest path from tyrosine to dopamine is highlighted with purple arcs and nodes. The start (Tyrosine) and end (epinephrine) nodes have thicker border and different colors. Since there are multiple dopamines in the map, a random dopamine node is selected.  If user wants a specific node, function *changeIds* can help find the node IDs corresponding to input IDs. Then user can run *highlightNodes* and/or *highlightPath* again with "node IDs" instead of "compound name". See [this example](#findNode) for details.
 
 
 
 # Getting started
 
-*SBGNview* is the main function to overylay omics data on SBGN pathway maps. It extracts node and edge data from SBGN-ML file and creates a SBGN graph in SVG format. Then it maps omics data to the glyphs and renders the graph with mapped data as colors. Currently it maps gene/protein omics data to "macromolecule" glyphs and maps compound omics data to "simple chemical" glyphs. Please see its documentation for more details. The *SBGNview* function returns a *SBGNview* object, it contains information necessary to render SBGN graph and can be further modified to change graph features. See [this section](#sbgnviewObj) for more details.
+*SBGNview* is the main function to overylay omics data on SBGN pathway maps. It extracts node and edge data from SBGN-ML file and creates a SBGN graph in SVG format. Then it maps omics data to the glyphs and renders the graph with mapped data as colors. Currently it maps gene/protein omics data to "macromolecule" glyphs and maps compound omics data to "simple chemical" glyphs. Please see the documentation of function *SBGNview* for more details. The *SBGNview* function returns a *SBGNview* object, it contains information necessary to render SBGN graph and can be further modified to change graph features. See [this section](#sbgnviewObj) for more details.
 
 ## SBGN pathway file (SBGN-ML)
 SBGN pathway is defined in a special XML format (SBGN-ML file). It contains information of the pathway content (molecules and their reactions) as well as graph layout information. There are two main types of data in SBGN-ML files:
@@ -190,26 +160,27 @@ There are two common scenarios of using *SBGNview*
 
 * Using [our pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp)
 
-In this scenario, SBGNview can automatically download pathway files by pathway IDs. 
+In this scenario, the SBGN-ML file contents are stored in data **sbgn.xmls** (included in package *SBGNview.data*). SBGNview can automatically retrieve SBGN-ML contents from this dataset by pathway IDs. 
+
 * Using SBGN-ML files from other sources.
 
-In this scenario, more parameters and/or ID mapping files are needed. Please see the documentation of function *SBGNview* for more details.
+In this scenario, more parameters and/or ID mapping files (map between omics data IDs and SBGN-ML file glyph IDs) are needed. Please see the documentation of function *SBGNview* for more details.
 
 #### Search for pathways by keywords {#searchPathways}
 SBGNview has several functions to search for pathways by keyword and automatically download SBGN-ML files.
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-pathways <- find.pathways(c("bile acid","bile salt"))
+pathways <- findPathways(c("bile acid","bile salt"))
 head(pathways)
-pathways.local.file <- download.sbgn.file(pathways$pathway.id[1:3])
+pathways.local.file <- downloadSbgnFile(pathways$pathway.id[1:3])
 pathways.local.file
 ```
-By default *find.pathways* searches for keywords in pathway names. It can also search by different ID types
+By default *findPathways* searches for keywords in pathway names. It can also search by different ID types
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-pathways <- find.pathways(c("tp53","Trp53"),keyword.type = "SYMBOL")
+pathways <- findPathways(c("tp53","Trp53"),keyword.type = "SYMBOL")
 head(pathways)
-pathways <- find.pathways(c("K04451","K10136"),keyword.type = "KO")
+pathways <- findPathways(c("K04451","K10136"),keyword.type = "KO")
 head(pathways)
 ```
 
@@ -246,7 +217,7 @@ head(cpd.data)
 Most of the SBGN-ML files from online resources have their unique ID types and it is different from the ID type in the omics data.
 If the ID types are different, we need to map the omics IDs to the node IDs in the SBGN-ML file.
 In the [quick start example](#quickStart) ("Adrenaline and noradrenaline biosynthesis" pathway), the SBGN-ML file uses pathwayCommons IDs for gene/protein nodes, whereas the omics dataset uses Entrez gene IDs.
-The function **SBGNview** can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN) as shown in the [quick start example](#quickStart). We can also do it manually using function *change.data.id*, which is called by *SBGNview* to do ID mapping. Supprted ID type pairs can be found in *data(mapped.ids)*.  *change.data.id* uses [pre-generated mapping tables](https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping) or **pathview** to do the mapping.
+The function **SBGNview** can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN) as shown in the [quick start example](#quickStart). We can also do it manually using function *changeDataId*, which is called by *SBGNview* to do ID mapping. Supprted ID type pairs can be found in *data(mapped.ids)*.  *changeDataId* uses [pre-generated mapping tables](https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping) or **pathview** to do the mapping.
 If the input-output ID type pair is not in *data(mapped.ids)* or can't be mapped by**pathview**, user needs to provide the mapping table explicitly using the "id.mapping.table" argument.
 
 Let's change the IDs in the gene expression omics data.
@@ -255,7 +226,7 @@ gene.data <- gse16873
 head(gene.data[,1:2])
 ```
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-gene.data <- change.data.id(data.input.id = gene.data,
+gene.data <- changeDataId(data.input.id = gene.data,
                            input.type = "entrez",
                            output.type = "pathwayCommons",
                            cpd.or.gene = "gene",
@@ -296,7 +267,7 @@ Here for demo purpose, we change the kegg compound IDs to pathwayCommons compoun
 
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-cpd.data <- change.data.id(data.input.id = cpd.data,
+cpd.data <- changeDataId(data.input.id = cpd.data,
                            input.type = "kegg.ligand",
                            output.type = "pathwayCommons",
                            cpd.or.gene = "compound",
@@ -325,10 +296,10 @@ include_graphics("test_output.gene.compound_P00001.svg")
 
 ## About *SBGNview* object {#sbgnviewObj}
 **SBGNview** operates in a way similar to **ggplot2**:
-The main function *SBGNview* returns a *SBGNview* object (similar to the *ggplot* object "p" returned by function *ggplot* in **ggplot2**), which contains all information needed to render SBGN graph, including output file path. Printing this object will render the graph and write output image files. *SBGNview* object can be further modified by several built-in functions to highlight nodes/edges/paths (e.g. *SBGNview.obj*+*highlight.nodes()*, similar to *p*+*geom_boxplot()* in **ggplot2**).
+The main function *SBGNview* returns a *SBGNview* object (similar to the *ggplot* object "p" returned by function *ggplot* in **ggplot2**), which contains all information needed to render SBGN graph, including output file path. Printing this object will render the graph and write output image files. *SBGNview* object can be further modified by several built-in functions to highlight nodes/edges/paths (e.g. *SBGNview.obj*+*highlightNodes()*, similar to *p*+*geom_boxplot()* in **ggplot2**).
 
 * These operations will generate plot files:
-    + *SBGNview(...) + highlight.nodes(...)* or *SBGNview.obj + highlight.nodes(...)*
+    + *SBGNview(...) + highlightNodes(...)* or *SBGNview.obj + highlightNodes(...)*
          
           How it works: The functions will return a *SBGNview* object to R console. The returned object is executed as a top-level R expression, thus will be implicitly printed using a *print.SBGNview* function in **SBGNview** package. For more details, please see the documentaion of function *print.SBGNview*.
     + run *SBGNview.obj* in R console
@@ -341,7 +312,7 @@ The main function *SBGNview* returns a *SBGNview* object (similar to the *ggplot
         
           Same as above: the "print.SBGNview" function is run explicitly.
 * These commands will NOT generate plot files:
-    + *SBGNview.obj = SBGNview(...)+highlight.nodes(...)*
+    + *SBGNview.obj = SBGNview(...)+highlightNodes(...)*
         
           In this case, the assign operation "=" made the returned object invisible thus not printed
     + *for (i in 1:2) {SBGNview.obj}*
@@ -362,14 +333,14 @@ str(arcs[[1]])
 ### Change output file in a *SBGNview* object
 
 
-We can change the output file using built-in function *output.file*:
+We can change the output file using built-in function *outputFile*:
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-output.file(SBGNview.obj)
-output.file(SBGNview.obj) <- "test.change.output.file"
-output.file(SBGNview.obj)
+outputFile(SBGNview.obj)
+outputFile(SBGNview.obj) <- "test.change.output.file"
+outputFile(SBGNview.obj)
 SBGNview.obj
-output.file(SBGNview.obj) <- "test.print"
-output.file(SBGNview.obj)
+outputFile(SBGNview.obj) <- "test.print"
+outputFile(SBGNview.obj)
 print(SBGNview.obj)
 ```
 
@@ -409,11 +380,11 @@ Like ggplot2, the *SBGNview* object can be further modified by concatenating it 
 ### Highlight all nodes
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 highlight.all.nodes.sbgn.obj <-  SBGNview.obj +
-        highlight.nodes( 
+        highlightNodes( 
 # Here we set argument "node.set" to select all nodes
             node.set = "all",
             stroke.width = 4, stroke.color = "green")
-output.file(highlight.all.nodes.sbgn.obj) = "highlight.all.nodes"
+outputFile(highlight.all.nodes.sbgn.obj) = "highlight.all.nodes"
 print(highlight.all.nodes.sbgn.obj)
 ```
 ```{r highlightAllNodes, echo = FALSE,fig.cap="\\label{fig:highlightAllNodes}Highlight all nodes."}
@@ -423,11 +394,11 @@ include_graphics("highlight.all.nodes_P00001.svg")
 ### Highlight nodes by class
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 highlight.macromolecule.sbgn.obj <-  SBGNview.obj +
-        highlight.nodes(
+        highlightNodes(
 # Here we set argument "select.glyph.class" to select macromolecule nodes
             select.glyph.class = "macromolecule",
             stroke.width = 4, stroke.color = "green")
-output.file(highlight.macromolecule.sbgn.obj) = "highlight.macromolecule"
+outputFile(highlight.macromolecule.sbgn.obj) = "highlight.macromolecule"
 print(highlight.macromolecule.sbgn.obj)
 ```
 ```{r highlightMacromolecule, echo = FALSE,fig.cap="\\label{fig:highlightMacromolecule}Highlight macromolecule nodes."}
@@ -438,11 +409,11 @@ include_graphics("highlight.macromolecule_P00001.svg")
 ### Show node IDs instead of node labels
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 highlight.all.nodes.sbgn.obj <-  SBGNview.obj +
-        highlight.nodes( node.set = "(+-)-epinephrine", stroke.width = 4, stroke.color = "green",
+        highlightNodes( node.set = "(+-)-epinephrine", stroke.width = 4, stroke.color = "green",
 # Here we set argument "show.glyph.id" to display node ID instead of the original label.
                          show.glyph.id = TRUE,
                         label.font.size = 10)
-output.file(highlight.all.nodes.sbgn.obj) = "highlight.all.id.nodes"
+outputFile(highlight.all.nodes.sbgn.obj) = "highlight.all.id.nodes"
 print(highlight.all.nodes.sbgn.obj)
 ```
 ```{r highlightNodes, echo = FALSE,fig.cap="\\label{fig:highlightNodes}Highlight nodes using node IDs."}
@@ -452,12 +423,12 @@ include_graphics("highlight.all.id.nodes_P00001.svg")
 ## Adjust node labels.
 
 ### Label position, font size, color, change labels
-The function *highlight.nodes* also can be used to adjust labels. In this example, we move the label horizontally and vertically, change their color and font size.
+The function *highlightNodes* also can be used to adjust labels. In this example, we move the label horizontally and vertically, change their color and font size.
 ```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 my.labels <- c("Tyr","epinephrine")
 names(my.labels) <- c("tyrosine", "(+-)-epinephrine")
 SBGNview.obj.adjust.label <-  SBGNview.obj +
-        highlight.nodes( node.set = c("tyrosine", "(+-)-epinephrine"), stroke.width = 4, stroke.color = "green",
+        highlightNodes( node.set = c("tyrosine", "(+-)-epinephrine"), stroke.width = 4, stroke.color = "green",
                          label.x.shift = 0,
 # Labels are moved up a little bit                        
                          label.y.shift = -20,
@@ -466,7 +437,7 @@ SBGNview.obj.adjust.label <-  SBGNview.obj +
                          label.spliting.string = "", 
 # node labels can be customized by a named vector. The names of the vector is the IDs assigned to argument "node.set". Values of the vector are the new labels for display.                
                          labels = my.labels)
-output.file(SBGNview.obj.adjust.label) <- "adjust.label"
+outputFile(SBGNview.obj.adjust.label) <- "adjust.label"
 print(SBGNview.obj.adjust.label)
 ```
 ```{r changeLabel, echo = FALSE,fig.cap="\\label{fig:changeLabel}Modify node labels."}
@@ -477,11 +448,11 @@ include_graphics("adjust.label_P00001.svg")
 Some nodes may have long labels thus overlap with surrounding graph elements. In this case we can set the parameter *label.spliting.string* to "any" so the label will be wrapped in multiple lines that fit the width of the node.
 ```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 SBGNview.obj.change.label.wrapping <-  SBGNview.obj +
-        highlight.nodes( node.set = c("tyrosine", "(+-)-epinephrine"), stroke.width = 4, stroke.color = "green",
+        highlightNodes( node.set = c("tyrosine", "(+-)-epinephrine"), stroke.width = 4, stroke.color = "green",
                          show.glyph.id = TRUE,
                          label.x.shift = 10,label.y.shift = 20,label.color = "red",
                          label.font.size = 10,label.spliting.string = "any")
-output.file(SBGNview.obj.change.label.wrapping) = "change.label.wrapping"
+outputFile(SBGNview.obj.change.label.wrapping) = "change.label.wrapping"
 print(SBGNview.obj.change.label.wrapping)
 ```
 ```{r changeWrapping, echo = FALSE,fig.cap="\\label{fig:changeWrapping}Change how labels are wrapped."}
@@ -490,16 +461,16 @@ include_graphics("change.label.wrapping_P00001.svg")
 
 
 ## When one input ID maps to multiple nodes {#findNode}
-In the example above, we saw that one input ID (e.g. "(+-)-epinephrine") can be mapped to multiple nodes in the graph. If we just want to focus on several particular ones, we can use function *highlight.nodes* to find the node IDs, which is unique to each node:
+In the example above, we saw that one input ID (e.g. "(+-)-epinephrine") can be mapped to multiple nodes in the graph. If we just want to focus on several particular ones, we can use function *highlightNodes* to find the node IDs, which is unique to each node:
 ```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 test.show.glyph.id <- SBGNview.obj+
-    highlight.nodes( node.set = c("tyrosine", "(+-)-epinephrine"), stroke.width = 4,
+    highlightNodes( node.set = c("tyrosine", "(+-)-epinephrine"), stroke.width = 4,
                      stroke.color = "green", show.glyph.id = TRUE,
                      label.x.shift = 10,label.y.shift = 20,label.color = "red",
                      label.font.size = 10,
 # When "label.spliting.string" is set to a string that is not in the label (including an empty string ""), the label will not be wrapped into multiple lines.                     
                      label.spliting.string = "")
-output.file(test.show.glyph.id) <- "test.show.glyph.id"
+outputFile(test.show.glyph.id) <- "test.show.glyph.id"
 print(test.show.glyph.id)
 ```
 ```{r displayNodeIds, echo = FALSE,fig.cap="\\label{fig:displayNodeIds}Show node IDs of mapped nodes."}
@@ -508,7 +479,7 @@ include_graphics("test.show.glyph.id_P00001.svg")
 
 We can find the mapping between input IDs and node IDs:
 ```{r, echo = TRUE, results = 'hide', eval = TRUE, message = FALSE, warning = FALSE}
-mapping <- change.ids(input.ids = c("tyrosine", "(+-)-epinephrine"),
+mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
            input.type = "CompoundName",
            output.type = "pathwayCommons",
            cpd.or.gene = "compound",
@@ -520,12 +491,12 @@ mapping
 
 We can pick two nodes to highlight and find a shortest path between them.
 ```{r, echo =TRUE}
-output.file(SBGNview.obj) <- "highlight.by.node.id"
+outputFile(SBGNview.obj) <- "highlight.by.node.id"
 ```
 ```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-SBGNview.obj+  highlight.nodes(node.set = c("tyrosine", "(+-)-epinephrine"),
+SBGNview.obj+  highlightNodes(node.set = c("tyrosine", "(+-)-epinephrine"),
                        stroke.width = 4, stroke.color = "red") + 
-    highlight.path(from.node =  "SmallMolecule_96737c854fd379b17cb3b7715570b733",
+    highlightPath(from.node =  "SmallMolecule_96737c854fd379b17cb3b7715570b733",
                    to.node =   "SmallMolecule_7753c3822ee83d806156d21648c931e6",
                    node.set.id.type = "pathwayCommons",
                       from.node.color = "green",
@@ -559,9 +530,9 @@ str(arcs[[1]])
 # Retrieve pathway related information{#extractInformation}
 
 ## Extract node information 
-Node information can be extracted using function *sbgn.nodes*. 
+Node information can be extracted using function *sbgnNodes*. 
 ```{r , echo = TRUE, message = FALSE,results='hide', warning=FALSE}
-node.info <- sbgn.nodes(input.sbgn = c("P00001","P00002"),
+node.info <- sbgnNodes(input.sbgn = c("P00001","P00002"),
                        output.gene.id.type = "SYMBOL",
                        output.cpd.id.type = "chebi",
                        species = "hsa"
@@ -582,10 +553,10 @@ data("mapped.ids")
 ```
 ## Map between two types of IDs
 
-Besides *change.data.id* which changes ID for omics data, SBGNview provides functions to map between different types IDs: 
+Besides *changeDataId* which changes ID for omics data, SBGNview provides functions to map between different types IDs: 
 
 ```{r , echo = TRUE, results = 'hide',message = FALSE, warning = FALSE }
-mapping <- change.ids(
+mapping <- changeIds(
   input.ids = c("tyrosine", "(+-)-epinephrine"),
   input.type = "CompoundName",
   output.type = "pathwayCommons",
@@ -597,7 +568,7 @@ mapping <- change.ids(
 head(mapping)
 ```
 ```{r , echo = TRUE, results = 'hide',message = FALSE, warning = FALSE }
-mapping <- change.ids(
+mapping <- changeIds(
   input.ids = c("tyrosine", "(+-)-epinephrine"),
   input.type = "CompoundName",
   output.type = "chebi",
@@ -612,7 +583,7 @@ head(mapping)
 SBGNview has generated pairwise ID mapping tables (between various gene/compound ID types and pathway glyph IDs and pathway IDs) for the pre-collected SBGN-ML files. SBGNview automatically downloads these mapping tables into a folder specified by parameter "SBGNview.data.folder", if the file is not in that folder. Therefore, user can retain the downloaded files and specify "SBGNview.data.folder" to re-use the downloaded ID mapping files. The default SBGNview.data.folder is "SBGNview.tmp.data" in the working directory. In the following example, we set "SBGNview.tmp.data" so SBGNview doesn't need to download the ID mapping table again.
 
 ```{r , echo = TRUE, results = 'hide',message = FALSE, warning = FALSE }
-mapping <- change.ids(
+mapping <- changeIds(
   input.ids = c("tyrosine"),
   input.type = "CompoundName",
   output.type = "chebi",
@@ -626,7 +597,7 @@ head(mapping)
 
 ## Extract molecule list from pathways {#extractList}
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- get.mol.list(
+mol.list <- getMolList(
                         database = "metacrop"
                         ,mol.list.ID.type = "ENZYME"
                         ,org = "ath"
@@ -638,7 +609,7 @@ mol.list <- get.mol.list(
 mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- get.mol.list(
+mol.list <- getMolList(
                  database = "pathwayCommons",
                  mol.list.ID.type = "ENTREZID",
                  org = "hsa"
@@ -648,7 +619,7 @@ mol.list <- get.mol.list(
 mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- get.mol.list(
+mol.list <- getMolList(
                  database = "pathwayCommons",
                  mol.list.ID.type = "ENTREZID",
                  org = "mmu"
@@ -658,7 +629,7 @@ mol.list <- get.mol.list(
 mol.list[[2]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- get.mol.list(
+mol.list <- getMolList(
                  database = "MetaCyc",
                  mol.list.ID.type = "KO",
                  org = "eco"
@@ -668,7 +639,7 @@ mol.list <- get.mol.list(
 mol.list[[2]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- get.mol.list(
+mol.list <- getMolList(
                  database = "pathwayCommons",
                  mol.list.ID.type = "chebi",
                  cpd.or.gene = "compound"
@@ -709,17 +680,17 @@ SBGNview.obj
 
 # Test SBGN reference cards
 ```{r , echo = TRUE,results = 'hide', message = FALSE, warning = FALSE}
-ref.card.url <- "https://raw.githubusercontent.com/datapplab/SBGNhub/master/data/SBGN.with.stamp/reference.card"
-download.file(paste0(ref.card.url,"/AF_Reference_Card.sbgn")
-              ,destfile = "AF.sbgn")
-download.file(paste0(ref.card.url,"/PD_Reference_Card.sbgn")
-              ,destfile = "PD.sbgn")
-download.file(paste0(ref.card.url,"/ER_Reference_Card.sbgn")
-              ,destfile = "ER.sbgn")
+downloadSbgnFile(c("AF_Reference_Card.sbgn"
+                 ,"PD_Reference_Card.sbgn"
+                 ,"ER_Reference_Card.sbgn"
+                 ))
 
 SBGNview.obj <- SBGNview(
              gene.data = c()
-             ,input.sbgn = c("AF.sbgn","PD.sbgn","ER.sbgn")
+             ,input.sbgn = c("AF_Reference_Card.sbgn"
+                             ,"PD_Reference_Card.sbgn"
+                             ,"ER_Reference_Card.sbgn"
+                             )
              ,sbgn.gene.id.type ="glyph"
              
              ,output.file = "./test.refcards" 
@@ -746,3 +717,10 @@ SBGNview(
 
 # References
  
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

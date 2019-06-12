@@ -5,31 +5,38 @@
 #' This binary operator ("+") modifies a SBGNview object(first argument) using a function (second argument)
 #' 
 #' @param SBGNview.obj An object of class SBGNview
-#' @param fn A character string. The name of any funtion that modifies and returns a SBGNview object. Some functions are available in SBGNview package: \code{\link{highlight.path}}, \code{\link{highlight.nodes}}.
+#' @param fn A character string. The name of any funtion that modifies and returns a SBGNview object. Some functions are available in SBGNview package: \code{\link{highlightPath}}, \code{\link{highlightNodes}}.
 #' @return The returned value of *fn*
 #' @examples 
-#'  data(SBGNview.obj)
-#' \dontrun{
-#' data("SBGNview.obj" )
+#' data(SBGNview.obj)
 #' obj.new = SBGNview.obj + 
-#'             highlight.arcs(class = "production",color = "red") 
+#'             highlightArcs(class = "production",color = "red") 
 #' 
-#' }
 #' @export
 
 "+.SBGNview" <- function(SBGNview.obj,fn){
     fn(SBGNview.obj)
 }
 
-#' A wrapper to run function \code{\link{render.sbgn}} for all pathways in a SBGNview object and generate image files.
+#' A wrapper to run function \code{\link{renderSbgn}} for all pathways in a SBGNview object and generate image files.
 #' @param x An object of class SBGNview
 #' @param ... Other parameters passed to print.
 #' @return None
 #' @examples 
-#' data("SBGNview.obj" )
-#' \dontrun{
-#' print(SBGNview.obj)
-#' }
+#' ### use simulated data. Please see vignettes for more examples
+#' data("pathways.info","sbgn.xmls")
+#' SBGNview.obj = SBGNview(
+#'               simulate.data = TRUE
+#'               ,sbgn.dir = "./"
+#'               ,input.sbgn = "P00001"
+#'               
+#'               ,output.file = "./test.local.file" 
+#'               ,output.formats = c("pdf")
+#'               
+#'               ,min.gene.value = -1
+#'               ,max.gene.value = 1
+#'             )
+#'  print(SBGNview.obj)
 #' @export
 "print.SBGNview" = function(x,...
                             # ,output.file = NULL
@@ -46,7 +53,7 @@
                                                         ,output.file
                                                         ,sbgn.parameters.list$output.file )
             }
-            tp = render.sbgn(
+            tp = renderSbgn(
                     input.sbgn = sbgn.parameters.list$input.sbgn
                     ,output.file = sbgn.parameters.list$output.file
                     ,arcs.info = sbgn.parameters.list$arcs.info
@@ -69,29 +76,27 @@
 
 #' Retrieve output file information from a SBGNview object
 #' @param obj A SBGNview object.
+#' @details This function prints the output file path recorded in a SBGNview object. When printing the SBGNview object, output image files will be generated using the output file.
 #' @return A string. The output file information. The same as parameter "output.file" when running \code{\link{SBGNview}}
 #' @examples 
 #' data("SBGNview.obj" )
-#' \dontrun{
-#' output.file(SBGNview.obj) 
-#' }
+#' outputFile(SBGNview.obj) 
 #' @export
-output.file = function(obj){
-    obj$output.file
+outputFile = function(obj){
+    obj$outputFile
 }
 
 
 #' Set output file information for a SBGNview object
 #' @param obj No need to provide
 #' @param value No need to provide 
+#' @details This function sets the output file path that can be recorded in a SBGNview object. When printing the SBGNview object, output image files will be generated using the output file.
 #' @return A SBGNview object
 #' @examples 
 #' data("SBGNview.obj" )
-#' \dontrun{
-#' output.file(SBGNview.obj) = "./test.output"
-#' }
+#' outputFile(SBGNview.obj) = "./test.output"
 #' @export
-"output.file<-" = function(obj,value){
+"outputFile<-" = function(obj,value){
     glyphs.arcs.list = obj$data
     sbgns = names(glyphs.arcs.list)
     for(s in seq_len(length.out = length(glyphs.arcs.list))){ # for each sbgn file

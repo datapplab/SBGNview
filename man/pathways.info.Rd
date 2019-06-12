@@ -11,4 +11,7 @@ pathways.info
 \description{
 Information of collected pathways
 }
+\details{
+The information of pre-collected pathways (SBGNhub: https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) and their SBGN-ML file information, such as pathway ID, name, source database, glyph ID types and URLs to the original pathway webpages.
+}
 \keyword{datasets}

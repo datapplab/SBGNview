@@ -29,7 +29,7 @@
 #' @param text.length.factor.macromolecule  Numeric. Controls macromolecles glyphs.
 #' @param text.length.factor.compartment Numeric
 #' @param text.length.factor.complex  Numeric
-#' @param global.parameters.list List. A record of parameters fed to "render.sbgn" for reuse. It will over-write other parameters. It is not designed to be used directly.
+#' @param global.parameters.list List. A record of parameters fed to "renderSbgn" for reuse. It will over-write other parameters. It is not designed to be used directly.
 #' @param color.panel.n.grid Numeric.  -Default:  101  How many colors does the color scheme show.
 #' @param col.gene.low  A character string. -Default:  "green"
 #' @param col.gene.high A character string.  -Default:  "red"
@@ -67,7 +67,6 @@
 #' @param space.between.color.panel.and.entity Numeric.  -Default:  10 The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph. 
 #' @return A list of three elements: glyphs.list, arcs.list, global.parameters.list
 #' @examples
-#'  ### The function render.sbgn() is not designed to run independently. Use SBGNview() instead.
 #'  data(pathways.info)
 #' \dontrun{
 #' SBGNview.obj = SBGNview(
@@ -85,7 +84,7 @@
 #' 
 #' @export
  
-render.sbgn = function(
+renderSbgn = function(
                      input.sbgn
                      ,output.file
                      ,if.write.files = TRUE

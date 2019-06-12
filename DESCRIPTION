@@ -8,7 +8,7 @@ Description:
     (e.g. color, line width etc.). To facilitate pathway based analysis,
     SBGNview also provides functions to extract molecule sets from SBGN-ML files.
     SBGNview can map a large collection of gene, protein and compound ID typs to glyphs. 
-Version: 0.99.35
+Version: 0.99.36
 Author:
     Xiaoxi Dong, Weijun Luo
 Maintainer: Xiaoxi Dong <dfdongxiaoxi@gmail.com>
@@ -25,10 +25,12 @@ Imports:
     xml2,
     rsvg,
     igraph,
-    SummarizedExperiment
+    rmarkdown,
+    knitr,
+    SummarizedExperiment,
 RdMacros: Rdpack
-License:  file LICENSE
-LazyData: TRUE
+License: AGPL-3
+LazyData: FALSE
 Collate:
     SBGN.to.SVG.R
     parsing.utilities.R
@@ -40,10 +42,12 @@ Collate:
     highlight.utilities.R
 RoxygenNote: 6.1.1
 Suggests:
-    knitr,
-    testthat
+    testthat,
+    gage
 VignetteBuilder: knitr
 Encoding: UTF-8
-biocViews: Pathways, GraphAndNetwork, Visualization, GeneSetEnrichment,
+biocViews: GeneTarget, Pathways, GraphAndNetwork, Visualization, GeneSetEnrichment,
         DifferentialExpression, GeneExpression, Microarray, RNASeq,
         Genetics, Metabolomics, Proteomics, SystemsBiology, Sequencing, GeneTarget
+URL: https://github.com/datapplab/SBGNview
+BugReports: https://github.com/datapplab/SBGNview/issues

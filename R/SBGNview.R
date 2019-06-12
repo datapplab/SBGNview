@@ -32,42 +32,7 @@
 #' @param SBGNview.data.folder A character string. The path to a folder that will hold download ID mapping files and pathway information data files. The data can be reused once downloaded.
 #' 
 #'              
-#' @param ... Other parameters passed to function \code{\link{render.sbgn}}, including:\cr\cr
-#'              key.pos\cr -Default: "topright"  One of "bottomleft" , "bottomright", "topright", "topleft"  location of color panel: lower left, lower right, upper right, upper left\cr\cr
-#'              color.panel.scale\cr   -Default:  1.5  It controls the relative size of color scheme panel. \cr\cr
-#'              color.panel.n.grid\cr   -Default:  101  How many colors does the color scheme show.\cr\cr
-#'              col.gene.low\cr   -Default:  "green"\cr\cr
-#'              col.gene.high\cr   -Default:  "red"\cr\cr
-#'              col.gene.mid\cr   -Default:  "gray"\cr\cr
-#'              col.cpd.low\cr   -Default:  "blue"\cr\cr
-#'              col.cpd.high\cr   -Default:  "yellow"\cr\cr
-#'              col.cpd.mid\cr   -Default:  "gray"\cr\cr
-#'              min.gene.value\cr   -Default:  -1  Color panel's min value for gene. Values smaller than this will have the same color as min.value.\cr\cr
-#'              max.gene.value\cr   -Default:  1\cr\cr
-#'              mid.gene.value\cr   -  Default:  0\cr\cr
-#'              min.cpd.value\cr   -Default:  -1  Color panel's min value for compound. Values smaller than this will have the same color as min.value.\cr\cr
-#'              max.cpd.value\cr   -Default:  1\cr\cr
-#'              mid.cpd.value\cr   -Default:  0\cr\cr
-#'              multimer.margin\cr   -Default:  5  For multimers, they are represented by two partly overlapped shapes (rectangle or ellipse). This parameter controls how much the two shapes overlap.\cr\cr 
-#'              compartment.opacity\cr   -Default:  0.9  How transparent the compartments are.\cr\cr
-#'              auxiliary.opacity\cr   -Default:  1  Opacity of auxiliary glyphs.\cr\cr
-#'              if.plot.annotation.nodes\cr   -Default:  F   Some sbgn files have "annotation" glyphs. By default we don't plot them.\cr\cr
-#'              inhibition.edge.end.shift\cr   -Default:  4  The tip of "inhibition" arcs is a line segment. Sometimes it overlaps with target glyph's border. We can shift it to prevent the overlap.\cr\cr
-#'              edge.tip.size\cr   -Default: 4\cr\cr
-#'              if.use.number.for.long.label\cr   -Default:  T  If the label is too long, we can create a shorter name for it. e.g. "macromolecule_1"\cr\cr
-#'              if.write.shorter.label.mapping\cr   -Default: T   If if.use.number.for.long.label is "T", we can write the mapping between shorter name and the original label to a text file.\cr\cr
-#'              label.spliting.string\cr   -Default:  c(" ","-",";","/","_")  When we split text into multiple lines, these characters will be used to split label(where a new line can be created). If label.spliting.string is set to anything not in the label (e.g. "", NULL, NA etc.), the label won't be split (i.e. all text in the same line). If label.spliting.string is set to "any", the label will be at any character when the lenth of current line reaches the width determined by parameter "text.length.factor\cr\cr
-#'              complex.compartment.label.margin\cr   -Default:  8  Move the label text vertically for compartment and complex.\cr\cr
-#'              font.size\cr   -Default:  6  Affects font size of all types of glyphs.\cr\cr
-#'              font.size.scale.gene\cr   -Default:  3 Only affect font size of "macromolecule" glyphs.\cr\cr
-#'              font.size.scale.cpd\cr   -Default:  3  Only affects font size of "simple chemical" glyphs.\cr\cr
-#'              logic.node.font.scale\cr   -Default:  6  Controls the size of logic glyphs(and, or, not etc.).\cr\cr
-#'              text.length.factor\cr   -Default:  2 How wide the wrapped text should be. If text is longer than the width controled by this parameter, the text is split into a new line, but only at characters in "label.spliting.string".\cr\cr
-#'              node.width.adjust.factor\cr   -Default:  3  Change font size according to the width of its glyph. If the glyph is too large (e.g. a compartment), its label may look too small. Then we can enlarge the label in proportion to width of the glyph. It affects all types of glyphs. \cr\cr
-#'              if.scale.complex.font.size\cr   -Default:  T  If we want to scale complex font size according to its width.\cr\cr
-#'              if.scale.compartment.font.size\cr   -Default:  T   If scale compartment font size according to its width.\cr\cr
-#'              node.width.adjust.factor.compartment\cr   -Default:  1  How much the font size should change in proportion to the width of compartment.\cr\cr
-#'              node.width.adjust.factor.complex\cr   -Default:  4 How much the font size should change in proportion to the width of complex.\cr\cr
+#' @param ... Other parameters passed to function \code{\link{renderSbgn}}, including:\cr\cr
 #' @return  A SBGNview object. 
 #' @details 
 #'          1. About SBGNview()
@@ -88,7 +53,7 @@
 #'           
 #'            3.1 How SBGNview finds glyph IDs in SBGN-ML file: Glyph IDs are recorded in attribute "id" in XHTML element "glyph". But for ID mapping, user can use other attributes by changing parameter "sbgn.id.attr".   
 #'           
-#'            3.2 For \href{ https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN}{our SBGN-ML file collection.}, SBGNview can do ID mapping automatically. It uses extracted mapping between 1) UNIPROT/uniref  and "macromolecule" glyph IDs and 2) ChEBI and "simple chemical" glyph IDs from biopax files in pathwayCommons and MetaCyc (other files were used for MetaCyc). For other ID types, we used pathview (gene/protein) and UniChem (compound) to map to UNIPROT and ChEBI, respectively, then map them to glyph IDs. Please see the \href{https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping/mapping.each.pair/for.use.all/both}{README.txt file} for more details. For MetaCrop, we used pathview for ID mapping.
+#'            3.2 For \href{ https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN}{our SBGN-ML file collection.}, SBGNview can do ID mapping automatically. It uses extracted mapping between 1) UNIPROT/uniref  and "macromolecule" glyph IDs and 2) ChEBI and "simple chemical" glyph IDs from biopax files in pathwayCommons and MetaCyc. For other ID types, we used pathview (gene/protein) and UniChem (compound) to map to UNIPROT and ChEBI, respectively, then map them to glyph IDs. Please see the \href{https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping/mapping.each.pair/for.use.all/both}{README.txt file} for more details. For MetaCrop, we used pathview for ID mapping.
 #'          
 #'          
 #'          4. Two common scenarios of using SBGNview
@@ -134,10 +99,10 @@
 #'          
 #'          -A mapping table between input omics IDs and SBGN-ML glyph IDs (id.mapping.gene and/or id.mapping.cpd).
 #'          
-#'          For user's convinience, pathview can generate such tables for several ID types (functions "geneannot.map" and "cpdidmap"). But column names need to be changed to the values of "input.type" and "output.type", as described in the "parameters" section.
+#'          For user's convinience, pathview can generate such tables for several ID types (functions "geneannot.map" and "cpdidmap"). But column names need to be changed to the values of "gene.id.type" and "sbgn.gene.id.type", as described in the "parameters" section.
 #' @examples 
-#'  ### use simulated data. Please see vignettes for more examples
-#'  data(pathways.info)
+#' ### use simulated data. Please see vignettes for more examples
+#' data("pathways.info","sbgn.xmls")
 #' SBGNview.obj = SBGNview(
 #'               simulate.data = TRUE
 #'               ,sbgn.dir = "./"
@@ -248,7 +213,7 @@ SBGNview = function(
         compartment.layer.info = get.compartment.layer(sbgn.xml)
         
         message("Rendering SBGN graph")
-        sbgn.result.list = render.sbgn(
+        sbgn.result.list = renderSbgn(
                                 input.sbgn = input.sbgn.full.path
                                 ,output.file = output.file.sbgn
                                 ,arcs.info = arcs.info
@@ -279,3 +244,14 @@ SBGNview = function(
     
 }
 
+
+#' SBGNview class
+#' This S3 class of objects contain information generated by function SBGNview. A demo is available by running 'data(SBGNview.obj)'
+#' @format A list containing two elements:
+#'           1. data: 
+#'              A list contains information for all input SBGN pathways. Each element is a list (e.g. "P00001") holding information of a single SBGN pathway. The information include parsed information of glyphs, arcs and SBGNview parameters passed to SBGNview function
+#'              
+#'           2. output.file:
+#'              A string of the path to the output file. It is the string set by parameter "output.file" in function SBGNview.
+#' @examples 
+#' data(SBGNview.obj)

@@ -11,4 +11,7 @@ pathways.stat
 \description{
 Number of pathways collected
 }
+\details{
+The number of pathways in SBGNhub from each source database. It is calculated from data 'pathways.info'.
+}
 \keyword{datasets}

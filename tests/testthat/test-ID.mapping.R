@@ -20,7 +20,7 @@ test.id.mapping = function(
                n = n+1
                message("\n\n\n\n\n Checking:  ",n," ",mol.type," ",input.type," ",output.type," ",species.run,"\n\n")
                 id.map = try(
-                              load.mapping.table(
+                              loadMappingTable(
                                       output.type = output.type
                                       ,input.type = input.type
                                       ,cpd.or.gene = mol.type
