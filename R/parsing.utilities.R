@@ -17,6 +17,7 @@ utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls"
 #' @import grDevices
 #' @import methods
 #' @importFrom stats median runif var
+#' @importFrom AnnotationDbi select columns
 #' @importFrom SummarizedExperiment assays
 #' @import utils
 #' 
@@ -2031,7 +2032,7 @@ geneannot.map.all = function(in.ids
         }
         message("Using package:", pkg.name,"\n")
         db.obj <- eval(parse(text=paste0(pkg.name, "::", pkg.name)))
-        id.types <- columns(db.obj) #columns(eval(as.name(pkg.name)))
+        id.types <- AnnotationDbi::columns(db.obj) #columns(eval(as.name(pkg.name)))
         
         in.type=toupper(in.type)
         out.type=toupper(out.type)
@@ -2053,7 +2054,7 @@ geneannot.map.all = function(in.ids
         in.ids0=in.ids
         in.ids <- unique(as.character(in.ids))#unique necessary for select()# if(unique.map)
         out.ids=character(length(in.ids))
-        res <- try(suppressWarnings(select(db.obj,
+        res <- try(suppressWarnings(AnnotationDbi::select(db.obj,
                                            keys = in.ids,
                                            keytype = in.type,
                                            columns=c(in.type, out.type))))
