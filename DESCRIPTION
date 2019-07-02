@@ -1,13 +1,16 @@
 Package: SBGNview
 Title: Overlay omics data onto SBGN pathway diagram
 Description: 
-    SBGNview is an R package for visualizing omics data on SBGN pathway maps. 
-    Given omics data and a SBGN-ML file with layout information,
-    SBGNview can display omics data as colors on glyphs and output image files.
-    SBGNview provides extensive options to control glyph and edge features 
-    (e.g. color, line width etc.). To facilitate pathway based analysis,
-    SBGNview also provides functions to extract molecule sets from SBGN-ML files.
-    SBGNview can map a large collection of gene, protein and compound ID typs to glyphs. 
+    SBGNview is a tool set for visualizing omics data on pathway maps and pathway related data analysis.
+    Given an omics data table and a pathway file (SBGN-ML format with layout information), SBGNview 
+    overlays omics data as colors on glyphs (nodes) and output image files.
+    Pathway is rendered with community standard notation: Systems Biology Graphical Notation (SBGN).
+    Currently it maps gene/protein data to “macromolecule” glyphs and maps chemical compound data to “simple chemical” glyphs.
+    For omics data, SBGNview supports common gene/protein/compound ID types (e.g. Entrez Gene ID, UNIPROT, ChEBI etc.).
+    SBGNview can automatically retrieve and use SBGN-ML files from common pathway databases
+    (e.g. Reactome, MetaCyc, SMPDB, PANTHER, METACROP etc.).
+    Extensive options are provided to control glyph and edge features.
+    SBGNview can search for pathways by keywords, extract node information and highlight shortest path between two nodes.  
 Version: 0.99.37
 Author:
     Xiaoxi Dong, Weijun Luo

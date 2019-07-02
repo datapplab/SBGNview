@@ -8,26 +8,7 @@
 An object to store glyph information
 }
 \details{
-User can modify glyph objects to change the way how it is rendered. 
-
-Some of the slots/parameters in a glyph object control similar graph features (e.g. text font, line width/color etc). The priority is determined in the following sequence: 
-
-
-1. glyph@text, glyph@shape.
-
-2. Fill color derived from omics data 
-
-3. Parameters in slot "glyph@global.parameters.list"
-
-4. Slots in glyph object: stroke.opacity, fill.color etc.
-
-For example, if both of the following parameters are set: 
-
-1). glyph@text$font.size = 5
-
-2). lobal.parameters.list$font.size = 10
-
-Then the font size is set by "glyph@text$font.size = 5".
+User can modify glyph objects to change the way how it is rendered.
 }
 \section{Slots}{
 
@@ -36,9 +17,9 @@ Then the font size is set by "glyph@text$font.size = 5".
 
 \item{\code{x,y,h,w}}{Numeric. The x,y location and hight, width of the glyph}
 
-\item{\code{id}}{A character string. The ID of the glyph (determined by the "id" attribute in element "glyph")}
+\item{\code{id}}{A character string. The ID of the glyph (determined by the 'id' attribute in element 'glyph')}
 
-\item{\code{label}}{A character string. label of the glyph. Extracted from the element "label"}
+\item{\code{label}}{A character string. label of the glyph. Extracted from the element 'label'}
 
 \item{\code{glyph.class}}{A character string. Class of the glyph}
 
@@ -48,23 +29,23 @@ Then the font size is set by "glyph@text$font.size = 5".
 
 \item{\code{fill.color,stroke.color}}{A character string. The fill color and stroke color of glyph.}
 
-\item{\code{label_location}}{A character string. One of "center" or "top". If set to "center", the glyph label text will be displayed at the center of the glyph. If set to "top", the label will be displayed at the top of the glyph.}
+\item{\code{label_location}}{A character string. One of 'center' or 'top'. If set to 'center', the glyph label text will be displayed at the center of the glyph. If set to 'top', the label will be displayed at the top of the glyph.}
 
-\item{\code{orientation}}{A character string. One of "left","right","up","down". This is specific to glyphs of classes "terminal" and "tag". It will change the orientation of the node.}
+\item{\code{orientation}}{A character string. One of 'left','right','up','down'. This only applies to glyphs of classes 'terminal' and 'tag'. It will change the orientation of the node.}
 
-\item{\code{global.parameters.list}}{A list. This is a copy of parameters in '...' of function \code{\link{SBGNview}}.}
+\item{\code{global.parameters.list}}{A list. This is a copy of parameters in '...' when running function \code{\link{SBGNview}}.}
 
 \item{\code{shape}}{A list. Parameters controlling how the node is rendered. Available elements can be accessed as follow:
 
 
              glyph@shape$stroke.color\cr
-                     -Character (e.g. "red"). The color of glyph border. \cr
+                     -Character (e.g. 'red'). The color of glyph border. \cr
              
              glyph@shape$stroke.opacity\cr
                      -Numeric (e.g. 0.8). The opacity of glyph border. Must be between 0 and 1.\cr
              
              glyph@shape$stroke.width\cr
-                     -Numeric. The width of glyph border\cr
+                     -Numeric. The thickness of glyph border\cr
              
              glyph@shape$fill.opacity\cr
                      -Numeric. The opacity of glyph fill. Must be between 0 and 1.\cr

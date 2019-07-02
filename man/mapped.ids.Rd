@@ -12,6 +12,6 @@ mapped.ids
 IDs mappable by SBGNview
 }
 \details{
-ID types mappable to glyph IDs in SBGNhub SBGN-ML file collection: https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp
+ID types mappable to glyph IDs in SBGNhub SBGN-ML file collection.
 }
 \keyword{datasets}

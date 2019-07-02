@@ -42,35 +42,35 @@ renderSbgn(input.sbgn, output.file, if.write.files = TRUE,
 
 \item{if.write.files}{Logical. If generate image files.}
 
-\item{glyphs.user}{A list, optional. Each element is a "glyph" object. The element names are glyph IDs (attribute "id" of XHTML element "glyph"). Note this is not affected by parameter "sbgn.id.attr". The glyph elements contain glyph meta-data for plotting (e.g. text size, border width, border color etc.). Please see the glyph object documentation for more information. By default, SBGNview will run without this argument and return a glyph list extracted from the SBGN file. User can then customize this glyph list and assign it to "glyphs.user" in the next SBGNview run to update the graph.}
+\item{glyphs.user}{A list, optional. Each element is a 'glyph' object. The element names are glyph IDs (attribute 'id' of XHTML element 'glyph'). Note this is not affected by parameter 'sbgn.id.attr'. The glyph elements contain glyph meta-data for plotting (e.g. text size, border width, border color etc.). Please see the glyph object documentation for more information. By default, SBGNview will run without this argument and return a glyph list extracted from the SBGN file. User can then customize this glyph list and assign it to 'glyphs.user' in the next SBGNview run to update the graph.}
 
-\item{arcs.user}{A list, optional. Each member is an "arc" object. The element names are arc IDs (the value of "id" attribute in XHTML element "arc" or "arc.spline" in the SBGN-ML file). Some SBGN-ML files have no arc IDs, in this case SBGNview  will create an arc ID using "source" and "target" node IDs). The arc object contains arc meta-data for plotting (e.g. arc line width, line color etc.). Please see the arc object documentation for more information. By default, SBGNview() will run without this argument and return an arc list. User can then customize this arc list and assign it to "arcs.user" in the next SBGNview() run to update the arcs.}
+\item{arcs.user}{A list, optional. Each member is an 'arc' object. The element names are arc IDs (the value of 'id' attribute in XHTML element 'arc' or 'arc.spline' in the SBGN-ML file). Some SBGN-ML files have no arc IDs, in this case SBGNview  will create an arc ID using 'source' and 'target' node IDs). The arc object contains arc meta-data for plotting (e.g. arc line width, line color etc.). Please see the arc object documentation for more information. By default, SBGNview() will run without this argument and return an arc list. User can then customize this arc list and assign it to 'arcs.user' in the next SBGNview() run to update the arcs.}
 
-\item{arcs.info}{A character string. It should be one of the following: "parse splines", "straight" or a string of svg code of arcs. If it is "parse splines", this function will look for XML element "arc.spline" in the SBGN-ML file and plot spline arcs. If it is "straight", the function will look for element "arc" and plot straight line arcs. If it is a string of svg code, it will write this code directly to the output svg file.}
+\item{arcs.info}{A character string. It should be one of the following: 'parse splines', 'straight' or a string of svg code of arcs. If it is 'parse splines', this function will look for XML element 'arc.spline' in the SBGN-ML file and plot spline arcs. If it is 'straight', the function will look for element 'arc' and plot straight line arcs. If it is a string of svg code, it will write this code directly to the output svg file.}
 
-\item{compartment.layer.info}{A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. A glyph laying in the overlapped region belongs to the compartment on the top layer.}
+\item{compartment.layer.info}{A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. This layer information ensures that a glyph laying in the overlapped region belongs to the compartment on the top layer.}
 
-\item{user.data}{A matrix. It holds both gene/protein data and compound data. Rows are gene or compounds, columns are experiments. Row names are gene IDs or compound IDs. The ID types must be the same as the type of glyph ID in the SBGN-ML file.}
+\item{user.data}{A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule.}
 
-\item{if.plot.svg}{Logical. If generate svg or only parse SBGN-ML file.}
+\item{if.plot.svg}{Logical. If generate svg codes or only parse SBGN-ML file.}
 
-\item{key.pos}{A character string. -Default: "topright"  One of "bottomleft" , "bottomright", "topright", "topleft". The location of color panel: lower left, lower right, upper right, upper left}
+\item{key.pos}{A character string. The position of color panel. -Default: 'topright'  One of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left}
 
 \item{color.panel.scale}{Numeric.  -Default:  1.5  It controls the relative size of color scheme panel.}
 
 \item{color.panel.n.grid}{Numeric.  -Default:  101  How many colors does the color scheme show.}
 
-\item{col.gene.low}{A character string. -Default:  "green"}
+\item{col.gene.low}{A character string. -Default:  'green'}
 
-\item{col.gene.high}{A character string.  -Default:  "red"}
+\item{col.gene.high}{A character string.  -Default:  'red'}
 
-\item{col.gene.mid}{A character string.  -Default:  "gray"}
+\item{col.gene.mid}{A character string.  -Default:  'gray'}
 
-\item{col.cpd.low}{A character string. -Default:  "blue"}
+\item{col.cpd.low}{A character string. -Default:  'blue'}
 
-\item{col.cpd.high}{A character string.  -Default:  "yellow"}
+\item{col.cpd.high}{A character string.  -Default:  'yellow'}
 
-\item{col.cpd.mid}{A character string.  -Default:  "gray"}
+\item{col.cpd.mid}{A character string.  -Default:  'gray'}
 
 \item{min.gene.value}{Numeric.  -Default:  -1  Color panel's min value for gene. Values smaller than this will have the same color as min.value.}
 
@@ -84,9 +84,9 @@ renderSbgn(input.sbgn, output.file, if.write.files = TRUE,
 
 \item{mid.cpd.value}{Numeric.  -Default:  0}
 
-\item{pathway.name}{List Containing two elements: 1. pathway name 2. stamp information}
+\item{pathway.name}{List containing two elements: 1. pathway name 2. stamp information}
 
-\item{pathway.name.font.size}{Numeric}
+\item{pathway.name.font.size}{Numeric. When pathway names are plotted on graph, this parameter controls their font size.}
 
 \item{if.plot.cardinality}{Logical. If plot cardinality glyphs.}
 
@@ -96,31 +96,31 @@ renderSbgn(input.sbgn, output.file, if.write.files = TRUE,
 
 \item{auxiliary.opacity}{Numeric.  -Default:  1  Opacity of auxiliary glyphs.}
 
-\item{if.plot.annotation.nodes}{Logical.  -Default:  F   Some SBGN-ML files have "annotation" glyphs. By default we don't plot them.}
+\item{if.plot.annotation.nodes}{Logical.  -Default:  F   Some SBGN-ML files have 'annotation' glyphs. By default we don't plot them.}
 
-\item{inhibition.edge.end.shift}{Numeric.  -Default:  4  The tip of "inhibition" arcs is a line segment. Sometimes it overlaps with target glyph's border. We can shift it along the arc to prevent the overlap.}
+\item{inhibition.edge.end.shift}{Numeric.  -Default:  4  The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target glyph's border. We can shift it along the arc to prevent the overlap.}
 
 \item{edge.tip.size}{Numeric.  -Default: 4}
 
-\item{if.use.number.for.long.label}{Logical. -Default:  T  If the label is too long, we can create a shorter name for it. e.g. "macromolecule_1".}
+\item{if.use.number.for.long.label}{Logical. -Default:  T  If the label is too long, we can create a shorter name for it. e.g. 'macromolecule_1'.}
 
-\item{label.spliting.string}{A character vector. -Default:  c(" ","-",";","/","_")  When we split text into multiple lines, these characters will be used to split label (where a new line can be created).}
+\item{label.spliting.string}{A character vector. -Default:  c(' ','-',';','/','_')  When we split text into multiple lines, these characters will be used to split label (where a new line can be created).}
 
 \item{complex.compartment.label.margin}{-Default:  8  Move the label text vertically for compartment and complex.}
 
-\item{if.write.shorter.label.mapping}{Logical.  -Default: T   If if.use.number.for.long.label is "T", we can write the mapping between shorter name and the original label to a text file.}
+\item{if.write.shorter.label.mapping}{Logical.  -Default: T   If if.use.number.for.long.label is 'T', we can write the mapping between shorter name and the original label to a text file.}
 
 \item{font.size}{Numeric.  -Default:  6  Affects font size of all types of glyphs.}
 
-\item{logic.node.font.scale}{Numeric.  -Default:  6  Controls the size of logical glyphs ("and", "or", "not" etc.).}
+\item{logic.node.font.scale}{Numeric.  -Default:  6  Controls the size of logical glyphs ('and', 'or', 'not' etc.).}
 
 \item{status.node.font.scale}{Numeric. Scale the font size for status variable and unit of information nodes.}
 
 \item{node.width.adjust.factor}{Numeric.  -Default:  3  Change font size according to the width of its glyph. If the glyph is too large (e.g. a compartment), its label may look too small. Then we can enlarge the label in proportion to the width of the glyph. It affects all types of glyphs.}
 
-\item{font.size.scale.gene}{Numeric.  -Default:  3 Only affect font size of "macromolecule" glyphs.}
+\item{font.size.scale.gene}{Numeric.  -Default:  3 Only affect font size of 'macromolecule' glyphs.}
 
-\item{font.size.scale.cpd}{Numeric.  -Default:  3  Only affects font size of "simple chemical" glyphs.}
+\item{font.size.scale.cpd}{Numeric.  -Default:  3  Only affects font size of 'simple chemical' glyphs.}
 
 \item{font.size.scale.complex}{Numeric}
 
@@ -134,17 +134,17 @@ renderSbgn(input.sbgn, output.file, if.write.files = TRUE,
 
 \item{node.width.adjust.factor.complex}{Numeric.  -Default:  4 How much the font size should change in proportion to the width of complex.}
 
-\item{text.length.factor}{Numeric.  -Default:  2 How wide the wrapped text should be. If text is longer than the width controled by this parameter, the text is split into a new line, but only at characters in "label.spliting.string". Controls all glyphs.}
+\item{text.length.factor}{Numeric.  -Default:  2 How wide the wrapped text should be. If text is longer than the width controled by this parameter, the text is split into a new line, but only at characters in 'label.spliting.string'. Controls all glyphs.}
 
-\item{text.length.factor.macromolecule}{Numeric. Controls macromolecles glyphs.}
+\item{text.length.factor.macromolecule}{Numeric. Controls macromolecules glyphs.}
 
 \item{text.length.factor.compartment}{Numeric}
 
 \item{text.length.factor.complex}{Numeric}
 
-\item{space.between.color.panel.and.entity}{Numeric.  -Default:  10 The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph.}
+\item{space.between.color.panel.and.entity}{Numeric.  -Default:  10 The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph. This parameter controls how close it can reach a glyph.}
 
-\item{global.parameters.list}{List. A record of parameters fed to "renderSbgn" for reuse. It will over-write other parameters. It is not designed to be used directly.}
+\item{global.parameters.list}{List. A record of parameters fed to 'renderSbgn' for reuse. It will over-write other parameters. It is not designed to be used directly.}
 }
 \value{
 A list of three elements: glyphs.list, arcs.list, global.parameters.list
@@ -157,11 +157,11 @@ This function is not intended to be used directly. Use SBGNview instead. Some in
 \dontrun{
 SBGNview.obj = SBGNview(
               simulate.data = TRUE
-              ,sbgn.dir = "./"
-              ,input.sbgn = "P00001"
+              ,sbgn.dir = './'
+              ,input.sbgn = 'P00001'
               
-              ,output.file = "./test.local.file" 
-              ,output.formats = c("pdf")
+              ,output.file = './test.local.file' 
+              ,output.formats = c('pdf')
               
               ,min.gene.value = -1
               ,max.gene.value = 1

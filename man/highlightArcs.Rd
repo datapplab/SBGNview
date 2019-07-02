@@ -10,21 +10,20 @@ highlightArcs(class = "all", color = "black", line.width = 2,
 \arguments{
 \item{class}{String. The arc class to modify.}
 
-\item{color}{String.}
+\item{color}{String. The color of arcs with selected 'class'}
 
-\item{line.width}{Numeric.}
+\item{line.width}{Numeric. Line thickness}
 
 \item{tip.size}{Numeric}
 }
 \value{
-A function that modify a SBGNview object to change arc color.
+A SBGNview object
 }
 \description{
-This function creates another function that can modify a SBGNview object and modify arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
+This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
 }
 \examples{
 data(SBGNview.obj)
-obj.new = SBGNview.obj + 
-            highlightArcs(class = "production",color = "red") 
+obj.new = SBGNview.obj + highlightArcs(class = 'production',color = 'red') 
             
 }

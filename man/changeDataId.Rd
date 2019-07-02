@@ -9,24 +9,24 @@ changeDataId(data.input.id, input.type, output.type, sum.method = "sum",
   SBGNview.data.folder = "./SBGNview.tmp.data")
 }
 \arguments{
-\item{data.input.id}{A matrix. Input omics data. Rows are genes or compounds, columns are measurements. Row names are original IDs that need to be transformed.}
+\item{data.input.id}{A matrix. Input omics data. Rows are genes or compounds, columns are measurements. Row names are the original IDs that need to be transformed.}
 
-\item{input.type}{A character string. The type of input IDs. Please check \code{data("mapped.ids")} for supported types.}
+\item{input.type}{A character string. The type of input IDs. Please check \code{data('mapped.ids')} for supported types.}
 
-\item{output.type}{A character string. The type of output IDs. Please check \code{data("mapped.ids")} for supported types.}
+\item{output.type}{A character string. The type of output IDs. Please check \code{data('mapped.ids')} for supported types.}
 
-\item{sum.method}{A character string. In some cases multiple input IDs are mapped to one output ID. In this situation ,we may need to derive only one value from them. This parameter is a function that can derive a single numeric value from a vector of numeric values (e.g. "sum","max","min","mean"), including a User Defined Function (UDF).}
+\item{sum.method}{A character string. In some cases multiple input IDs are mapped to one output ID. In this situation ,we may need to derive only one value from them. This parameter is a function that can derive a single numeric value from a vector of numeric values (e.g. 'sum','max','min','mean'), including a User Defined Function (UDF).}
 
-\item{org}{A character string. The species source of omics data. "changeDataId" uses pathview to map between some gene ID types. Please use "?geneannot.map" to check the detail. Pathview needs species information to do the job. This parameter is a two-letter abbreviation of organism name, or KEGG species code, or the common species name, used to determine the gene annotation package. For all potential values check: data(bods); bods. Default org="Hs", and can also be "hsa" or "human" (case insensitive).}
+\item{org}{A character string. The species source of omics data. 'changeDataId' uses pathview to map between some gene ID types. Please use '?geneannot.map' to check the detail. Pathview needs species information to do the job. This parameter is a two-letter abbreviation of organism name, or KEGG species code, or the common species name, used to determine the gene annotation package. For all potential values check: data(bods); bods. Default org='Hs', and can also be 'hsa' or 'human' (case insensitive).}
 
-\item{cpd.or.gene}{A character string. Either "compound" or "gene" -- the type of input omics data.}
+\item{cpd.or.gene}{A character string. Either 'compound' or 'gene' -- the type of input omics data.}
 
-\item{id.mapping.table}{A matrix.  Mapping table between input.type and output.type. This matrix should have two columns for input.type and output.type, respectively.  Column names should be the values of parameters "input.type" and "output.type". See example section for an example.}
+\item{id.mapping.table}{A matrix.  Mapping table between input.type and output.type. This matrix should have two columns for input.type and output.type, respectively.  Column names should be the values of parameters 'input.type' and 'output.type'. See example section for an example.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files. The data can be reused once downloaded.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files.}
 }
 \value{
-A matrix, row names are changed to IDs of "output.type". Note the number of rows may be different from input matrix, because multiple input IDs could be collapsed to a single output ID. Also a single input ID could map to multiple output IDs.
+A matrix, row names are changed to IDs of 'output.type'. Note the number of rows may be different from input matrix, because multiple input IDs could be collapsed to a single output ID. Also a single input ID could map to multiple output IDs.
 }
 \description{
 This function changes the IDs of input omics data from one type to another.
@@ -35,13 +35,13 @@ This function changes the IDs of input omics data from one type to another.
 This function maps between various gene/compound ID types.
 
  1. Map other ID types to glyph IDs in SBGN-ML files of pathwayCommons database,and MetaCyc database:
-    Use output.type = "pathwayCommons" or output.type = "metacyc.SBGN". 
-    Please check \code{data("mapped.ids")} for supported input ID types.
+    Use output.type = 'pathwayCommons' or output.type = 'metacyc.SBGN'. 
+    Please check \code{data('mapped.ids')} for supported input ID types.
     
  2. Map between other ID types:
  
  2.1 ID types pairs can be mapped by pathview.
-    Currently SBGNview uses pathview to do this mapping. Please check pathview functions "geneannot.map" and "cpdidmap" for more details.
+    Currently SBGNview uses pathview to do this mapping. Please check pathview functions 'geneannot.map' and 'cpdidmap' for more details.
     
  2.2 Other ID type pairs
     
@@ -51,18 +51,18 @@ This function maps between various gene/compound ID types.
 # Change gene ID
 data(mapped.ids)
 library(pathview)
-data("gse16873.d")
-gene.data = gse16873.d[c("7157","1032"),]
+data('gse16873.d')
+gene.data = gse16873.d[c('7157','1032'),]
 mapping.table = data.frame(
-                   ENTREZID = c("7157","1032")
-                   ,SYMBOL = c("TP53","CDKN2D")
+                   ENTREZID = c('7157','1032')
+                   ,SYMBOL = c('TP53','CDKN2D')
                    ,stringsAsFactors=FALSE
 )
 new.dt = changeDataId(
       data.input.id = gene.data,
-      output.type="SYMBOL",
-      input.type="ENTREZID",
-      cpd.or.gene = "gene",
+      output.type='SYMBOL',
+      input.type='ENTREZID',
+      cpd.or.gene = 'gene',
       id.mapping.table = mapping.table
       )
       

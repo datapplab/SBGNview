@@ -11,21 +11,21 @@ sbgnNodes(input.sbgn, output.gene.id.type = NA,
   sbgn.dir = "./SBGNview.tmp.data")
 }
 \arguments{
-\item{input.sbgn}{A character string. required. The path to input SBGN-ML file.}
+\item{input.sbgn}{A character string. required. The pathway ID of pre-collected pathways or a path to a local SBGN-ML file.}
 
-\item{output.gene.id.type}{A character string. The desired output gene ID type. It only works when the SBGN-ML file is from one of these databases: "MetaCyc" and "pathwayCommons". Currently, only "macromolecule" glyphs are supported. Please check \code{data("mapped.ids")} for the types accepted. If omitted, the output IDs are the oritinal IDs in the SBGN-ML file.}
+\item{output.gene.id.type}{A character string. The desired output gene ID type. It only works when the SBGN-ML file is from one of these databases: 'MetaCyc' and 'pathwayCommons'. Currently, only 'macromolecule' glyphs are supported. Please check \code{data('mapped.ids')} for the types accepted. If omitted, the output IDs are the oritinal IDs in the SBGN-ML file.}
 
-\item{output.cpd.id.type}{A character string.  The desired output compound ID type. It only works when the SBGN-ML file is from one of these databases: "MetaCyc" and "pathwayCommons". Currently, only "simple chemical" glyphs are supported. Please check \code{data("mapped.ids")} for the types accepted. If omitted, the output IDs are the oritinal IDs in the SBGN-ML file.}
+\item{output.cpd.id.type}{A character string.  The desired output compound ID type. It only works when the SBGN-ML file is from one of these databases: 'MetaCyc' and 'pathwayCommons'. Currently, only 'simple chemical' glyphs are supported. Please check \code{data('mapped.ids')} for the types accepted. If omitted, the output IDs are the oritinal IDs in the SBGN-ML file.}
 
-\item{database}{A character string. If the SBGN-ML file is from one of these databases: "MetaCyc" and "pathwayCommons", this parameter should be set to the corresponding string. For these two databases, this function can output other ID types instead of the original IDs in the SBGN-ML files. Otherwise, the output IDs are the oritinal IDs in the "id" attribure in the "glyph" element.}
+\item{database}{A character string. If the SBGN-ML file is from one of these databases: 'MetaCyc' and 'pathwayCommons', this parameter should be set to the corresponding string. For these two databases, this function can output other ID types instead of the original IDs in the SBGN-ML files. Otherwise, the output IDs are the oritinal IDs in the 'id' attribure in the 'glyph' element.}
 
-\item{species}{A character string. Only output IDs from this particular species. It only works when the SBGN-ML file is from one of these databases: "MetaCyc" and "pathwayCommons". Please check data("supported.species") for supported species. If omitted, the function will output IDs from all species.}
+\item{species}{A character string. Only output IDs from this particular species. It only works when the SBGN-ML file is from one of these databases: 'MetaCyc' and 'pathwayCommons'. Please check data('supported.species') for supported species. If omitted, the function will output IDs from all species.}
 
-\item{show.ids.for.multiHit}{Vector}
+\item{show.ids.for.multiHit}{Vector. When there are multiple output IDs mapped to a glyph, we only show the ones in this vector.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files. The data can be reused once downloaded.}
+\item{SBGNview.data.folder}{A character string.}
 
-\item{sbgn.dir}{A character string. The path to a folder that will hold download SBGN-ML files, if the input.sbgn are IDs of pre-collected SBGN-ML files.}
+\item{sbgn.dir}{A character string. The path to a folder that will hold created SBGN-ML files, if the input.sbgn are IDs of pre-collected pathways.}
 }
 \value{
 A list, containing extracted glyph information.
@@ -34,16 +34,16 @@ A list, containing extracted glyph information.
 This function will extract node information such as complex members, compartment members, node class, nodes with state variables etc.
 }
 \details{
-The following glyph information is extracted: complex members, compartment members,submap members, node class, nodes with state variables, class of state variables, edges with cardinality, nodes with ports, "source and sink" nodes, process nodes.\cr When trying to output other ID types, sometimes multiple output IDs are mapped to one glyph. In this situation, the IDs are concatenated by "; " to represent the glyph.
+The following glyph information is extracted: complex members, compartment members,submap members, node class, nodes with state variables, class of state variables, edges with cardinality, nodes with ports, 'source and sink' nodes, process nodes.\cr When trying to output other ID types, sometimes multiple output IDs are mapped to one glyph. In this situation, the IDs are concatenated by '; ' to represent the glyph.
 }
 \examples{
  data(mapped.ids)
  data(sbgn.xmls)
  data(pathways.info)
 node.list = sbgnNodes(
-                       input.sbgn = "P00001",
-                       output.gene.id.type = "ENTREZID",
-                       output.cpd.id.type = "CompoundName",
-                       species = "hsa"
+                       input.sbgn = 'P00001',
+                       output.gene.id.type = 'ENTREZID',
+                       output.cpd.id.type = 'CompoundName',
+                       species = 'hsa'
                     )
 }

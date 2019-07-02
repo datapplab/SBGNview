@@ -10,21 +10,21 @@ getMolList(database = "pathwayCommons", mol.list.ID.type = "ENTREZID",
   SBGNview.data.folder = "./SBGNview.tmp.data")
 }
 \arguments{
-\item{database}{Character string. The database where gene list will be extracted. Acceptable values: "MetaCyc", "pathwayCommons", "MetaCyc". The value is case in-sensitive.}
+\item{database}{Character string. The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.}
 
-\item{mol.list.ID.type}{Character string. The ID type of output gene list. One of the supported types in \code{data("mapped.ids")}}
+\item{mol.list.ID.type}{Character string. The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}}
 
-\item{org}{Character string. The three letter species code used by KEGG. E.g. "hsa","mmu"}
+\item{org}{Character string. The three letter species code used by KEGG. E.g. 'hsa','mmu'}
 
-\item{cpd.or.gene}{Character string. One of "gene" or "compound"}
+\item{cpd.or.gene}{Character string. One of 'gene' or 'compound'}
 
-\item{output.pathway.name}{Logical. If set to "TRUE", the names of returned list are in the format: "pathway.id::pathway.name". If set to "FALSE", the format is "pahtway.id"}
+\item{output.pathway.name}{Logical. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'}
 
-\item{combine.duplicated.set}{Logical.  Some pathways have the same geneset. If this parameter is set to "TRUE", the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with "||"}
+\item{combine.duplicated.set}{Logical.  Some pathways have the same geneset. If this parameter is set to 'TRUE', the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with '||'}
 
 \item{truncate.name.length}{Integer. The pathway names will be truncated to at most that length.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files. The data can be reused once downloaded.}
+\item{SBGNview.data.folder}{A character string.}
 }
 \value{
 A list. Each element is a genelist of a pathway.
@@ -35,9 +35,9 @@ Retrieve gene list or compound list from collected databases
 \examples{
 data(pathways.info)
 mol.list <- getMolList(
-                 database = "pathwayCommons",
-                 mol.list.ID.type = "ENTREZID",
-                 org = "hsa"
+                 database = 'pathwayCommons',
+                 mol.list.ID.type = 'ENTREZID',
+                 org = 'hsa'
 )
   
 }

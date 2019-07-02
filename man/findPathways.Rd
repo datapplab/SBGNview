@@ -2,28 +2,22 @@
 % Please edit documentation in R/parsing.utilities.R
 \name{findPathways}
 \alias{findPathways}
-\title{Retrieve pathways from keywords}
+\title{Retrieve pathways by keywords}
 \usage{
 findPathways(keywords = NULL, keywords.logic = "or",
   keyword.type = "pathway.name", org = NULL,
-  pathway.completeness = NULL, mol.name.match = c("exact.match",
-  "jaccard", "presence.of.input-string.in.target-name")[1],
   SBGNview.data.folder = "./SBGNview.tmp.data/")
 }
 \arguments{
 \item{keywords}{A character string or vector. The search is case in-sensitive.}
 
-\item{keywords.logic}{A character string. Options are "and" or "or". This will tell the function if the search require "all" or "any" of the keywords to be present. It only makes difference when keyword.type is "pathway.name".}
+\item{keywords.logic}{A character string. Options are 'and' or 'or'. This will tell the function if the search require 'all' or 'any' of the keywords to be present. It only makes difference when keyword.type is 'pathway.name'.}
 
-\item{keyword.type}{A character string. Either "pathway.name" or one of the ID types in \code{data("mapped.ids")}}
+\item{keyword.type}{A character string. Either 'pathway.name' or one of the ID types in \code{data('mapped.ids')}}
 
 \item{org}{A character string. The KEGG species code.}
 
-\item{pathway.completeness}{Numeric. The returned pathways need to meet this criteria: completeness in the species(parameter "org") should be larger than this value. Currently it only applies to "pathwayCommons" pathways. Because pathwayCommons only annotated human pathways, we mapped pathwayCommons' nodes to other species using KEGG ortholog annotation. As a result, not all of the nodes have corresponding genes in another species. We call the percentage of mapped nodes the "coverage or completeness" in the species. If "pathway.completeness" is provided, the function will use this single cutoff for different pathways. If it is not provided, the function will use pre-generated pathway-specific completeness cutoff, that is: use different cutoffs for different pathways. This cutoff is selected using the following approach: 1. A pathway has different completeness in different species thus form a completeness vector across all species (vector C) . 2. Use a completeness cutoff we can define whether this pathway "exists" in a species, thus form a label vector E (a pathway "Exist" or "not Exist" across all species). 3. Use one way ANOVA to calculate F statistic of completeness between the two groups ("Exist" or "not Exist"), thus one cutoff will have one F statistic. 4. Try different cutoffs(unique completeness values in vector C) and select the one with the largest F statistic, i.e. the cutoff the can maximize the difference between Exist" and "not Exist" groups.}
-
-\item{mol.name.match}{A character string. How to match molecular names.}
-
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files. The data can be reused once downloaded.}
+\item{SBGNview.data.folder}{A character string.}
 }
 \value{
 A dataframe. Contains information of pathways found.
@@ -32,9 +26,9 @@ A dataframe. Contains information of pathways found.
 This function searches for pathways by input keywords.
 }
 \details{
-If "keyword.type" is "pathway.name" (default), this function will search for the presence of any keyword in the pathway.name column of data(pathways.info). The search is case in-sensitive. If "keyword.type" is one of the identifier types and "keywords" are corresponding identifiers, this function will return pathways that include nodes mapped to input identifiers. "org" and "pathway.completeness" are used to filter pathways by their completeness is a species. We mapped KEGG ortholog proteins from other species to pathwayCommons' human pathway nodes. Therefore, each pathway has different coverage or completeness in another species. When omics gene data is from a paticular species, "pathway.completeness" can give some information about how confident this pathway exists in the species.
+If 'keyword.type' is 'pathway.name' (default), this function will search for the presence of any keyword in the pathway.name column of data(pathways.info). The search is case in-sensitive. If 'keyword.type' is one of the identifier types and 'keywords' are corresponding identifiers, this function will return pathways that include nodes mapped to input identifiers.
 }
 \examples{
 data(pathways.info)
-input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
+input.pathways <- findPathways('Adrenaline and noradrenaline biosynthesis')
 }

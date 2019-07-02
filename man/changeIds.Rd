@@ -15,13 +15,13 @@ changeIds(input.ids, input.type, output.type, cpd.or.gene,
 
 \item{output.type}{A character string. The type of output IDs. Supported ID types can be found in data(mapped.ids)}
 
-\item{cpd.or.gene}{A character string. One of "gene" or "compound". Currently only supports macromolecule and simple chemical IDs. This parameter is used to find the ID mapping between input node set IDs and glyph IDs.}
+\item{cpd.or.gene}{A character string. One of 'gene' or 'compound'.}
 
-\item{limit.to.pathways}{A vector of character strings. A vector of pathways IDs. When *output.type* is one of "pathwayCommons" or "metacyc.SBGN", one input ID(e.g. gene symbol) can map to multiple nodes in different pathways (SBGN-ML files). In this case, we can limit output to the specified pathways. When *output.type* is NOT one of "pathwayCommons" or "metacyc.SBGN", this argument is ignored.}
+\item{limit.to.pathways}{A vector of character strings. A vector of pathways IDs. When 'output.type' is one of 'pathwayCommons' or 'metacyc.SBGN', one input ID (e.g. gene symbol) can map to multiple nodes in different pathways (SBGN-ML files). In this case, we can limit output to the specified pathways. When 'output.type' is NOT one of 'pathwayCommons' or 'metacyc.SBGN', this argument is ignored.}
 
 \item{org}{Character string. Three letter KEGG species code.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files. The data can be reused once downloaded.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files.}
 }
 \value{
 A list. Each element is the IDs in output.type that are mapped to one input ID.
@@ -33,9 +33,9 @@ Change input IDs to another ID type
  data(mapped.ids)
 mapping = changeIds(
   input.ids = c(100048912),
-  input.type = "ENTREZID",
-  output.type = "pathwayCommons",
-  cpd.or.gene = "gene",
+  input.type = 'ENTREZID',
+  output.type = 'pathwayCommons',
+  cpd.or.gene = 'gene',
 )
 
 }

@@ -15,11 +15,11 @@
 The returned value of *fn*
 }
 \description{
-This binary operator ("+") modifies a SBGNview object(first argument) using a function (second argument)
+This binary operator ('+') modifies a SBGNview object(first argument) using a function (second argument)
 }
 \examples{
 data(SBGNview.obj)
 obj.new = SBGNview.obj + 
-            highlightArcs(class = "production",color = "red") 
+            highlightArcs(class = 'production',color = 'red') 
 
 }

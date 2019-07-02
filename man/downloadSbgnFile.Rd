@@ -7,20 +7,20 @@
 downloadSbgnFile(pathway.id, download.folder = ".")
 }
 \arguments{
-\item{pathway.id}{The ID of pathway. It is a pathway database specific ID. For accepted pathway IDs, please check \code{data("pathways.info")}. IDs are in column "pathway.id" (pathways.info[,"pathway.id"])}
+\item{pathway.id}{The ID of pathway. For accepted pathway IDs, please check \code{data('pathways.info')}. IDs are in column 'pathway.id' (pathways.info[,'pathway.id'])}
 
-\item{download.folder}{The output folder to store downloaded SBGN-ML files.}
+\item{download.folder}{The output folder to store created SBGN-ML files.}
 }
 \value{
-A character string. The path to the downloaded SBGN-ML file.
+A vector of character strings. The path to the created SBGN-ML files.
 }
 \description{
-This function can download our pre-generated SBGN-ML files from \href{https://github.com/datapplab/SBGNhub/tree/master/data/SBGN}{GitHub repository}.
+This function can generate a SBGN-ML file of our pre-collected SBGN-ML files
 }
 \examples{
-data("pathways.info")
+data('pathways.info')
 data(sbgn.xmls)
 input.sbgn = downloadSbgnFile(
-                  pathway.id = pathways.info[1,"pathway.id"],
-                  download.folder = "./")
+                  pathway.id = pathways.info[1,'pathway.id'],
+                  download.folder = './')
 }

@@ -19,14 +19,14 @@ A wrapper to run function \code{\link{renderSbgn}} for all pathways in a SBGNvie
 }
 \examples{
 ### use simulated data. Please see vignettes for more examples
-data("pathways.info","sbgn.xmls")
+data('pathways.info','sbgn.xmls')
 SBGNview.obj = SBGNview(
               simulate.data = TRUE
-              ,sbgn.dir = "./"
-              ,input.sbgn = "P00001"
+              ,sbgn.dir = './'
+              ,input.sbgn = 'P00001'
               
-              ,output.file = "./test.local.file" 
-              ,output.formats = c("pdf")
+              ,output.file = './test.local.file' 
+              ,output.formats = c('pdf')
               
               ,min.gene.value = -1
               ,max.gene.value = 1

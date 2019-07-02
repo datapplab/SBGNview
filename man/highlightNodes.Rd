@@ -12,25 +12,25 @@ highlightNodes(node.set = "all", node.set.id.type = "CompoundName",
   label.spliting.string = NULL, labels = NULL)
 }
 \arguments{
-\item{node.set}{A vector of character strings. Input node set that need to be highlighted. It can be any ID types supported by SBGNview.}
+\item{node.set}{A vector of character strings. Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview.}
 
 \item{node.set.id.type}{A character string. ID type of input nodes.}
 
-\item{glyphs.id.type}{A character string. ID type of nodes in SBGN-ML file, which is used as node IDs in the SBGNview object returned by the SBGNview() function.}
+\item{glyphs.id.type}{A character string. ID type of nodes in SBGN-ML file.}
 
-\item{cpd.or.gene}{A character string. One of "gene" or "compound". Currently highlight.node() only supports highlighting macromolecule and simple chemical nodes. This parameter is used to find the ID mapping between input node set IDs and glyph IDs.}
+\item{cpd.or.gene}{A character string. One of 'gene' or 'compound'.}
 
-\item{stroke.color}{A character string. The vorder color of highlighted nodes.}
+\item{stroke.color}{A character string. The border color of highlighted nodes.}
 
-\item{stroke.width}{A character string. The border width of highlighted nodes.}
+\item{stroke.width}{A character string. The border stroke width of highlighted nodes.}
 
-\item{stroke.opacity}{Numeric}
+\item{stroke.opacity}{Numeric. The border stroke opacity of highlighted nodes.}
 
-\item{show.glyph.id}{Logic}
+\item{show.glyph.id}{Logic. If set to 'TRUE', glyph IDs are plotted instead of their labels.}
 
-\item{select.glyph.class}{Character}
+\item{select.glyph.class}{Character. Select glyphs by class. It should be one of the values of XML attribute 'class' of a 'glyph' element. For example 'macromolecule', "simple chemical"}
 
-\item{label.x.shift}{Numeric}
+\item{label.x.shift}{Numeric. Move labels horizontally.}
 
 \item{label.y.shift}{Numeric}
 
@@ -40,7 +40,7 @@ highlightNodes(node.set = "all", node.set.id.type = "CompoundName",
 
 \item{label.spliting.string}{Character}
 
-\item{labels}{Character}
+\item{labels}{A vector of character strings. The labels to display on the nodes of input molecules. The names of this vector should be the vector of 'node.set'. The values are the new labels to display.}
 }
 \value{
 A SBGNview obj
@@ -51,6 +51,6 @@ Change node properties such as border color and width to highlight a list of inp
 \examples{
 data(SBGNview.obj)
 obj.new = SBGNview.obj + 
-       highlightNodes(node.set = c("tyrosine", "(+-)-epinephrine"),
-                      stroke.width = 4, stroke.color = "green") 
+       highlightNodes(node.set = c('tyrosine', '(+-)-epinephrine'),
+                      stroke.width = 4, stroke.color = 'green') 
 }

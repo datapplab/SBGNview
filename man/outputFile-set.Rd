@@ -18,9 +18,9 @@ A SBGNview object
 Set output file information for a SBGNview object
 }
 \details{
-This function sets the output file path that can be recorded in a SBGNview object. When printing the SBGNview object, output image files will be generated using the output file.
+This function sets the output file path recorded in a SBGNview object.
 }
 \examples{
-data("SBGNview.obj" )
-outputFile(SBGNview.obj) = "./test.output"
+data('SBGNview.obj' )
+outputFile(SBGNview.obj) = './test.output'
 }

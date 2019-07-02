@@ -1,5 +1,5 @@
 ---
-title: "Pathway analysis using SBGNview gene set and visualization"
+title: "Pathway analysis and visualization using SBGNview collected gene set"
 author: "Xiaoxi Dong, Weijun Luo"
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -15,6 +15,8 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
+# Introduction
+SBGNview has collected pathway gene sets from the following databases: Reactome, PANTHER Pathway, SMPDB, MetaCyc and MetaCrop. These gene sets can be used for pathway enrichment analysis.
 
 # Install R packages
 ## Install SBGNview
@@ -42,18 +44,17 @@ library(SummarizedExperiment)
 library(SBGNview.data)
 data("IFNg")
 count.data <- assays(IFNg)$counts
+head(count.data)
 wt <- colnames(IFNg)[IFNg$group == "wt"]
 ko <- colnames(IFNg)[IFNg$group == "ko"]
-head(count.data)
 
 ```
 
-## Pathway enrichment analysis: run SBGNview gene set
-### Load gene list: mouse ensemble IDs.
+## Pathway enrichment analysis: run SBGNview collected gene set
+### Generate gene set: mouse ensemble IDs.
 ```{r , echo = TRUE , results = 'hide',   message = FALSE, warning = FALSE}
 ensemble.to.pathway <- getMolList(
-    database = "pathwayCommons"
-    ,mol.list.ID.type = "ENSEMBL"
+    mol.list.ID.type = "ENSEMBL"
     ,org = "mmu"
     ,cpd.or.gene = "gene"
     ,output.pathway.name = TRUE
@@ -62,7 +63,7 @@ head(ensemble.to.pathway[[2]])
 ```
 
 
-### Run gage
+### Run pathway enrichment analysis
 gage is an R package for pathway enrichment analysis.
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(gage)
@@ -80,12 +81,13 @@ head(down.pathways)
 
 ## Visualize fold change on pathway maps
 ### Generate fold change data for visualization.
-The abundance table was log2 transformed. Here we calculate the fold change of KO group v.s. WT group. 
+The abundance values were log2 transformed. Here we calculate the fold change of IFNg KO group v.s. WT group. 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 mean.wt <- apply(count.data[,wt] ,1 ,"mean")
 head(mean.wt)
 mean.ko <- apply(count.data[,ko],1,"mean")
 head(mean.ko)
+# The abundance values were on log scale. Hence fold change is their difference.
 ensemble.to.koVsWt <- mean.ko - mean.wt
 head(ensemble.to.koVsWt)
 ```
@@ -133,6 +135,7 @@ include_graphics("ifn.sbgnview.less_R-HSA-877300_Interferon gamma signaling.svg"
 
 
 ### Visualize RNA abundance data: SummarizedExperiment object as input.
+SBGNview can process 'SummarizedExperiment' object and visualize data stored in 'assays'.
 ```{r , eval=FALSE, echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 data("cancer.ds")
 sbgnview.obj <- SBGNview(
