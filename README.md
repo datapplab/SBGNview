@@ -1,5 +1,5 @@
 
-# SBGNview
+# SBGNview 
 SBGNview is a tool set for visualizing omics data on SBGN pathway maps.  Given omics data and a SBGN-ML file with layout information, SBGNview can display omics data as colors on glyphs and output image files. SBGNview provides extensive options to control glyph and edge features  (e.g. color, line width etc.). To facilitate pathway based analysis, SBGNview also provides functions to extract glyph information and pairwise interactions from SBGN-ML files. SBGNview can map a large collection of gene, protein and compound ID typs to glyphs.  
 
 
