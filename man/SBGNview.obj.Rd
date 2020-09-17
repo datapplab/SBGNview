@@ -4,7 +4,9 @@
 \name{SBGNview.obj}
 \alias{SBGNview.obj}
 \title{Demo SBGNview object}
-\format{A SBGNview object}
+\format{
+A SBGNview object
+}
 \usage{
 SBGNview.obj
 }

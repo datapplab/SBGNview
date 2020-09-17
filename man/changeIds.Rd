@@ -4,9 +4,15 @@
 \alias{changeIds}
 \title{Change input IDs to another ID type}
 \usage{
-changeIds(input.ids, input.type, output.type, cpd.or.gene,
-  limit.to.pathways = NULL, org = "hsa",
-  SBGNview.data.folder = "./SBGNview.tmp.data")
+changeIds(
+  input.ids,
+  input.type,
+  output.type,
+  cpd.or.gene,
+  limit.to.pathways = NULL,
+  org = "hsa",
+  SBGNview.data.folder = "./SBGNview.tmp.data"
+)
 }
 \arguments{
 \item{input.ids}{A vector of character strings. Input IDs that need to be converted.}

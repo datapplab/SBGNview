@@ -4,12 +4,23 @@
 \alias{highlightNodes}
 \title{Highlight input nodes}
 \usage{
-highlightNodes(node.set = "all", node.set.id.type = "CompoundName",
-  glyphs.id.type = "pathwayCommons", cpd.or.gene = "compound",
-  stroke.color = "black", stroke.width = 10, stroke.opacity = 1,
-  show.glyph.id = FALSE, select.glyph.class = c(), label.x.shift = 0,
-  label.y.shift = 0, label.color = "black", label.font.size = NULL,
-  label.spliting.string = NULL, labels = NULL)
+highlightNodes(
+  node.set = "all",
+  node.set.id.type = "CompoundName",
+  glyphs.id.type = "pathwayCommons",
+  cpd.or.gene = "compound",
+  stroke.color = "black",
+  stroke.width = 10,
+  stroke.opacity = 1,
+  show.glyph.id = FALSE,
+  select.glyph.class = c(),
+  label.x.shift = 0,
+  label.y.shift = 0,
+  label.color = "black",
+  label.font.size = NULL,
+  label.spliting.string = NULL,
+  labels = NULL
+)
 }
 \arguments{
 \item{node.set}{A vector of character strings. Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview.}

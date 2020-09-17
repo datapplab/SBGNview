@@ -4,8 +4,14 @@
 \alias{loadMappingTable}
 \title{Generate ID mapping table from input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).}
 \usage{
-loadMappingTable(output.type, input.type, species = NULL, cpd.or.gene,
-  limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data")
+loadMappingTable(
+  output.type,
+  input.type,
+  species = NULL,
+  cpd.or.gene,
+  limit.to.ids = NULL,
+  SBGNview.data.folder = "./SBGNview.tmp.data"
+)
 }
 \arguments{
 \item{output.type}{A character string. Gene or compound ID type}

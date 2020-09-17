@@ -4,7 +4,9 @@
 \name{pathways.info}
 \alias{pathways.info}
 \title{Information of collected pathways}
-\format{A data.frame}
+\format{
+A data.frame
+}
 \usage{
 pathways.info
 }

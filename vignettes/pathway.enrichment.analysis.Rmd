@@ -12,21 +12,24 @@ editor_options:
 bibliography: REFERENCES.bib
 vignette: >
   %\VignetteIndexEntry{Pathway analysis using SBGNview gene set}
-  %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 # Introduction
 SBGNview has collected pathway gene sets from the following databases: Reactome, PANTHER Pathway, SMPDB, MetaCyc and MetaCrop. These gene sets can be used for pathway enrichment analysis.
 
 # Install R packages
 ## Install SBGNview
-Install **SBGNview** through Bioconductor 
+Install **SBGNview** through [Bioconductor](https://bioconductor.org/packages/release/bioc/html/SBGNview.html). Requires R (version >= 3.6).
 ```{r install, eval = FALSE}
-BiocManager::install(c("SBGNview"))
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("SBGNview")
 ```
 
 ## Install package 'gage' for pathway enrichment analysis
-Install **gage** through Bioconductor 
+Install **gage** through Bioconductor. [gage](https://bioconductor.org/packages/release/bioc/html/gage.html) is an R package for pathway enrichment analysis. 
 ```{r installGage, eval = FALSE}
 BiocManager::install(c("gage"))
 ```
@@ -36,13 +39,12 @@ BiocManager::install(c("gage"))
 In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice. It contains normalized RNA-seq gene expression data described in this study: Greer, Renee L., Xiaoxi Dong, et al. "Akkermansia muciniphila mediates negative effects of IFNg on glucose metabolism." Nature communications 2016.
 
 ## Load RNA-seq data
-The RNA abundance data was quantile normalized and log2 transformed, stored in a "SummarizedExperiment" object
+The RNA abundance data was quantile normalized and log2 transformed, stored in a ["SummarizedExperiment"](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object. SBGNview can process "SummarizedExperiment" object and visualize data stored in 'assays'.
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(SBGNview)
 library(SummarizedExperiment)
-library(SBGNview.data)
-data("IFNg")
+data("IFNg", "pathways.info")
 count.data <- assays(IFNg)$counts
 head(count.data)
 wt <- colnames(IFNg)[IFNg$group == "wt"]
@@ -51,7 +53,7 @@ ko <- colnames(IFNg)[IFNg$group == "ko"]
 ```
 
 ## Pathway enrichment analysis: run SBGNview collected gene set
-### Generate gene set: mouse ensemble IDs.
+### Load gene set: mouse ensemble IDs
 ```{r , echo = TRUE , results = 'hide',   message = FALSE, warning = FALSE}
 ensemble.to.pathway <- getMolList(
     mol.list.ID.type = "ENSEMBL"
@@ -63,8 +65,7 @@ head(ensemble.to.pathway[[2]])
 ```
 
 
-### Run pathway enrichment analysis
-gage is an R package for pathway enrichment analysis.
+### Run pathway enrichment analysis using gage
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(gage)
 degs <- gage(exprs = count.data
@@ -80,7 +81,7 @@ head(down.pathways)
 ```
 
 ## Visualize fold change on pathway maps
-### Generate fold change data for visualization.
+### Generate fold change data for visualization
 The abundance values were log2 transformed. Here we calculate the fold change of IFNg KO group v.s. WT group. 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 mean.wt <- apply(count.data[,wt] ,1 ,"mean")
@@ -96,7 +97,7 @@ head(ensemble.to.koVsWt)
 
 ### Visualize fold change data
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-
+data(sbgn.xmls)
 down.pathways <- do.call(rbind,strsplit(row.names(down.pathways),"::"))[,1]
 head(down.pathways)
 sbgnview.obj <- SBGNview(
@@ -134,9 +135,9 @@ include_graphics("ifn.sbgnview.less_R-HSA-877300_Interferon gamma signaling.svg"
 
 
 
-### Visualize RNA abundance data: SummarizedExperiment object as input.
-SBGNview can process 'SummarizedExperiment' object and visualize data stored in 'assays'.
-```{r , eval=FALSE, echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+### Visualize RNA abundance data: SummarizedExperiment object as input
+The 'cancer.ds' is a microarray dataset from a cancer study. It is used to demo SBGNview's visualization ability. 
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 data("cancer.ds")
 sbgnview.obj <- SBGNview(
     gene.data = cancer.ds,
@@ -166,13 +167,13 @@ sbgnview.obj <- SBGNview(
 sbgnview.obj
 
 ```
-```{r cancerds,eval=FALSE, echo = FALSE,fig.cap="\\label{fig:cancerds}SBGNview of a cancer dataset gse16873"}
+```{r cancerds, echo = FALSE,fig.cap="\\label{fig:cancerds}SBGNview of a cancer dataset gse16873"}
 include_graphics("demo.SummarizedExperiment_R-HSA-877300_Interferon gamma signaling.svg")
 ```
 
 
 # Session Info
-
+R session info to help replicate session in case any issues occur. 
 ```{r}
 sessionInfo()
 ```

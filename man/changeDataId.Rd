@@ -4,9 +4,16 @@
 \alias{changeDataId}
 \title{Change the data IDs of input omics data}
 \usage{
-changeDataId(data.input.id, input.type, output.type, sum.method = "sum",
-  org = "hsa", cpd.or.gene, id.mapping.table = NULL,
-  SBGNview.data.folder = "./SBGNview.tmp.data")
+changeDataId(
+  data.input.id,
+  input.type,
+  output.type,
+  sum.method = "sum",
+  org = "hsa",
+  cpd.or.gene,
+  id.mapping.table = NULL,
+  SBGNview.data.folder = "./SBGNview.tmp.data"
+)
 }
 \arguments{
 \item{data.input.id}{A matrix. Input omics data. Rows are genes or compounds, columns are measurements. Row names are the original IDs that need to be transformed.}

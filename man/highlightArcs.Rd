@@ -4,8 +4,7 @@
 \alias{highlightArcs}
 \title{Highlight arcs by arc class}
 \usage{
-highlightArcs(class = "all", color = "black", line.width = 2,
-  tip.size = 6)
+highlightArcs(class = "all", color = "black", line.width = 2, tip.size = 6)
 }
 \arguments{
 \item{class}{String. The arc class to modify.}

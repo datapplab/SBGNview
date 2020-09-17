@@ -4,9 +4,13 @@
 \alias{findPathways}
 \title{Retrieve pathways by keywords}
 \usage{
-findPathways(keywords = NULL, keywords.logic = "or",
-  keyword.type = "pathway.name", org = NULL,
-  SBGNview.data.folder = "./SBGNview.tmp.data/")
+findPathways(
+  keywords = NULL,
+  keywords.logic = "or",
+  keyword.type = "pathway.name",
+  org = NULL,
+  SBGNview.data.folder = "./SBGNview.tmp.data/"
+)
 }
 \arguments{
 \item{keywords}{A character string or vector. The search is case in-sensitive.}

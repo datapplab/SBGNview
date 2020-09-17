@@ -1,6 +1,6 @@
 #' IDs mappable by SBGNview
 #' @details ID types mappable to glyph IDs in SBGNhub SBGN-ML file collection.
-#' @format A list with two elements: A vector of mappable gene ID types, a vector of mappable compound ID types.
+#' @format A list with two elements: A vector of mappable gene ID types (\code{mapped.ids[["gene"]]}), a vector of mappable compound ID types (\code{mapped.ids[["cpd"]]}).
 "mapped.ids"
 
 #' Information of collected pathways

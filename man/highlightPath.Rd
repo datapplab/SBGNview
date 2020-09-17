@@ -4,14 +4,23 @@
 \alias{highlightPath}
 \title{Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.}
 \usage{
-highlightPath(from.node = NULL, to.node = NULL,
-  directed.graph = TRUE, node.set.id.type = "CompoundName",
-  glyphs.id.type = "pathwayCommons", cpd.or.gene = "compound",
-  input.node.stroke.width = 10, from.node.color = "red",
-  to.node.color = "blue", path.node.color = "black",
-  path.node.stroke.width = 10, n.shortest.paths.plot = 1,
-  shortest.paths.cols = c("purple"), path.stroke.width = 2,
-  tip.size = 4)
+highlightPath(
+  from.node = NULL,
+  to.node = NULL,
+  directed.graph = TRUE,
+  node.set.id.type = "CompoundName",
+  glyphs.id.type = "pathwayCommons",
+  cpd.or.gene = "compound",
+  input.node.stroke.width = 10,
+  from.node.color = "red",
+  to.node.color = "blue",
+  path.node.color = "black",
+  path.node.stroke.width = 10,
+  n.shortest.paths.plot = 1,
+  shortest.paths.cols = c("purple"),
+  path.stroke.width = 2,
+  tip.size = 4
+)
 }
 \arguments{
 \item{from.node}{A character string. The molecule ID of source node.}

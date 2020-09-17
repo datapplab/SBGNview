@@ -4,7 +4,9 @@
 \name{pathways.stat}
 \alias{pathways.stat}
 \title{Number of pathways collected}
-\format{A data.frame}
+\format{
+A data.frame
+}
 \usage{
 pathways.stat
 }

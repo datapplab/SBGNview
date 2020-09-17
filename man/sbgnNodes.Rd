@@ -4,11 +4,16 @@
 \alias{sbgnNodes}
 \title{Extract glyph information}
 \usage{
-sbgnNodes(input.sbgn, output.gene.id.type = NA,
-  output.cpd.id.type = NA, database = NA, species = NA,
+sbgnNodes(
+  input.sbgn,
+  output.gene.id.type = NA,
+  output.cpd.id.type = NA,
+  database = NA,
+  species = NA,
   show.ids.for.multiHit = NULL,
   SBGNview.data.folder = "./SBGNview.tmp.data",
-  sbgn.dir = "./SBGNview.tmp.data")
+  sbgn.dir = "./SBGNview.tmp.data"
+)
 }
 \arguments{
 \item{input.sbgn}{A character string. required. The pathway ID of pre-collected pathways or a path to a local SBGN-ML file.}

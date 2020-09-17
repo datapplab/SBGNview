@@ -44,7 +44,7 @@ Collate:
     SBGNview.obj.fun.R
     col.panel.R
     highlight.utilities.R
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Suggests:
     testthat,
     gage

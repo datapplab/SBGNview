@@ -4,10 +4,16 @@
 \alias{getMolList}
 \title{Retrieve gene list or compound list from collected databases}
 \usage{
-getMolList(database = "pathwayCommons", mol.list.ID.type = "ENTREZID",
-  org = "hsa", cpd.or.gene = "gene", output.pathway.name = TRUE,
-  combine.duplicated.set = TRUE, truncate.name.length = 50,
-  SBGNview.data.folder = "./SBGNview.tmp.data")
+getMolList(
+  database = "pathwayCommons",
+  mol.list.ID.type = "ENTREZID",
+  org = "hsa",
+  cpd.or.gene = "gene",
+  output.pathway.name = TRUE,
+  combine.duplicated.set = TRUE,
+  truncate.name.length = 50,
+  SBGNview.data.folder = "./SBGNview.tmp.data"
+)
 }
 \arguments{
 \item{database}{Character string. The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.}

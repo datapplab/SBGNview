@@ -4,14 +4,27 @@
 \alias{SBGNview}
 \title{Overlay omics data on SBGN pathway diagram and output image files.}
 \usage{
-SBGNview(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE,
-  input.sbgn = NULL, sbgn.dir = ".", output.file = "./output.svg",
-  node.sum = "sum", gene.id.type = NA, cpd.id.type = NA,
-  sbgn.id.attr = "id", sbgn.gene.id.type = NULL,
-  sbgn.cpd.id.type = NA, id.mapping.gene = NULL,
-  id.mapping.cpd = NULL, org = "hsa", output.formats = c("svg"),
+SBGNview(
+  gene.data = NULL,
+  cpd.data = NULL,
+  simulate.data = FALSE,
+  input.sbgn = NULL,
+  sbgn.dir = ".",
+  output.file = "./output.svg",
+  node.sum = "sum",
+  gene.id.type = NA,
+  cpd.id.type = NA,
+  sbgn.id.attr = "id",
+  sbgn.gene.id.type = NULL,
+  sbgn.cpd.id.type = NA,
+  id.mapping.gene = NULL,
+  id.mapping.cpd = NULL,
+  org = "hsa",
+  output.formats = c("svg"),
   show.pathway.name = FALSE,
-  SBGNview.data.folder = "./SBGNview.tmp.data", ...)
+  SBGNview.data.folder = "./SBGNview.tmp.data",
+  ...
+)
 }
 \arguments{
 \item{gene.data}{A matrix, vector or SummarizedExperiment object. The same as 'gene.data' argument in package 'pathview', it is either a vector (single measurement) or a matrix-like data (multiple measurements). If the data is a vector, the entries should be numeric and names of entries should be gene IDs. Matrix data structure has genes as rows and samples as columns. Row names should be gene IDs. Here gene ID is a generic concept, including multiple types: gene, transcript or protein. Default gene.data=NULL.}
