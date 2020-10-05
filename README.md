@@ -27,13 +27,14 @@ Key features:
 * *igraph*: find shortest paths
 
 ## Install SBGNview
+Install **prerequisites**:
 ```{r setup, eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)){
      install.packages("BiocManager")
 }
 BiocManager::install( c("pathview", "xml2", "igraph", "rsvg"))
 ```
-Install **SBGNview** itself through Bioconductor 
+Install **SBGNview** through Bioconductor: 
 ```{r install, eval = FALSE}
 BiocManager::install(c("SBGNview"))
 ```
@@ -54,7 +55,7 @@ git clone  https://github.com/datapplab/SBGNview.git
 # load demo dataset and pathway information of built-in collection of SBGN-ML files
 library(SBGNview)
 data("gse16873.d","pathways.info")
-input.pathways <- find.pathways("Adrenaline and noradrenaline biosynthesis")
+input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
 SBGNview.obj <- SBGNview(
           gene.data = gse16873.d[,1:3], 
           gene.id.type = "entrez",
@@ -64,7 +65,7 @@ SBGNview.obj <- SBGNview(
           ) 
 print(SBGNview.obj)
 ```
-Two image files (a .svg file and a .pdf file) will be created in the current working directory.
+Two image files (a .svg file by default and a .png file) will be created in the current working directory.
 <img src="inst/app/www/quick.start_P00001.png">   
 
 # Additional information
