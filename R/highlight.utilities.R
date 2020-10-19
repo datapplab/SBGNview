@@ -1,9 +1,9 @@
 
-highlight.edges <- function(node.set, arcs = NULL  # needs improvement. Currently, input in a set of nodes, it will highlight all edges among the input nodes
-, 
+highlight.edges <- function(node.set, arcs = NULL,  # needs improvement. Currently, input in a set of nodes, it will highlight all edges among the input nodes
     node.set.id.type = NULL, arc.node.id.type = NULL, cpd.or.gene = NULL, arc.highlight.stroke.color = "red", 
     arc.highlight.stroke.width = 4, arc.highlight.tip.size = 4) {
-    if (node.set.id.type != node.set.id.type) {
+    
+    if (node.set.id.type != arc.node.id.type) {
         new.ids <- changeIds(input.ids = node.set, input.type = node.set.id.type, 
             output.type = node.set.id.type)
         unique.n.ids <- c()
