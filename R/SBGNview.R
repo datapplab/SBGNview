@@ -196,6 +196,9 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
     }
     SBGNview.obj <- structure(list(data = SBGNview.obj.data, output.file = output.file), 
         class = "SBGNview")
+    
+    # SBGNview.obj <- create.SBGNview.object(data = SBGNview.obj.data, output.file = output.file)
+    
     return(SBGNview.obj)
     
 }
@@ -211,3 +214,12 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
 #'              A string of the path to the output file. It is the string set by parameter 'output.file' in function SBGNview.
 #' @examples 
 #' data(SBGNview.obj)
+create.SBGNview.object <- function(data.in, output.file.in){
+    
+    structure(list(data = data.in, output.file = output.file.in), class = "SBGNview")
+    
+    # fields <- list(data = data.in, output.file = output.file.in)
+    # attr(fields, "class") <- "SBGNview.class"
+    # fields
+}
+

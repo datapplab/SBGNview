@@ -307,14 +307,21 @@ plot.LineWings <- function(x, y, w, h, orientation, id) {
 #' @details User can modify glyph objects to change the way how it is rendered. 
 #' 
 
+# setClass("glyph", representation(compartment = "character", x = "numeric", y = "numeric", 
+#     h = "numeric", w = "numeric", id = "character", label = "character", label.margin = "numeric", 
+#     label_location = "character", svg.port = "character", orientation = "character", 
+#     user.data = "vector", clone = "list", fill.color = "character", stroke.width = "numeric", 
+#     stroke.color = "character", stroke.opacity = "numeric", fill.opacity = "numeric", 
+#     global.parameters.list = "list", glyph.class = "character", text = "list", shape = "list"))
 
+# "glyph" class with slots. representation depreciated since R 3.0.0
+setClass("glyph", slots = c(compartment = "character", x = "numeric", y = "numeric", 
+            h = "numeric", w = "numeric", id = "character", label = "character", label.margin = "numeric", 
+            label_location = "character", svg.port = "character", orientation = "character", 
+            user.data = "vector", clone = "list", fill.color = "character", stroke.width = "numeric", 
+            stroke.color = "character", stroke.opacity = "numeric", fill.opacity = "numeric", 
+            global.parameters.list = "list", glyph.class = "character", text = "list", shape = "list"))
 
-setClass("glyph", representation(compartment = "character", x = "numeric", y = "numeric", 
-    h = "numeric", w = "numeric", id = "character", label = "character", label.margin = "numeric", 
-    label_location = "character", svg.port = "character", orientation = "character", 
-    user.data = "vector", clone = "list", fill.color = "character", stroke.width = "numeric", 
-    stroke.color = "character", stroke.opacity = "numeric", fill.opacity = "numeric", 
-    global.parameters.list = "list", glyph.class = "character", text = "list", shape = "list"))
 setClass("port", contains = "glyph")
 
 
@@ -349,12 +356,26 @@ setClass("port", contains = "glyph")
 #' @details Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running function \code{\link{SBGNview}}.  User can modify arc objects to change the way how it is rendered. 
 #' 
 
-setClass("arc", representation(target = "character", source = "character", id = "character", 
-    arc.class = "character", start.y = "numeric", start.x = "numeric", end.y = "numeric", 
-    end.x = "numeric", stroke.opacity = "numeric", global.parameters.list = "list", 
-    edge = "list"))
-setClass("spline", representation(id = "character", spline.coords = "vector", edge = "list", 
-    global.parameters.list = "list"))
+
+# setClass("arc", representation(target = "character", source = "character", id = "character", 
+#     arc.class = "character", start.y = "numeric", start.x = "numeric", end.y = "numeric", 
+#     end.x = "numeric", stroke.opacity = "numeric", global.parameters.list = "list", 
+#     edge = "list"))
+
+# "arc" class with slots. representation depreciated since R 3.0.0
+setClass("arc", slots = c(target = "character", source = "character", id = "character", 
+                          arc.class = "character", start.y = "numeric", start.x = "numeric", end.y = "numeric", 
+                          end.x = "numeric", stroke.opacity = "numeric", global.parameters.list = "list", 
+                          edge = "list"))
+
+
+# setClass("spline", representation(id = "character", spline.coords = "vector", edge = "list", 
+#     global.parameters.list = "list"))
+
+# "spline" class with slots. representation depreciated since R 3.0.0
+setClass("spline", slots = c(id = "character", spline.coords = "vector", edge = "list", 
+                                  global.parameters.list = "list"))
+
 
 ########################################################## 
 #' An object to store information of spline arcs.
@@ -389,8 +410,16 @@ setClass("spline", representation(id = "character", spline.coords = "vector", ed
 #' 
 #' 
 #' 
-setClass("spline.arc", representation(id = "character", source = "character", target = "character", 
-    arc.class = "character", edge = "list", components = "list", global.parameters.list = "list"))
+# setClass("spline.arc", representation(id = "character", source = "character", target = "character", 
+#     arc.class = "character", edge = "list", components = "list", global.parameters.list = "list"))
+
+# "spline.arc" class with slots. representation depreciated since R 3.0.0
+setClass("spline.arc", slots = c(id = "character", source = "character", target = "character", 
+        arc.class = "character", edge = "list", components = "list", global.parameters.list = "list"))
+
+########################################################## 
+# generic function to plot glyph and arc defined 
+# by classes inheriting from "glyph" and "arc" classes
 
 setGeneric("plot.glyph", function(object) {
     standardGeneric("plot.glyph")
@@ -537,7 +566,8 @@ setMethod("plot.glyph", signature("entity.sbgn"), function(object) {
 })
 
 ############################################ 
-setClass("compartment.sbgn", contains = "glyph", representation(max.x = "numeric"))
+#setClass("compartment.sbgn", contains = "glyph", representation(max.x = "numeric"))
+setClass("compartment.sbgn", contains = "glyph", slots = c(max.x = "numeric"))
 setMethod("plot.glyph", signature("compartment.sbgn"), function(object) {
     w <- object@w
     h <- object@h
@@ -562,7 +592,8 @@ setMethod("plot.glyph", signature("compartment.sbgn"), function(object) {
     return(svg)
 })
 ############################################ 
-setClass("complex.sbgn", contains = "glyph", representation(if.complex.empty = "logical"))
+#setClass("complex.sbgn", contains = "glyph", representation(if.complex.empty = "logical"))
+setClass("complex.sbgn", contains = "glyph", slots = c(if.complex.empty = "logical"))
 setMethod("plot.glyph", signature("complex.sbgn"), function(object) {
     w <- object@w
     h <- object@h
@@ -902,7 +933,8 @@ setMethod("plot.glyph", signature("submap.sbgn"), function(object) {
 })
 
 ############################################ 
-setClass("process.sbgn", contains = "glyph", representation(if.show.label = "logical"))
+#setClass("process.sbgn", contains = "glyph", representation(if.show.label = "logical"))
+setClass("process.sbgn", contains = "glyph", slots = c(if.show.label = "logical"))
 setMethod("plot.glyph", signature("process.sbgn"), function(object) {
     w <- object@w
     h <- object@h
@@ -939,7 +971,8 @@ setMethod("plot.glyph", signature("process.sbgn"), function(object) {
     return(svg)
 })
 ############################################ 
-setClass("uncertain_process.sbgn", contains = "glyph", representation(if.show.label = "logical"))
+#setClass("uncertain_process.sbgn", contains = "glyph", representation(if.show.label = "logical"))
+setClass("uncertain_process.sbgn", contains = "glyph", slots = c(if.show.label = "logical"))
 setMethod("plot.glyph", signature("uncertain_process.sbgn"), function(object) {
     w <- object@w
     h <- object@h
@@ -974,6 +1007,7 @@ setMethod("plot.glyph", signature("uncertain_process.sbgn"), function(object) {
     svg <- paste(svg.rect, svg.wings, svg.text, sep = "\n")
     return(svg)
 })
+
 ########################################################## 
 setClass("and.sbgn", contains = "glyph")
 setMethod("plot.glyph", signature("and.sbgn"), function(object) {
@@ -1293,7 +1327,8 @@ setMethod("plot.glyph", signature("simple_chemical_multimer.sbgn"), function(obj
 })
 
 ############################################ 
-setClass("omitted_process.sbgn", contains = "glyph", representation(if.show.label = "logical"))
+#setClass("omitted_process.sbgn", contains = "glyph", representation(if.show.label = "logical"))
+setClass("omitted_process.sbgn", contains = "glyph", slots = c(if.show.label = "logical"))
 setMethod("plot.glyph", signature("omitted_process.sbgn"), function(object) {
     w <- object@w
     h <- object@h
@@ -1460,9 +1495,10 @@ setMethod("plot.glyph", signature("dissociation.sbgn"), function(object) {
 })
 
 ###################################################### 
-
-setClass("nucleic_acid_feature_multimer.sbgn", contains = "glyph", representation(r4 = "numeric", 
-    r3 = "numeric"))
+# setClass("nucleic_acid_feature_multimer.sbgn", contains = "glyph", representation(r4 = "numeric", 
+#     r3 = "numeric"))
+setClass("nucleic_acid_feature_multimer.sbgn", contains = "glyph", slots = c(r4 = "numeric", 
+                                                                             r3 = "numeric"))
 setMethod("plot.glyph", signature("nucleic_acid_feature_multimer.sbgn"), function(object) {
     w <- object@w
     h <- object@h
@@ -1559,9 +1595,10 @@ setMethod("plot.glyph", signature("nucleic_acid_feature_multimer.sbgn"), functio
 
 
 ###################################################### 
-
-setClass("nucleic_acid_feature.sbgn", contains = "glyph", representation(r4 = "numeric", 
-    r3 = "numeric"))
+# setClass("nucleic_acid_feature.sbgn", contains = "glyph", representation(r4 = "numeric", 
+#     r3 = "numeric"))
+setClass("nucleic_acid_feature.sbgn", contains = "glyph", slots = c(r4 = "numeric", 
+                                                                    r3 = "numeric"))
 setMethod("plot.glyph", signature("nucleic_acid_feature.sbgn"), function(object) {
     w <- object@w
     h <- object@h
@@ -2116,8 +2153,8 @@ setMethod("plot.glyph", signature("location.sbgn"), function(object) {
     svg <- paste(svg.ellipse, svg.line1, svg.line2, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("state_variable.ER.sbgn", contains = "glyph")
 setMethod("plot.glyph", signature("state_variable.ER.sbgn"), function(object) {
     w <- object@w
@@ -2142,6 +2179,7 @@ setMethod("plot.glyph", signature("state_variable.ER.sbgn"), function(object) {
     svg <- paste(svg.path, svg.text, sep = "\n")
     return(svg)
 })
+
 ###################################################### 
 setClass("variable_value.sbgn", contains = "glyph")
 setMethod("plot.glyph", signature("variable_value.sbgn"), function(object) {
@@ -2187,7 +2225,6 @@ setMethod("plot.glyph", signature("variable_value.sbgn"), function(object) {
 
 
 ###################################################### 
-
 setMethod("plot.arc", signature("spline.arc"), function(object) {
     components <- object@components
     svg <- ""
@@ -2205,7 +2242,6 @@ setMethod("plot.arc", signature("spline.arc"), function(object) {
 
 
 ###################################################### 
-
 spline.svg.template <- "<path d=\"M%s %s C %s %s, %s %s,%s %s\" stroke=\"%s\" stroke-opacity=\"%s\" stroke-width=\"%s\" fill-opacity=\"0\" fill=\"transparent\"/>"
 setMethod("plot.arc", signature("spline"), function(object) {
     svg <- do.call(sprintf, c(list(spline.svg.template), c(object@spline.coords, 
@@ -2214,7 +2250,6 @@ setMethod("plot.arc", signature("spline"), function(object) {
 })
 
 ###################################################### 
-
 setClass("absolute_stimulation.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("absolute_stimulation.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2249,8 +2284,8 @@ setMethod("plot.arc", signature("absolute_stimulation.sbgn.arc"), function(objec
     svg <- paste(svg.line, svg.triangle, svg.triangle2, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("absolute_inhibition.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("absolute_inhibition.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2287,8 +2322,8 @@ setMethod("plot.arc", signature("absolute_inhibition.sbgn.arc"), function(object
     svg <- paste(svg.line, svg.endLine, svg.endLine1, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("necessary_stimulation.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("necessary_stimulation.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2365,6 +2400,7 @@ setMethod("plot.arc", signature("consumption.sbgn.arc"), function(object) {
     svg <- svg.line
     return(svg)
 })
+
 ###################################################### 
 setClass("next.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("next.sbgn.arc"), function(object) {
@@ -2383,7 +2419,6 @@ setMethod("plot.arc", signature("next.sbgn.arc"), function(object) {
 })
 
 ############################################### 
-
 setClass("production.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("production.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2410,8 +2445,8 @@ setMethod("plot.arc", signature("production.sbgn.arc"), function(object) {
     svg <- paste(svg.line, svg.triangle, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("interaction.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("interaction.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2448,8 +2483,8 @@ setMethod("plot.arc", signature("interaction.sbgn.arc"), function(object) {
     svg <- paste(svg.line, svg.triangle.end, svg.triangle.start, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("assignment.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("assignment.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2477,8 +2512,8 @@ setMethod("plot.arc", signature("assignment.sbgn.arc"), function(object) {
     svg <- paste(svg.line, svg.triangle, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("catalysis.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("catalysis.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2506,6 +2541,7 @@ setMethod("plot.arc", signature("catalysis.sbgn.arc"), function(object) {
     svg <- paste(svg.line, svg.ellipse, sep = "\n")
     return(svg)
 })
+
 ###################################################### 
 setClass("positive_influence.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("positive_influence.sbgn.arc"), function(object) {
@@ -2533,9 +2569,8 @@ setMethod("plot.arc", signature("positive_influence.sbgn.arc"), function(object)
     svg <- paste(svg.line, svg.triangle, sep = "\n")
     return(svg)
 })
+
 ###################################################### 
-
-
 setClass("stimulation.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("stimulation.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2562,8 +2597,8 @@ setMethod("plot.arc", signature("stimulation.sbgn.arc"), function(object) {
     svg <- paste(svg.line, svg.triangle, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("negative_influence.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("negative_influence.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2595,8 +2630,8 @@ setMethod("plot.arc", signature("negative_influence.sbgn.arc"), function(object)
     svg <- paste(svg.line, svg.endLine, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("inhibition.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("inhibition.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2641,8 +2676,8 @@ setMethod("plot.arc", signature("inhibition.sbgn.arc"), function(object) {
     svg <- paste(svg.line, svg.endLine, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("unknown_influence.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("unknown_influence.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2670,8 +2705,8 @@ setMethod("plot.arc", signature("unknown_influence.sbgn.arc"), function(object) 
     svg <- paste(svg.line, svg.triangle, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("modulation.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("modulation.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2699,8 +2734,8 @@ setMethod("plot.arc", signature("modulation.sbgn.arc"), function(object) {
     svg <- paste(svg.line, svg.triangle, sep = "\n")
     return(svg)
 })
-###################################################### 
 
+###################################################### 
 setClass("logic_arc.sbgn.arc", contains = "arc")
 setMethod("plot.arc", signature("logic_arc.sbgn.arc"), function(object) {
     start.x <- object@start.x
@@ -2717,6 +2752,7 @@ setMethod("plot.arc", signature("logic_arc.sbgn.arc"), function(object) {
     return(svg)
 })
 
+######################################################
 plot.text <- function(x, y, h, w, label, id, label.location, color = "black", glyph.class = "", 
     stroke.opacity = 1, max.x = 0, if.generate.text.box = FALSE, global.parameters.list, 
     glyph) {

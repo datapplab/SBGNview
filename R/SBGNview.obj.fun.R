@@ -69,10 +69,16 @@
 #' @return A string. The output file information. 
 #' @examples 
 #' data('SBGNview.obj' )
-#' outputFile(SBGNview.obj) 
+#' fileOutput(SBGNview.obj) 
 #' @export
-outputFile <- function(obj) {
-    obj$outputFile
+
+# outputFile <- function(obj) {
+#     obj$outputFile
+# }
+
+# changed name of outputFile function to fileOutput - Date: 10-19-2020
+fileOutput <- function(obj) {
+    obj$output.file
 }
 
 

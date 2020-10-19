@@ -2532,7 +2532,7 @@ break.text.into.segments <- function(label, w, glyph.class, global.parameters.li
         words.segments <- gsub("^\n", "", words.segments)
     }
     label.margin <- (nline) * (font.size)
-    if (nline > 3) {
+        if (nline > 3) {
         if.long.word <- TRUE
         label.margin <- (font.size)
     }
