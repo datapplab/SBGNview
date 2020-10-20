@@ -352,12 +352,12 @@ str(arcs[[1]])
 
 We can change the output file using built-in function *outputFile*:
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-outputFile(SBGNview.obj)
+fileOutput(SBGNview.obj)
 outputFile(SBGNview.obj) <- "test.change.output.file"
-outputFile(SBGNview.obj)
+fileOutput(SBGNview.obj)
 SBGNview.obj
 outputFile(SBGNview.obj) <- "test.print"
-outputFile(SBGNview.obj)
+fileOutput(SBGNview.obj)
 print(SBGNview.obj)
 ```
 
