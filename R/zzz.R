@@ -2,6 +2,7 @@
   pkgNames = rownames(installed.packages())
   
   if("SBGNview" %in% pkgNames){
-    data("pathways.info", "mapped.ids")
+    data("pathways.info", package = "SBGNview")
+    data("mapped.ids", package = "SBGNview")
   }
 }
