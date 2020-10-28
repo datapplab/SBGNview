@@ -1,3 +1,6 @@
+
+#########################################################################################################
+# Load R data objects when SBGNview package is loaded
 .onLoad <- function(libname, pkgname){
   pkgNames = rownames(installed.packages())
   
@@ -6,3 +9,5 @@
     data("mapped.ids", package = "SBGNview")
   }
 }
+
+#########################################################################################################

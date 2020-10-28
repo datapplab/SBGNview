@@ -1,4 +1,5 @@
 
+#########################################################################################################
 color.from.01.value <- function(value, gene.or.cpd, global.parameters.list) {
     if (gene.or.cpd == "gene") {
         min.value <- global.parameters.list$min.gene.value
@@ -15,8 +16,6 @@ color.from.01.value <- function(value, gene.or.cpd, global.parameters.list) {
         mid <- global.parameters.list$col.cpd.mid
         low <- global.parameters.list$col.cpd.low
     }
-    
-    
     
     if (is.na(value) | identical(value, "no.user.data")) {
         return("white")
@@ -58,7 +57,7 @@ color.from.01.value <- function(value, gene.or.cpd, global.parameters.list) {
     return(rgb(red, blue, green))
 }
 
-
+#########################################################################################################
 # color.panel(100,100,10)
 color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, if.insert.sbgn.link = TRUE) {
     if (gene.or.cpd == "gene") {
@@ -77,13 +76,11 @@ color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, 
     col.values <- seq(max.value, min.value, by = (min.value - max.value)/n.grid)
     panel.grid.w <- col.panel.w/n.grid
     
-    
     col.panel.h <- col.panel.w/7
     y.loc.text <- y + (2 + 1/3) * col.panel.h
     y.loc.link.to.SBGN.notation <- y.loc.text + col.panel.h * 1.2
     font.size.color.panel <- col.panel.h
     alignment.baseline <- "baseline"
-    
     
     svg <- ""
     for (i in seq_len(length.out = length(col.values))) {
@@ -95,8 +92,8 @@ color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, 
             fill.color = col, stroke.opacity = 0, fill.opacity = 1)
         svg <- paste(svg, svg.rect, sep = "\n")
     }
-    j <- 0
     
+    j <- 0
     if (min.value > 100) 
         min.value <- formatC(min.value, format = "e", digits = 0)
     if (mid.value > 100) 
@@ -133,13 +130,12 @@ color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, 
         }
     }
     
-    
     svg <- paste(svg, svg.text.high, svg.text.low, svg.text.mid, svg.text.link.to.SBGN.panel, 
         sep = "\n")
     return(svg)
 }
 
-
+#########################################################################################################
 find.col.panel.range <- function(user.data, max.gene.value, mid.gene.value, min.gene.value, 
     max.cpd.value, mid.cpd.value, min.cpd.value) {
     if (!"max.gene" %in% names(user.data)) {
@@ -176,6 +172,7 @@ find.col.panel.range <- function(user.data, max.gene.value, mid.gene.value, min.
         max.cpd.value = max.cpd.value, mid.cpd.value = mid.cpd.value, min.cpd.value = min.cpd.value))
 }
 
+#########################################################################################################
 find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, if.has.gene.data, 
     if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, min.y) {
     col.panel.w <- y.margin * 0.8
@@ -222,9 +219,7 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
         col.panel.h = col.panel.h))
 }
 
-
-
-
+#########################################################################################################
 find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin, 
     max.y, max.x, min.x, min.y, key.pos, space.between.color.panel.and.entity) {
     
@@ -291,3 +286,5 @@ find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin
     }
     return(list(col.panel.x = col.panel.x, col.panel.y = col.panel.y))
 }
+
+#########################################################################################################

@@ -1,5 +1,5 @@
 
-
+#########################################################################################################
 #' Generic function to modify SBGN graph features
 #' 
 #' This binary operator ('+') modifies a SBGNview object(first argument) using a function (second argument)
@@ -18,6 +18,7 @@
     fn(SBGNview.obj)
 }
 
+#########################################################################################################
 #' A wrapper to run function \code{\link{renderSbgn}} for all pathways in a SBGNview object and generate image files.
 #' @param x An object of class SBGNview
 #' @param ... Other parameters passed to print.
@@ -38,6 +39,7 @@
 #'             )
 #'  print(SBGNview.obj)
 #' @export
+
 "print.SBGNview" <- function(x, ...) {
     output.file <- NULL
     SBGNview.obj <- x
@@ -62,7 +64,7 @@
     return(invisible())
 }
 
-
+#########################################################################################################
 #' Retrieve output file information from a SBGNview object
 #' @param obj A SBGNview object.
 #' @details This function prints the output file path recorded in a SBGNview object. 
@@ -81,7 +83,7 @@ fileOutput <- function(obj) {
     obj$output.file
 }
 
-
+#########################################################################################################
 #' Set output file information for a SBGNview object
 #' @param obj No need to provide
 #' @param value No need to provide 
@@ -105,3 +107,4 @@ fileOutput <- function(obj) {
     return(obj)
 }
 
+#########################################################################################################

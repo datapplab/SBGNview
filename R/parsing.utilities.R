@@ -1,8 +1,9 @@
-# data('pathways.info','sbgn.xmls','pathway.completeness.cutoff.info')
-utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls", "pathway.completeness.cutoff.info", 
-    "bods"))
 
-#'
+#########################################################################################################
+# data('pathways.info','sbgn.xmls','pathway.completeness.cutoff.info')
+utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls", 
+                         "pathway.completeness.cutoff.info", "bods"))
+
 #' @import igraph 
 #' @import xml2
 #' @import rsvg
@@ -18,10 +19,8 @@ utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls", "pathway.co
 #' @importFrom AnnotationDbi select columns
 #' @importFrom SummarizedExperiment assays
 #' @import utils
-#' 
-
-
-
+ 
+#########################################################################################################
 parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.dir, 
     sbgn.gene.id.type, sbgn.cpd.id.type, sbgn.id.attr, SBGNview.data.folder = "./SBGNview.tmp.data") {
     database <- NULL
@@ -89,7 +88,7 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
         sbgn.id.attr = sbgn.id.attr, database = database))
 }
 
-
+#########################################################################################################
 parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
     user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, id.mapping.cpd, 
     node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, simulate.data, SBGNview.data.folder = "./SBGNview.tmp.data") {
@@ -190,6 +189,7 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
     return(list(user.data = user.data, user.data.recorded = user.data.recorded))
 }
 
+#########################################################################################################
 get.arcs.info <- function(sbgn) {
     # Retrieve edge information
     edge.spline.info.node <- xml2::xml_find_all(sbgn, ".//edge.spline.info")
@@ -204,7 +204,7 @@ get.arcs.info <- function(sbgn) {
     return(arcs.info)
 }
 
-
+#########################################################################################################
 get.compartment.layer <- function(sbgn) {
     compartment.layer.info <- xml2::xml_find_all(sbgn, ".//compartment.layer.info")
     if (length(compartment.layer.info) > 0) {
@@ -216,8 +216,7 @@ get.compartment.layer <- function(sbgn) {
     return(compartment.layer.info)
 }
 
-
-
+#########################################################################################################
 find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale) {
     box.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//bbox")))
     x <- as.numeric(box.info[, "x"])
@@ -242,8 +241,7 @@ find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale) {
     return(list(max.xw = max.xw, max.yh = max.yh, min.y = min.y, min.x = min.x, y.margin = y.margin))
 }
 
-
-
+#########################################################################################################
 download.mapping.file <- function(input.type, output.type, species = NULL, SBGNview.data.folder = "./SBGNview.tmp.data/") {
     options(warn = -1)
     # R CMD check will give different sort result if you didn't specify 'method': the
@@ -284,7 +282,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL, SBGNv
     return(mapping.file.name)
 }
 
-
+#########################################################################################################
 #' Generate ID mapping table from input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
 #' @param input.type A character string. Gene or compound ID type
 #' @param output.type A character string. Gene or compound ID type
@@ -304,15 +302,9 @@ download.mapping.file <- function(input.type, output.type, species = NULL, SBGNv
 #'                              
 #' @export
 
-
-loadMappingTable <- function(                          
-    output.type
-    ,input.type
-    ,species=NULL
-    ,cpd.or.gene
-    ,limit.to.ids = NULL
-    ,SBGNview.data.folder = "./SBGNview.tmp.data"
-){
+loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
+                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){
+    
     input.type = gsub("entrez","ENTREZID",input.type)
     output.type = gsub("entrez","ENTREZID",output.type)
     if(input.type == output.type){
@@ -324,12 +316,11 @@ loadMappingTable <- function(
         dir.create(SBGNview.data.folder)
     }
     
-    mapping.file.name = download.mapping.file(input.type,output.type,species
-                                              ,SBGNview.data.folder = SBGNview.data.folder
-    )
+    mapping.file.name = download.mapping.file(input.type, output.type, species, SBGNview.data.folder = SBGNview.data.folder)
     
-    if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name),warning=function(w) "no such data") %in% c(mapping.file.name,"mapping.list","mapping.table" )
-    ){
+    if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name), 
+                                                 warning = function(w) "no such data") %in% c(mapping.file.name, "mapping.list", "mapping.table" )
+       ){
         message("Loading ID mapping file: ",mapping.file.name," \n")
         .GlobalEnv$mapping.list = NULL; .GlobalEnv$mapping.table = NULL
         if.from.file = FALSE
@@ -382,7 +373,6 @@ loadMappingTable <- function(
                     ,SBGNview.data.folder = SBGNview.data.folder
                 )
                 input.to.ko = input.to.ko$gene[[1]]
-                
                 input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
                 id.map = input.to.glyph.id[,c(input.type,output.type)]
             }else {
@@ -421,7 +411,6 @@ loadMappingTable <- function(
             id.map = as.matrix(t(id.map))
         }
         id.map = unique(id.map)
-        
     }
     
     if(!is.null(limit.to.ids)){
@@ -430,7 +419,6 @@ loadMappingTable <- function(
         id.map[,input.type] = gsub("\"$","",id.map[,input.type])
         id.map = id.map[id.map[,input.type] %in% limit.to.ids,]
     }
-    
     # add additional mapping using KO to glyph.id
     mapping.list = list()
     if(is.vector(id.map)){
@@ -446,8 +434,7 @@ loadMappingTable <- function(
     return(mapping.list)
 }
 
-
-
+#########################################################################################################
 geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", unique.map, 
     SBGNview.data.folder = "./SBGNview.tmp.data") {
     # pathview's geneannot.map can't map KO, so here included KO mapping
@@ -499,6 +486,7 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
     return(id.map)
 }
 
+#########################################################################################################
 load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gene.id.type = NULL, 
     output.gene.id.type = NULL, output.cpd.id.type = NULL, species = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") {
     idmapping.all.list <- list()
@@ -525,9 +513,9 @@ load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gen
     return(id.mapping.all.list)
 }
 
-
+#########################################################################################################
 change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping.all.list, 
-    show.ids.for.multiHit = NULL) {
+                      show.ids.for.multiHit = NULL) {
     
     mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]]
     output.ids <- as.character(mapping.table[mapping.table[, input.type] == input.id, 
@@ -546,9 +534,10 @@ change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping
     output.ids <- unique(output.ids)
     output.ids <- paste(output.ids, collapse = "; ")  # If there are multiple id mapped, we combine all of them
     
+    return(output.ids)
 }
 
-
+#########################################################################################################
 change.glyph.id <- function(glyph.id, glyph.class, id.mapping.all.list, output.gene.id.type = NA, 
     output.cpd.id.type = NA, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, show.ids.for.multiHit = NULL) {
     cpd.or.gene <- glyph.class
@@ -568,7 +557,7 @@ change.glyph.id <- function(glyph.id, glyph.class, id.mapping.all.list, output.g
         id.mapping.all.list, show.ids.for.multiHit = show.ids.for.multiHit)
 }
 
-
+#########################################################################################################
 load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, output.gene.id.type, 
     output.cpd.id.type, SBGNview.data.folder = "./SBGNview.tmp.data") {
     if (database == "MetaCrop") {
@@ -609,8 +598,7 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
         SBGN.file.cpd.id.type = SBGN.file.cpd.id.type, SBGN.file.gene.id.type = SBGN.file.gene.id.type))
 }
 
-
-
+#########################################################################################################
 get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
     output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, id.mapping.all.list, 
     show.ids.for.multiHit) {
@@ -679,7 +667,7 @@ get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.
     return(node.set.list)
 }
 
-
+#########################################################################################################
 #' Extract glyph information
 #' 
 #' This function will extract node information such as complex members, compartment members, node class, nodes with state variables etc. 
@@ -705,9 +693,6 @@ get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.
 #'                        species = 'hsa'
 #'                     )
 #' @export
-#' 
-#' 
-
 
 sbgnNodes <- function(input.sbgn
                       ,output.gene.id.type = NA
@@ -770,8 +755,7 @@ sbgnNodes <- function(input.sbgn
     return(result.list)
 }
 
-
-
+#########################################################################################################
 # parse ports
 xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
     ports <- list()
@@ -787,7 +771,7 @@ xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
     return(ports)
 }
 
-
+#########################################################################################################
 get.spline.compo <- function(arc.spline, spline.info, y.margin) {
     children <- xml2::xml_children(arc.spline)
     components <- list()
@@ -831,7 +815,7 @@ get.spline.compo <- function(arc.spline, spline.info, y.margin) {
     return(components)
 }
 
-
+#########################################################################################################
 parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
     arcs.user = list()) {
     if (length(arcs.user) == 0) {
@@ -884,8 +868,7 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, gl
     return(list(svg.splines = svg.splines, splines.list = splines.list))
 }
 
-
-
+#########################################################################################################
 get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge.paras, 
     global.parameters.list, glyphs) {
     svg.arc <- ""
@@ -949,8 +932,7 @@ get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge
     
 }
 
-
-
+#########################################################################################################
 # parse arcs
 parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
     arcs.user = list()) {
@@ -982,9 +964,7 @@ parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, globa
     return(list(svg.arc = svg.arc, arcs.list = arcs.list))
 }
 
-
-
-
+#########################################################################################################
 generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id.node.count.list) {
     if (is.na(glyph.id)) {
         if (glyph.class %in% c("unit of information", "state variable")) {
@@ -1012,12 +992,7 @@ generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id
     return(list(glyph.id = glyph.id, node.set.list = node.set.list, no.id.node.count.list = no.id.node.count.list))
 }
 
-
-
-
-
-
-
+#########################################################################################################
 add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
     node.omics.data.id <- glyph.info[sbgn.id.attr]
     # remove complex name from omics.data.id for metacyc
@@ -1052,16 +1027,11 @@ add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.
     return(list(node = node))
 }
 
-
-
-
-
-
-
-
+#########################################################################################################
 parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, max.x, 
     global.parameters.list, sbgn.id.attr, glyphs.user = list(), compartment.layer.info, 
     if.plot.cardinality) {
+    
     if.plot.annotation.nodes <- global.parameters.list$if.plot.annotation.nodes
     if.use.number.for.long.label <- global.parameters.list$if.use.number.for.long.label
     # parse glyphs and plot glyphs and ports
@@ -1114,8 +1084,9 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
         node@id <- parsed.ids.record$glyph.id
         node.set.list <- parsed.ids.record$node.set.list
         no.id.node.count.list <- parsed.ids.record$no.id.node.count.list
-        ############################################################################### use user glyph if found
-        if (node@id %in% user.defined.glyphs) {
+        
+        ##### use user glyph if found
+        if (node@id %in% user.defined.glyphs) {  
             node <- glyphs.user[[node@id]]
             label.margin <- node@label.margin
             svg.port <- node@svg.port
@@ -1161,7 +1132,6 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
             svg.ports <- paste(svg.ports, svg.port, sep = "\n")
         }
         
-        
         ############################################################################### 
         if (glyph.class %in% c("complex", "compartment")) {
             label.margin <- node@label.margin
@@ -1196,7 +1166,7 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
     return(out.list)
 }
 
-
+#########################################################################################################
 generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg, 
     y.margin, sbgn.id.attr, user.data, max.x, global.parameters.list, if.use.number.for.long.label, 
     if.plot.annotation.nodes, map.language, long.words.count.list, shorter.label.mapping.list) {
@@ -1213,8 +1183,6 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
     node.label <- parsed.children$node.label
     glyph.info <- parsed.children$glyph.info
     if.complex.empty <- parsed.children$if.complex.empty
-    
-    
     
     node@compartment <- glyph.info["compartmentRef"]
     if (length(node@label) == 0) {
@@ -1254,11 +1222,10 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
         node@label <- shorter.label
     }
     
-    
     node@global.parameters.list <- global.parameters.list
     # handle clone markers
     
-    ############################################################################### set node specific parameters
+    ##### set node specific parameters
     node@shape$stroke.width <- min(1, max.x/900)
     if (glyph.class == "annotation" & !if.plot.annotation.nodes) {
         node@stroke.opacity <- 0
@@ -1284,6 +1251,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
     return(list(node = node, long.words.count.list = long.words.count.list, shorter.label.mapping.list = shorter.label.mapping.list))
 }
 
+#########################################################################################################
 parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, node, 
     if.plot.svg, y.margin) {
     
@@ -1354,7 +1322,6 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, n
             node@h <- as.numeric(glyph.box.information["h"])
             node@w <- as.numeric(glyph.box.information["w"])
             
-            
             node@x <- node@x + node@w/2
             node@y <- node@y + node@h/2
         } else if (xml2::xml_name(child) == "port") {
@@ -1372,16 +1339,12 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, n
             if.complex.empty <- FALSE
         }
     }
-    # ====
+ 
     return(list(node = node, node.clone = node.clone, glyph.port.info = glyph.port.info, 
         svg.port = svg.port, node.label = node.label, glyph.info = glyph.info, if.complex.empty = if.complex.empty))
 }
 
-
-
-
-
-
+#########################################################################################################
 generate.user.data <- function(user.data) {
     for (j in seq_len(ncol(user.data))) {
         # if the variance is zero, scale will produce NaN and cause error
@@ -1412,8 +1375,7 @@ generate.user.data <- function(user.data) {
     return(user.data)
 }
 
-
-
+#########################################################################################################
 node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule", 
     "simple chemical"), if.include.complex.member = FALSE) {
     message("reading SBGN-ML file for node ids: ", sbgn.file)
@@ -1426,7 +1388,6 @@ node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule"
     if (!identical(output.glyph.class, "all")) {
         glyph.info <- glyph.info[glyph.class %in% output.glyph.class]
     }
-    
     if (!if.include.complex.member) {
         # this function need to be improved. Now we assume complex members have 'Complex'
         # in their IDs, which may only apply to pathwayCommons naming.
@@ -1437,7 +1398,7 @@ node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule"
     return(glyph.info)
 }
 
-
+#########################################################################################################
 simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
     all.nodes <- node.ids.from.sbgn(sbgn.file, ...)
     if (is.null(all.nodes)) {
@@ -1451,7 +1412,9 @@ simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
     return(user.data)
 }
 
-mol.sum.multiple.mapping = function(mol.data,id.map,sum.method,input.sbgn.file="na"){  # the first column of id.map is input ids(need to convert FROM), second column is output ids(converting TO) 
+#########################################################################################################
+# the first column of id.map is input ids(need to convert FROM), second column is output ids(converting TO)
+mol.sum.multiple.mapping = function(mol.data, id.map, sum.method, input.sbgn.file = "na"){   
     # function: change input data matrix with input/uniprot id to data matrix with pathwaycommons id
     # if there are multiple input ids mapped to a node, collapse their values using user specified function(sum.method)
     id.map[,1] = as.character(id.map[,1])
@@ -1522,10 +1485,9 @@ mol.sum.multiple.mapping = function(mol.data,id.map,sum.method,input.sbgn.file="
     return(in.data.target.id)
 }
 
-merge.molecule.data = function(in.data.source.id
-                               ,id.map.in.target.and.source
-                               ,sum.method
-){
+#########################################################################################################
+merge.molecule.data = function(in.data.source.id, id.map.in.target.and.source, sum.method){
+    
     target.ids = id.map.in.target.and.source[,2]
     target.id.count = table(target.ids)
     
@@ -1576,10 +1538,10 @@ merge.molecule.data = function(in.data.source.id
         in.data.target.id = in.data.single.target.id
     }
     
-    
     return(in.data.target.id)
 }
 
+#########################################################################################################
 # mol.sum.multiple.mapping <- function(mol.data, id.map, sum.method, input.sbgn.file = "na") {
 #     # the first column of id.map is input ids(need to convert FROM), second column is
 #     # output ids(converting TO) function: change input data matrix with input/uniprot
@@ -1719,7 +1681,7 @@ merge.molecule.data = function(in.data.source.id
 #     return(in.data.target.id)
 # }
 
-
+#########################################################################################################
 #' Download pre-generated SBGN-ML file from GitHub
 #' 
 #' This function can generate a SBGN-ML file of our pre-collected SBGN-ML files 
@@ -1734,7 +1696,6 @@ merge.molecule.data = function(in.data.source.id
 #'                   pathway.id = pathways.info[1,'pathway.id'],
 #'                   download.folder = './')
 #' @export
-
 
 downloadSbgnFile <- function(pathway.id, download.folder = ".") {
     if (!file.exists(download.folder)) {
@@ -1774,8 +1735,7 @@ downloadSbgnFile <- function(pathway.id, download.folder = ".") {
     return(output.files)
 }
 
-
-
+#########################################################################################################
 #' Change the data IDs of input omics data
 #' 
 #' This function changes the IDs of input omics data from one type to another. 
@@ -1861,8 +1821,7 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
     return(in.data.target.id)
 }
 
-
-
+#########################################################################################################
 geneannot.map.all <- function(in.ids, in.type, out.type, org = "Hs", pkg.name = NULL, 
     unique.map = TRUE, na.rm = TRUE, keep.order = FALSE) {
     
@@ -1944,6 +1903,7 @@ geneannot.map.all <- function(in.ids, in.type, out.type, org = "Hs", pkg.name = 
     return(res)
 }
 
+#########################################################################################################
 find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mol.name.match, 
     SBGNview.data.folder = "./SBGNview.tmp.data/") {
     if (is.null(keywords)) {
@@ -2016,9 +1976,7 @@ find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mo
     return(pathways = pathways)
 }
 
-
-
-
+#########################################################################################################
 filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways.info.file.folder = "./SBGNview.tmp.data") {
     org <- tolower(org)
     data("pathway.species.pct_Mapped")
@@ -2051,7 +2009,7 @@ filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways
     return(pathways)
 }
 
-
+#########################################################################################################
 #' Retrieve pathways by keywords
 #' 
 #' This function searches for pathways by input keywords.
@@ -2092,8 +2050,7 @@ findPathways <- function(keywords = NULL, keywords.logic = "or", keyword.type = 
     return(pathways)
 }
 
-
-
+#########################################################################################################
 # given two vectors of characters/words, this function find the best match
 # between words in the two vectors, by spliting a word into sub-strings and use
 # 'jaccard' to calculate two words' similarity (similarity between thier
@@ -2142,7 +2099,9 @@ match.names <- function(input.names, output.names, output.file = NULL) {
     return(mapped.table)
 }
 
+#########################################################################################################
 #' Retrieve gene list or compound list from collected databases
+#' 
 #' @param database Character string. The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.
 #' @param mol.list.ID.type Character string. The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}
 #' @param org Character string. The three letter species code used by KEGG. E.g. 'hsa','mmu'
@@ -2242,9 +2201,9 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
     return(out.id.to.pathway)
 }
 
-
-
+#########################################################################################################
 #' Change input IDs to another ID type
+#' 
 #' @param input.ids A vector of character strings. Input IDs that need to be converted.
 #' @param input.type A character string. The type of input IDs. Supported ID types can be found in data(mapped.ids)
 #' @param output.type A character string. The type of output IDs. Supported ID types can be found in data(mapped.ids)
@@ -2264,7 +2223,6 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
 #' )
 #' 
 #' @export
-#' 
 
 changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.pathways = NULL, 
     org = "hsa", SBGNview.data.folder = "./SBGNview.tmp.data") {
@@ -2304,7 +2262,7 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
     return(new.ids)
 }
 
-
+#########################################################################################################
 find.arc.coordinates <- function(arc.line, glyphs) {
     arc.source <- arc.line["source"]
     arc.target <- arc.line["target"]
@@ -2362,6 +2320,7 @@ find.arc.coordinates <- function(arc.line, glyphs) {
     
 }
 
+#########################################################################################################
 plot.arc.ports <- function(glyph.port.info, node) {
     port.x <- as.numeric(glyph.port.info["x"])
     port.y <- as.numeric(glyph.port.info["y"])
@@ -2402,10 +2361,7 @@ plot.arc.ports <- function(glyph.port.info, node) {
     return(svg.port)
 }
 
-###################################################### 
-
-
-
+#########################################################################################################
 break.text.into.segments <- function(label, w, glyph.class, global.parameters.list, 
     max.x = 0, glyph) {
     if.long.word <- FALSE
@@ -2540,3 +2496,4 @@ break.text.into.segments <- function(label, w, glyph.class, global.parameters.li
         if.long.word = if.long.word, nline = nline))
 }
 
+#########################################################################################################

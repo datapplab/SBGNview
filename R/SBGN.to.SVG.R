@@ -1,24 +1,18 @@
+
+#########################################################################################################
 #' Overlay omics data on a SBGN pathway graph and output image files.
 #' 
 #' This function is not intended to be used directly. Use SBGNview instead. Some input arguments can be better prepared by \code{\link{SBGNview}}.
 #' 
 #' @param input.sbgn A character string. The path to a local SBGN-ML file.
-#' @param output.file,output.formats,sbgn.id.attr
-#'   These parameters are the same as the ones in \code{\link{SBGNview}}. Please see \code{\link{SBGNview}} for more details.
-#'   
+#' @param output.file,output.formats,sbgn.id.attr These parameters are the same as the ones in \code{\link{SBGNview}}. Please see \code{\link{SBGNview}} for more details.
 #' @param glyphs.user  A list, optional. Each element is a 'glyph' object. The element names are glyph IDs (attribute 'id' of XHTML element 'glyph'). Note this is not affected by parameter 'sbgn.id.attr'. The glyph elements contain glyph meta-data for plotting (e.g. text size, border width, border color etc.). Please see the glyph object documentation for more information. By default, SBGNview will run without this argument and return a glyph list extracted from the SBGN file. User can then customize this glyph list and assign it to 'glyphs.user' in the next SBGNview run to update the graph.
-#'              
 #' @param arcs.user  A list, optional. Each member is an 'arc' object. The element names are arc IDs (the value of 'id' attribute in XHTML element 'arc' or 'arc.spline' in the SBGN-ML file). Some SBGN-ML files have no arc IDs, in this case SBGNview  will create an arc ID using 'source' and 'target' node IDs). The arc object contains arc meta-data for plotting (e.g. arc line width, line color etc.). Please see the arc object documentation for more information. By default, SBGNview() will run without this argument and return an arc list. User can then customize this arc list and assign it to 'arcs.user' in the next SBGNview() run to update the arcs.
-#' 
 #' @param arcs.info A character string. It should be one of the following: 'parse splines', 'straight' or a string of svg code of arcs. If it is 'parse splines', this function will look for XML element 'arc.spline' in the SBGN-ML file and plot spline arcs. If it is 'straight', the function will look for element 'arc' and plot straight line arcs. If it is a string of svg code, it will write this code directly to the output svg file.
-#' 
 #' @param compartment.layer.info A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. This layer information ensures that a glyph laying in the overlapped region belongs to the compartment on the top layer.
-#' 
 #' @param user.data A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule. 
 #' @param if.plot.svg Logical. If generate svg codes or only parse SBGN-ML file.
-#' 
-#' @param key.pos  A character string. The position of color panel. -Default: 'topright'  One of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left
-#' 
+#' @param key.pos  A character string. The position of color panel. -Default: 'topright'  One of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.
 #' @param color.panel.scale Numeric.  -Default:  1.5  It controls the relative size of color scheme panel. 
 #' @param if.write.files Logical. If generate image files.
 #' @param if.plot.cardinality Logical. If plot cardinality glyphs.
@@ -85,210 +79,190 @@
 #' @export
 
 renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.formats, 
-    sbgn.id.attr, glyphs.user = list(), arcs.user = list(), arcs.info = "straight", 
-    compartment.layer.info = "original", user.data = matrix("no.user.data", nrow = 1), 
-    if.plot.svg = TRUE, key.pos = "topright", color.panel.scale = 0.7  # Control the relative size of color scheme panel
-, color.panel.n.grid = 21  # how many colors doese the color scheme show
-, col.gene.low = "green", 
-    col.gene.high = "red", col.gene.mid = "gray", col.cpd.low = "blue", col.cpd.high = "yellow", 
-    col.cpd.mid = "gray", min.gene.value = -1  # color panel min value, values smaller than this will have the min.value color
-, 
-    max.gene.value = 1, mid.gene.value = 0, min.cpd.value = -1  # color panel min value, values smaller than this will have the min.value color
-, 
-    max.cpd.value = 1, mid.cpd.value = 0, pathway.name = "", pathway.name.font.size = 1, 
-    if.plot.cardinality = FALSE, multimer.margin = 5, compartment.opacity = 1  # how transparent the compartments are
-, auxiliary.opacity = 1  # opacity of auxiliary nodes
-, if.plot.annotation.nodes = FALSE  # Some sbgn files have 'annotation' nodes. By default we don't plot them
-, 
-    inhibition.edge.end.shift = 5  # The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target node's border. We can shift it to prevent the overlap.
-, 
-    edge.tip.size = 6, if.use.number.for.long.label = FALSE, label.spliting.string = c(" ", 
-        ":", "-", ";", "/", "_")  # the regular expression used to spline text to wrape labels. Can be set to '' to split by single letter. The default is space ' '. In some cases the word seperated by ' ' is too long. We can use space or '-'(i.e. '-| ')  to  split the words
-, 
-    complex.compartment.label.margin = 8  # shift the label to the upper direction
-, 
-    if.write.shorter.label.mapping = TRUE, font.size = 3, logic.node.font.scale = 3, 
-    status.node.font.scale = 3, node.width.adjust.factor = 2  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-, 
-    font.size.scale.gene = 3  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-, 
-    font.size.scale.cpd = 3  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-, 
-    font.size.scale.complex = 1.1, font.size.scale.compartment = 1.6, if.scale.complex.font.size = FALSE, 
-    if.scale.compartment.font.size = FALSE, node.width.adjust.factor.compartment = 1  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-, 
-    node.width.adjust.factor.complex = 3  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-, 
-    text.length.factor = 2, text.length.factor.macromolecule = 2  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for how wide the wrapped text should be.
-, 
-    text.length.factor.compartment = 2, text.length.factor.complex = 2, space.between.color.panel.and.entity = 100, 
-    global.parameters.list = NULL) {
-    col.panel.params <- find.col.panel.range(user.data, max.gene.value, mid.gene.value, 
-        min.gene.value, max.cpd.value, mid.cpd.value, min.cpd.value)
-    if.has.gene.data <- col.panel.params$if.has.gene.data
-    if.has.cpd.data <- col.panel.params$if.has.cpd.data
-    max.gene.value <- col.panel.params$max.gene.value
-    mid.gene.value <- col.panel.params$mid.gene.value
-    min.gene.value <- col.panel.params$min.gene.value
-    max.cpd.value <- col.panel.params$max.cpd.value
-    mid.cpd.value <- col.panel.params$mid.cpd.value
-    min.cpd.value <- col.panel.params$min.cpd.value
-    if (is.null(global.parameters.list)) {
-        global.parameters.list <- list()
-        global.parameters.list$if.plot.cardinality <- if.plot.cardinality
-        global.parameters.list$multimer.margin <- multimer.margin
-        global.parameters.list$if.write.shorter.label.mapping <- if.write.shorter.label.mapping
-        global.parameters.list$compartment.opacity <- compartment.opacity  # how transparent the compartments are
-        global.parameters.list$auxiliary.opacity <- auxiliary.opacity  # opacity of auxiliary nodes
-        global.parameters.list$if.plot.annotation.nodes <- if.plot.annotation.nodes  # Some sbgn files have 'annotation' nodes. By default we don't plot them
-        # arc parameters
-        global.parameters.list$inhibition.edge.end.shift <- inhibition.edge.end.shift  # The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target node's border. We can shift it to prevent the overlap.
-        global.parameters.list$edge.tip.size <- edge.tip.size
-        # label parameters
-        global.parameters.list$if.use.number.for.long.label <- if.use.number.for.long.label
-        global.parameters.list$label.spliting.string <- label.spliting.string  # the regular expression used to spline text to wrape labels. Can be set to '' to split by single letter. The default is space ' '. In some cases the word seperated by ' ' is too long. We can use space or '-'(i.e. '-| ')  to  split the words
-        global.parameters.list$complex.compartment.label.margin <- complex.compartment.label.margin  # shift the label to the upper direction
-        global.parameters.list$font.size <- font.size
-        global.parameters.list$logic.node.font.scale <- logic.node.font.scale
-        global.parameters.list$status.node.font.scale <- status.node.font.scale
-        global.parameters.list$font.size.scale.gene <- font.size.scale.gene  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        global.parameters.list$font.size.scale.cpd <- font.size.scale.cpd  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        global.parameters.list$font.size.scale.compartment <- font.size.scale.compartment  # 
-        global.parameters.list$font.size.scale.complex <- font.size.scale.complex  # 
+        sbgn.id.attr, glyphs.user = list(), arcs.user = list(), arcs.info = "straight", 
+        compartment.layer.info = "original", user.data = matrix("no.user.data", nrow = 1), 
+        if.plot.svg = TRUE, key.pos = "topright", color.panel.scale = 0.7,  # Control the relative size of color scheme panel
+        color.panel.n.grid = 21,  # how many colors doese the color scheme show
+        col.gene.low = "green", col.gene.high = "red", col.gene.mid = "gray", col.cpd.low = "blue", col.cpd.high = "yellow", 
+        col.cpd.mid = "gray", min.gene.value = -1,  # color panel min value, values smaller than this will have the min.value color
+        max.gene.value = 1, mid.gene.value = 0, min.cpd.value = -1,  # color panel min value, values smaller than this will have the min.value color
+        max.cpd.value = 1, mid.cpd.value = 0, pathway.name = "", pathway.name.font.size = 1, 
+        if.plot.cardinality = FALSE, multimer.margin = 5, compartment.opacity = 1,  # how transparent the compartments are
+        auxiliary.opacity = 1,  # opacity of auxiliary nodes
+        if.plot.annotation.nodes = FALSE,  # Some sbgn files have 'annotation' nodes. By default we don't plot them
+        inhibition.edge.end.shift = 5,  # The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target node's border. We can shift it to prevent the overlap.
+        edge.tip.size = 6, if.use.number.for.long.label = FALSE, 
+        label.spliting.string = c(" ", ":", "-", ";", "/", "_"),  # the regular expression used to spline text to wrape labels. Can be set to '' to split by single letter. The default is space ' '. In some cases the word seperated by ' ' is too long. We can use space or '-'(i.e. '-| ')  to  split the words
+        complex.compartment.label.margin = 8,  # shift the label to the upper direction
+        if.write.shorter.label.mapping = TRUE, font.size = 3, logic.node.font.scale = 3, 
+        status.node.font.scale = 3, node.width.adjust.factor = 2,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+        font.size.scale.gene = 3,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+        font.size.scale.cpd = 3, # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+        font.size.scale.complex = 1.1, font.size.scale.compartment = 1.6, if.scale.complex.font.size = FALSE, 
+        if.scale.compartment.font.size = FALSE, node.width.adjust.factor.compartment = 1,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+        node.width.adjust.factor.complex = 3,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+        text.length.factor = 2, text.length.factor.macromolecule = 2,  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for how wide the wrapped text should be.
+        text.length.factor.compartment = 2, text.length.factor.complex = 2, space.between.color.panel.and.entity = 100, 
+        global.parameters.list = NULL) {
+    
+        col.panel.params <- find.col.panel.range(user.data, max.gene.value, mid.gene.value, 
+                                                 min.gene.value, max.cpd.value, mid.cpd.value, min.cpd.value)
         
-        global.parameters.list$node.width.adjust.factor <- node.width.adjust.factor  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        global.parameters.list$if.scale.compartment.font.size <- if.scale.compartment.font.size  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        global.parameters.list$if.scale.complex.font.size <- if.scale.complex.font.size  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        global.parameters.list$node.width.adjust.factor.compartment <- node.width.adjust.factor.compartment  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        global.parameters.list$node.width.adjust.factor.complex <- node.width.adjust.factor.complex  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        global.parameters.list$text.length.factor <- text.length.factor  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
-        global.parameters.list$pathway.name <- pathway.name
-        global.parameters.list$pathway.name.font.size <- pathway.name.font.size
-        global.parameters.list$text.length.factor.macromolecule <- text.length.factor.macromolecule  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
-        global.parameters.list$text.length.factor.compartment <- text.length.factor.compartment  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
-        global.parameters.list$text.length.factor.complex <- text.length.factor.complex  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
+        if.has.gene.data <- col.panel.params$if.has.gene.data
+        if.has.cpd.data <- col.panel.params$if.has.cpd.data
+        max.gene.value <- col.panel.params$max.gene.value
+        mid.gene.value <- col.panel.params$mid.gene.value
+        min.gene.value <- col.panel.params$min.gene.value
+        max.cpd.value <- col.panel.params$max.cpd.value
+        mid.cpd.value <- col.panel.params$mid.cpd.value
+        min.cpd.value <- col.panel.params$min.cpd.value
         
-        global.parameters.list$key.pos <- key.pos  # ll , lr, ur, ul  # location of color panel: lower left, lower right, upper right, upper left
-        global.parameters.list$color.panel.scale <- color.panel.scale  # Control the relative size of color scheme panel
-        global.parameters.list$color.panel.n.grid <- color.panel.n.grid  # how many colors doese the color scheme show
-        global.parameters.list$col.gene.low <- col.gene.low
-        global.parameters.list$col.gene.high <- col.gene.high
-        global.parameters.list$col.gene.mid <- col.gene.mid
-        # global.parameters.list$col.gene.mid = NA
-        global.parameters.list$col.cpd.low <- col.cpd.low
-        global.parameters.list$col.cpd.high <- col.cpd.high
-        global.parameters.list$col.cpd.mid <- "gray"
-        global.parameters.list$min.gene.value <- min.gene.value  # color panel min value, values smaller than this will have the min.value color
-        global.parameters.list$max.gene.value <- max.gene.value
-        global.parameters.list$mid.gene.value <- mid.gene.value
-        global.parameters.list$min.cpd.value <- min.cpd.value  # color panel min value, values smaller than this will have the min.value color
-        global.parameters.list$max.cpd.value <- max.cpd.value
-        global.parameters.list$mid.cpd.value <- mid.cpd.value
-        global.parameters.list$space.between.color.panel.and.entity <- space.between.color.panel.and.entity
-    }
-    
-    
-    sbgn.xml <- read_xml(input.sbgn)
-    xml_attrs(sbgn.xml) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
-    
-    
-    message("checking graph size and create margin for color panel")
-    coords.range.list <- find.max.xy(sbgn.xml, arcs.info, color.panel.scale)
-    max.x <- coords.range.list$max.xw
-    max.y <- coords.range.list$max.yh
-    min.x <- coords.range.list$min.x
-    min.y <- coords.range.list$min.y
-    y.margin <- coords.range.list$y.margin
-    
-    message("parsing ports")
-    ports <- xml.to.port.glyphs(sbgn.xml, y.margin = y.margin)  # The output 'ports' is a list of port glphs
-    
-    message("parsing glyphs")
-    parse.glyph.out.list <- parse.glyph(sbgn.xml, user.data, y.margin = y.margin, 
-        max.x = max.x, global.parameters.list = global.parameters.list, sbgn.id.attr = sbgn.id.attr, 
-        if.plot.svg = if.plot.svg, glyphs.user = glyphs.user, compartment.layer.info = compartment.layer.info, 
-        if.plot.cardinality = if.plot.cardinality)
-    glyphs <- parse.glyph.out.list$glyphs
-    # find plot parameters
-    min.w <- parse.glyph.out.list$min.w  # find the minimum h to set the text size
-    min.w.maxNchar <- parse.glyph.out.list$min.w.maxNchar  # number of characters of the text that occupies the most narrow box
-    # svg contents
-    svg.ports <- parse.glyph.out.list$svg.ports
-    svg.nodes <- parse.glyph.out.list$svg.nodes
-    svg.nodes.complex <- parse.glyph.out.list$svg.nodes.complex
-    svg.nodes.compartment <- parse.glyph.out.list$svg.nodes.compartment
-    svg.cardinality <- parse.glyph.out.list$svg.cardinality  # the cadinality node are supposed to be in front of the arcs, so need to print it again at the end of the svg file
-    shorter.label.mapping.list <- parse.glyph.out.list$shorter.label.mapping.list
-    if (if.write.shorter.label.mapping & if.use.number.for.long.label & !is.vector(shorter.label.mapping.list)) {
-        write.table(shorter.label.mapping.list, paste(output.file, ".shorter.label.mapping.tsv", 
-            sep = ""), row.names = FALSE, col.names = FALSE, sep = "\t")
-    }
-    # combine glyphs and ports
-    glyphs <- c(glyphs, ports)
-    
-    
-    
-    message("parsing arcs")
-    arcs.result <- get.arcs(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.parameters.list, 
-        arcs.user)
-    svg.arc <- arcs.result$svg.arc
-    arcs.list <- arcs.result$arcs.list
-    
-    
-    
-    message("plotting color panel")
-    col.panel.params <- find.col.panel.position.and.plot(y.margin, global.parameters.list, 
-        if.has.gene.data, if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, 
-        min.y)
-    col.panel.svg <- col.panel.params$col.panel.svg
-    col.panel.w <- col.panel.params$col.panel.w
-    col.panel.y <- col.panel.params$col.panel.y
-    col.panel.h <- col.panel.params$col.panel.h
-    
-    
-    # add pathway.name and stamp
-    stamp.svg.list <- add.stamp(col.panel.w, col.panel.y, global.parameters.list, 
-        template.text, min.x, max.x, max.y, y.margin)
-    pathway.name.svg <- stamp.svg.list$pathway.name.svg
-    stamp.svg <- stamp.svg.list$stamp.svg
-    
-    # generate output xml content
-    svg.dim.x = max.x+50+4*70
-    svg.dim.y = max.y+col.panel.h+50+y.margin
-    svg.header = sprintf (svg.header,svg.dim.x,svg.dim.y)
-    
-    out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes, 
-        svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, stamp.svg, 
-        svg.end, sep = "\n")
-    Encoding(out) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
-    
-    # write output file
-    if (if.write.files) {
-        output.svg.file <- paste(output.file, ".svg", sep = "")
-        write(out, output.svg.file)
-        if ("pdf" %in% output.formats) {
-            rsvg::rsvg_pdf(output.svg.file, paste(output.file, ".pdf", sep = ""))
+        if (is.null(global.parameters.list)) {
+            global.parameters.list <- list()
+            global.parameters.list$if.plot.cardinality <- if.plot.cardinality
+            global.parameters.list$multimer.margin <- multimer.margin
+            global.parameters.list$if.write.shorter.label.mapping <- if.write.shorter.label.mapping
+            global.parameters.list$compartment.opacity <- compartment.opacity  # how transparent the compartments are
+            global.parameters.list$auxiliary.opacity <- auxiliary.opacity  # opacity of auxiliary nodes
+            global.parameters.list$if.plot.annotation.nodes <- if.plot.annotation.nodes  # Some sbgn files have 'annotation' nodes. By default we don't plot them
+            
+            # arc parameters
+            global.parameters.list$inhibition.edge.end.shift <- inhibition.edge.end.shift  # The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target node's border. We can shift it to prevent the overlap.
+            global.parameters.list$edge.tip.size <- edge.tip.size
+            
+            # label parameters
+            global.parameters.list$if.use.number.for.long.label <- if.use.number.for.long.label
+            global.parameters.list$label.spliting.string <- label.spliting.string  # the regular expression used to spline text to wrape labels. Can be set to '' to split by single letter. The default is space ' '. In some cases the word seperated by ' ' is too long. We can use space or '-'(i.e. '-| ')  to  split the words
+            global.parameters.list$complex.compartment.label.margin <- complex.compartment.label.margin  # shift the label to the upper direction
+            global.parameters.list$font.size <- font.size
+            global.parameters.list$logic.node.font.scale <- logic.node.font.scale
+            global.parameters.list$status.node.font.scale <- status.node.font.scale
+            global.parameters.list$font.size.scale.gene <- font.size.scale.gene  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+            global.parameters.list$font.size.scale.cpd <- font.size.scale.cpd  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+            global.parameters.list$font.size.scale.compartment <- font.size.scale.compartment  # 
+            global.parameters.list$font.size.scale.complex <- font.size.scale.complex  # 
+            
+            global.parameters.list$node.width.adjust.factor <- node.width.adjust.factor  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+            global.parameters.list$if.scale.compartment.font.size <- if.scale.compartment.font.size  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+            global.parameters.list$if.scale.complex.font.size <- if.scale.complex.font.size  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+            global.parameters.list$node.width.adjust.factor.compartment <- node.width.adjust.factor.compartment  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+            global.parameters.list$node.width.adjust.factor.complex <- node.width.adjust.factor.complex  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+            global.parameters.list$text.length.factor <- text.length.factor  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
+            global.parameters.list$pathway.name <- pathway.name
+            global.parameters.list$pathway.name.font.size <- pathway.name.font.size
+            global.parameters.list$text.length.factor.macromolecule <- text.length.factor.macromolecule  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
+            global.parameters.list$text.length.factor.compartment <- text.length.factor.compartment  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
+            global.parameters.list$text.length.factor.complex <- text.length.factor.complex  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for the label length and node width to match
+            
+            global.parameters.list$key.pos <- key.pos  # ll , lr, ur, ul  # location of color panel: lower left, lower right, upper right, upper left
+            global.parameters.list$color.panel.scale <- color.panel.scale  # Control the relative size of color scheme panel
+            global.parameters.list$color.panel.n.grid <- color.panel.n.grid  # how many colors doese the color scheme show
+            global.parameters.list$col.gene.low <- col.gene.low
+            global.parameters.list$col.gene.high <- col.gene.high
+            global.parameters.list$col.gene.mid <- col.gene.mid
+            
+            # global.parameters.list$col.gene.mid = NA
+            global.parameters.list$col.cpd.low <- col.cpd.low
+            global.parameters.list$col.cpd.high <- col.cpd.high
+            global.parameters.list$col.cpd.mid <- "gray"
+            global.parameters.list$min.gene.value <- min.gene.value  # color panel min value, values smaller than this will have the min.value color
+            global.parameters.list$max.gene.value <- max.gene.value
+            global.parameters.list$mid.gene.value <- mid.gene.value
+            global.parameters.list$min.cpd.value <- min.cpd.value  # color panel min value, values smaller than this will have the min.value color
+            global.parameters.list$max.cpd.value <- max.cpd.value
+            global.parameters.list$mid.cpd.value <- mid.cpd.value
+            global.parameters.list$space.between.color.panel.and.entity <- space.between.color.panel.and.entity
         }
-        if ("png" %in% output.formats) {
-            rsvg::rsvg_png(output.svg.file, paste(output.file, ".png", sep = ""))
+        
+        sbgn.xml <- read_xml(input.sbgn)
+        xml_attrs(sbgn.xml) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
+        
+        message("checking graph size and create margin for color panel")
+        coords.range.list <- find.max.xy(sbgn.xml, arcs.info, color.panel.scale)
+        max.x <- coords.range.list$max.xw
+        max.y <- coords.range.list$max.yh
+        min.x <- coords.range.list$min.x
+        min.y <- coords.range.list$min.y
+        y.margin <- coords.range.list$y.margin
+        
+        message("parsing ports")
+        ports <- xml.to.port.glyphs(sbgn.xml, y.margin = y.margin)  # The output 'ports' is a list of port glphs
+        
+        message("parsing glyphs")
+        parse.glyph.out.list <- parse.glyph(sbgn.xml, user.data, y.margin = y.margin, 
+            max.x = max.x, global.parameters.list = global.parameters.list, sbgn.id.attr = sbgn.id.attr, 
+            if.plot.svg = if.plot.svg, glyphs.user = glyphs.user, compartment.layer.info = compartment.layer.info, 
+            if.plot.cardinality = if.plot.cardinality)
+        glyphs <- parse.glyph.out.list$glyphs
+        # find plot parameters
+        min.w <- parse.glyph.out.list$min.w  # find the minimum h to set the text size
+        min.w.maxNchar <- parse.glyph.out.list$min.w.maxNchar  # number of characters of the text that occupies the most narrow box
+        # svg contents
+        svg.ports <- parse.glyph.out.list$svg.ports
+        svg.nodes <- parse.glyph.out.list$svg.nodes
+        svg.nodes.complex <- parse.glyph.out.list$svg.nodes.complex
+        svg.nodes.compartment <- parse.glyph.out.list$svg.nodes.compartment
+        svg.cardinality <- parse.glyph.out.list$svg.cardinality  # the cadinality node are supposed to be in front of the arcs, so need to print it again at the end of the svg file
+        shorter.label.mapping.list <- parse.glyph.out.list$shorter.label.mapping.list
+        if (if.write.shorter.label.mapping & if.use.number.for.long.label & !is.vector(shorter.label.mapping.list)) {
+            write.table(shorter.label.mapping.list, paste(output.file, ".shorter.label.mapping.tsv", 
+                sep = ""), row.names = FALSE, col.names = FALSE, sep = "\t")
         }
-        if ("ps" %in% output.formats) {
-            rsvg::rsvg_ps(output.svg.file, paste(output.file, ".ps", sep = ""))
+        # combine glyphs and ports
+        glyphs <- c(glyphs, ports)
+        
+        message("parsing arcs")
+        arcs.result <- get.arcs(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.parameters.list, 
+            arcs.user)
+        svg.arc <- arcs.result$svg.arc
+        arcs.list <- arcs.result$arcs.list
+        
+        message("plotting color panel")
+        col.panel.params <- find.col.panel.position.and.plot(y.margin, global.parameters.list, 
+            if.has.gene.data, if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, 
+            min.y)
+        col.panel.svg <- col.panel.params$col.panel.svg
+        col.panel.w <- col.panel.params$col.panel.w
+        col.panel.y <- col.panel.params$col.panel.y
+        col.panel.h <- col.panel.params$col.panel.h
+        
+        # add pathway.name and stamp
+        stamp.svg.list <- add.stamp(col.panel.w, col.panel.y, global.parameters.list, 
+            template.text, min.x, max.x, max.y, y.margin)
+        pathway.name.svg <- stamp.svg.list$pathway.name.svg
+        stamp.svg <- stamp.svg.list$stamp.svg
+        
+        # generate output xml content
+        svg.dim.x = max.x+50+4*70
+        svg.dim.y = max.y+col.panel.h+50+y.margin
+        svg.header = sprintf (svg.header,svg.dim.x,svg.dim.y)
+        
+        out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes, 
+            svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, stamp.svg, 
+            svg.end, sep = "\n")
+        Encoding(out) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
+        
+        # write output file
+        if (if.write.files) {
+            output.svg.file <- paste(output.file, ".svg", sep = "")
+            write(out, output.svg.file)
+            if ("pdf" %in% output.formats) {
+                rsvg::rsvg_pdf(output.svg.file, paste(output.file, ".pdf", sep = ""))
+            }
+            if ("png" %in% output.formats) {
+                rsvg::rsvg_png(output.svg.file, paste(output.file, ".png", sep = ""))
+            }
+            if ("ps" %in% output.formats) {
+                rsvg::rsvg_ps(output.svg.file, paste(output.file, ".ps", sep = ""))
+            }
         }
-    }
-    return(list(glyphs.list = glyphs, arcs.list = arcs.list
-                , global.parameters.list = global.parameters.list
-                ,coords.range.list = coords.range.list
-                ,svg.dim.x = svg.dim.x
-                ,svg.dim.y = svg.dim.y
-                )
-           )
-    
+        
+        return(list(glyphs.list = glyphs, arcs.list = arcs.list, global.parameters.list = global.parameters.list,
+                    coords.range.list = coords.range.list, svg.dim.x = svg.dim.x, svg.dim.y = svg.dim.y))
 }
 
 
-
-
+#########################################################################################################
 add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, 
     min.x, max.x, max.y, y.margin) {
     pathway.name.font <- col.panel.w/7 * global.parameters.list$pathway.name.font.size
@@ -306,12 +280,8 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
     
 }
 
-
-
-
-
-get.arcs <- function(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.parameters.list, 
-    arcs.user) {
+#########################################################################################################
+get.arcs <- function(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.parameters.list, arcs.user) {
     if (arcs.info == "straight") {
         print("using original edges")
         result.list <- parse.arcs(sbgn.xml, glyphs, if.plot.svg = if.plot.svg, y.margin = y.margin, 
@@ -333,25 +303,4 @@ get.arcs <- function(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.
     return(list(svg.arc = svg.arc, arcs.list = arcs.list))
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#########################################################################################################

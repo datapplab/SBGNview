@@ -1,5 +1,8 @@
 
-highlight.edges <- function(node.set, arcs = NULL,  # needs improvement. Currently, input in a set of nodes, it will highlight all edges among the input nodes
+#########################################################################################################
+# needs improvement. Currently, input in a set of nodes, 
+# it will highlight all edges among the input nodes
+highlight.edges <- function(node.set, arcs = NULL,  
     node.set.id.type = NULL, arc.node.id.type = NULL, cpd.or.gene = NULL, arc.highlight.stroke.color = "red", 
     arc.highlight.stroke.width = 4, arc.highlight.tip.size = 4) {
     
@@ -40,6 +43,7 @@ highlight.edges <- function(node.set, arcs = NULL,  # needs improvement. Current
     return(arcs)
 }
 
+#########################################################################################################
 #' Highlight input nodes
 #' 
 #' Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function \code{\link{+.SBGNview}}. 
@@ -66,7 +70,7 @@ highlight.edges <- function(node.set, arcs = NULL,  # needs improvement. Current
 #'        highlightNodes(node.set = c('tyrosine', '(+-)-epinephrine'),
 #'                       stroke.width = 4, stroke.color = 'green') 
 #' @export
-#' 
+ 
 highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
     cpd.or.gene = "compound", stroke.color = "black", stroke.width = 10, stroke.opacity = 1, 
     show.glyph.id = FALSE, select.glyph.class = c(), label.x.shift = 0, label.y.shift = 0, 
@@ -92,6 +96,7 @@ highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", 
     }
 }
 
+#########################################################################################################
 highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c(), 
     glyphs = NULL, pathway.id = NULL, node.set.id.type = NULL, glyphs.id.type = NULL, 
     cpd.or.gene = NULL, stroke.width = 4, stroke.color = "red", stroke.opacity = 1, 
@@ -132,7 +137,6 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
         # if we are interested in all nodes
         input.node.ids <- "all"
     }
-    
     
     for (i in seq_len(length.out = length(glyphs))) {
         # i=49
@@ -180,7 +184,7 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
     return(glyphs)
 }
 
-
+#########################################################################################################
 arcs.to.graph <- function(arcs, if.directed = TRUE) {
     edge.df <- lapply(arcs, function(arc) {
         return(c(source = arc@source, target = arc@target))
@@ -189,11 +193,8 @@ arcs.to.graph <- function(arcs, if.directed = TRUE) {
     grf <- igraph::graph_from_data_frame(edge.df, directed = if.directed)
 }
 
-
-################################################################ 
-
+#########################################################################################################
 #' Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.
-
 #' @param from.node A character string. The molecule ID of source node.
 #' @param to.node A character string. The molecule ID of target node.
 #' @param directed.graph Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from 'source' node to 'target' node.
@@ -252,6 +253,7 @@ highlightPath <- function(from.node = NULL, to.node = NULL, directed.graph = TRU
     }
 }
 
+#########################################################################################################
 # generate a new node set containing shortest paths connecting all nodes in the
 # input nodeset
 shortest.path.from.arcs <- function(arcs, from.node, to.node, directed.graph = TRUE) {
@@ -285,7 +287,7 @@ shortest.path.from.arcs <- function(arcs, from.node, to.node, directed.graph = T
     return(node.paths)
 }
 
-
+#########################################################################################################
 highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = NULL, 
     pathway.id = NULL, directed.graph = TRUE, node.set.id.type = NULL, glyphs.id.type = NULL, 
     cpd.or.gene = NULL, from.node.color = "red", to.node.color = "blue", input.node.stroke.width = 4, 
@@ -293,7 +295,6 @@ highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = N
     path.stroke.width = 3, shortest.paths.cols = c("purple", "green"), tip.size = 4) {
     
     if (node.set.id.type != glyphs.id.type) {
-        
         from.node <- changeIds(input.ids = from.node, input.type = node.set.id.type, 
             output.type = glyphs.id.type, cpd.or.gene = cpd.or.gene)
         from.node <- from.node[[1]]
@@ -340,10 +341,10 @@ highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = N
                 stroke.color = from.node.color, stroke.width = input.node.stroke.width)
         }
     }
-    
     return(list(glyphs = glyphs, arcs = arcs))
 }
 
+#########################################################################################################
 #' Highlight arcs by arc class
 #' 
 #' This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
@@ -387,3 +388,4 @@ highlightArcs <- function(class = "all", color = "black", line.width = 2, tip.si
     }
 }
 
+#########################################################################################################
