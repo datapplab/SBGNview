@@ -3,9 +3,9 @@
 \docType{class}
 \name{glyph-class}
 \alias{glyph-class}
-\title{An object to store glyph information}
+\title{An object to store glyph information.}
 \description{
-An object to store glyph information
+An object to store glyph information.
 }
 \details{
 User can modify glyph objects to change the way how it is rendered.
@@ -15,13 +15,13 @@ User can modify glyph objects to change the way how it is rendered.
 \describe{
 \item{\code{compartment}}{A character string. The compartment this glyph belongs to.}
 
-\item{\code{x,y,h,w}}{Numeric. The x,y location and hight, width of the glyph}
+\item{\code{x,y,h,w}}{Numeric. The x,y location and hight, width of the glyph.}
 
-\item{\code{id}}{A character string. The ID of the glyph (determined by the 'id' attribute in element 'glyph')}
+\item{\code{id}}{A character string. The ID of the glyph (determined by the 'id' attribute in element 'glyph').}
 
-\item{\code{label}}{A character string. label of the glyph. Extracted from the element 'label'}
+\item{\code{label}}{A character string. label of the glyph. Extracted from the element 'label'.}
 
-\item{\code{glyph.class}}{A character string. Class of the glyph}
+\item{\code{glyph.class}}{A character string. Class of the glyph.}
 
 \item{\code{user.data}}{A numeric vector. The omics data mapped to this glyph.}
 
@@ -36,35 +36,25 @@ User can modify glyph objects to change the way how it is rendered.
 \item{\code{global.parameters.list}}{A list. This is a copy of parameters in '...' when running function \code{\link{SBGNview}}.}
 
 \item{\code{shape}}{A list. Parameters controlling how the node is rendered. Available elements can be accessed as follow:
-
-
-             glyph@shape$stroke.color\cr
-                     -Character (e.g. 'red'). The color of glyph border. \cr
-             
-             glyph@shape$stroke.opacity\cr
-                     -Numeric (e.g. 0.8). The opacity of glyph border. Must be between 0 and 1.\cr
-             
-             glyph@shape$stroke.width\cr
-                     -Numeric. The thickness of glyph border\cr
-             
-             glyph@shape$fill.opacity\cr
-                     -Numeric. The opacity of glyph fill. Must be between 0 and 1.\cr
-             
-             glyph@shape$fill.color\cr
-                     -Numeric. The glyph fill color. Note that this will overwrite colors generated from omics data!\cr}
+glyph@shape$stroke.color\cr
+        -Character (e.g. 'red'). The color of glyph border. \cr
+glyph@shape$stroke.opacity\cr
+        -Numeric (e.g. 0.8). The opacity of glyph border. Must be between 0 and 1.\cr
+glyph@shape$stroke.width\cr
+        -Numeric. The thickness of glyph border.\cr
+glyph@shape$fill.opacity\cr
+        -Numeric. The opacity of glyph fill. Must be between 0 and 1.\cr
+glyph@shape$fill.color\cr
+        -Numeric. The glyph fill color. Note that this will overwrite colors generated from omics data!\cr}
 
 \item{\code{text}}{A list. Parameters controlling how node label is rendered. Available elements can be accessed as follow:
-
-             glyph@text$y.shift\cr
-                     -Numeric. Move glyph label vertically by this value.\cr
-             
-             glyph@text$x.shift\cr
-                     -Numeric. Move glyph label horizontally by this value.\cr
-             
-             glyph@text$color\cr
-                     -A character string. The color of glyph label.\cr
-             
-             glyph@text$font.size\cr
-                     -A character string. The font size of glyph label.\cr}
+glyph@text$y.shift\cr
+        -Numeric. Move glyph label vertically by this value.\cr
+glyph@text$x.shift\cr
+        -Numeric. Move glyph label horizontally by this value.\cr
+glyph@text$color\cr
+        -A character string. The color of glyph label.\cr
+glyph@text$font.size\cr
+        -A character string. The font size of glyph label.\cr}
 }}
 

@@ -13,27 +13,25 @@ Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' e
 \section{Slots}{
 
 \describe{
-\item{\code{target,source,id,arc.class}}{A character string. Information extracted from element 'arc'}
+\item{\code{target,source,id,arc.class}}{A character string. Information extracted from element 'arc'.}
 
-\item{\code{start.x,start.y,end.x,end.y}}{Numeric. Information extracted from elements 'start', 'end' or 'next'}
+\item{\code{start.x,start.y,end.x,end.y}}{Numeric. Information extracted from elements 'start', 'end' or 'next'.}
 
 \item{\code{stroke.opacity}}{Numeric. Controls the line of an arc (not tip of the arc).}
 
 \item{\code{global.parameters.list}}{A list. This is a copy of parameters in '...' when running function SBGNview. See details for more information.}
 
 \item{\code{edge}}{A list. An arc in SBGN map normally consists of a line and a tip at the end of the line. This list holds variables that controls arc properties. Available elements can be accessed as follow:
-
-         The following three paremeters control the line.\cr
-            arc@edge$line.stroke.color\cr
-            arc@edge$line.stroke.opacity\cr
-            arc@edge$line.width\cr
-                    
-                    
-         The following five paremeters control the tip.\cr
-            arc@edge$tip.stroke.opacity\cr
-            arc@edge$tip.stroke.color\cr
-            arc@edge$tip.stroke.width\cr
-            arc@edge$tip.fill.color\cr
-            arc@edge$tip.fill.opacity\cr}
+The following three paremeters control the line:\cr
+   arc@edge$line.stroke.color\cr
+   arc@edge$line.stroke.opacity\cr
+   arc@edge$line.width\cr
+           
+The following five paremeters control the tip:\cr
+   arc@edge$tip.stroke.opacity\cr
+   arc@edge$tip.stroke.color\cr
+   arc@edge$tip.stroke.width\cr
+   arc@edge$tip.fill.color\cr
+   arc@edge$tip.fill.opacity\cr}
 }}
 

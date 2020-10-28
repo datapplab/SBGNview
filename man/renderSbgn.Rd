@@ -83,7 +83,7 @@ renderSbgn(
 
 \item{if.plot.svg}{Logical. If generate svg codes or only parse SBGN-ML file.}
 
-\item{key.pos}{A character string. The position of color panel. -Default: 'topright'  One of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left}
+\item{key.pos}{A character string. The position of color panel. -Default: 'topright'  One of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.}
 
 \item{color.panel.scale}{Numeric.  -Default:  1.5  It controls the relative size of color scheme panel.}
 
