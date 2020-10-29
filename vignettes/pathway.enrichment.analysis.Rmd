@@ -19,19 +19,36 @@ vignette: >
 SBGNview has collected pathway gene sets from the following databases: Reactome, PANTHER Pathway, SMPDB, MetaCyc and MetaCrop. These gene sets can be used for pathway enrichment analysis.
 
 # Install R packages
+
+## Install prerequisites
+
+* *xml2*: parse SBGN-ML files
+* *rsvg*: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
+* *igraph*: find shortest paths
+* [*pathview*](https://bioconductor.org/packages/release/bioc/html/pathview.html): map between different ID types for gene and chemical compound
+* [*gage*](https://bioconductor.org/packages/release/bioc/html/gage.html): R package for pathway enrichment analysis.
+* [*SBGNview.data*](https://bioconductor.org/packages/release/data/experiment/html/SBGNview.data.html): demo gene expression datasets for SBGNview package
+* [*SummarizedExperiment*](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html): main function accepts data as SummarizedExperiment objects
+* *AnnotationDbi*: filter and select data for mapping between IDs
+
+```{r setup, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)){
+     install.packages("BiocManager")
+}
+BiocManager::install(c("xml2", "rsvg", "igraph", "pathview", "gage", "SummarizedExperiment", "AnnotationDbi"))
+```
+
+Dependencies for Operating Systems:  
+**Windows 10**: none
+**Linux (Ubuntu)**: needs additional packages (libxml2-dev, libssl-dev, libcurl4-openssl-dev, librsvg2-dev) to be installed. Run the command below in a terminal to install the necessary packages. The same or similar packages can be found for other distributes of linux.
+```{r depend, eval = FALSE}
+sudo apt install libxml2-dev libssl-dev libcurl4-openssl-dev librsvg2-dev
+```
+
 ## Install SBGNview
 Install **SBGNview** through [Bioconductor](https://bioconductor.org/packages/release/bioc/html/SBGNview.html). Requires R (version >= 3.6).
 ```{r install, eval = FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
 BiocManager::install("SBGNview")
-```
-
-## Install package 'gage' for pathway enrichment analysis
-Install **gage** through Bioconductor. [gage](https://bioconductor.org/packages/release/bioc/html/gage.html) is an R package for pathway enrichment analysis. 
-```{r installGage, eval = FALSE}
-BiocManager::install(c("gage"))
 ```
 
 # IFNg dataset

@@ -4,7 +4,7 @@ SBGNview is a tool set for visualizing omics data on SBGN pathway maps.  Given o
 
 
 # Introduction
-Molecular pathways have been widely used in omics data analysis. We previously developed an R/BioConductor package called Pathview, which maps, integrates and visualizes omics data onto KEGG pathway graphs. Since its publication, Pathview has been widely used in numerous omics studies and analysis tools. Here we introduce the SBGNview package, which adopts Systems Biology Graphical Notation (SBGN)[@le2009systems] and greatly extends the Pathview project by supportting multiple major pathway databases besides KEGG.
+Molecular pathways have been widely used in omics data analysis. We previously developed an R/BioConductor package called Pathview, which maps, integrates and visualizes omics data onto KEGG pathway graphs. Since its publication, Pathview has been widely used in numerous omics studies and analysis tools. Here we introduce the SBGNview package, which adopts Systems Biology Graphical Notation (SBGN)[@le2009systems] and greatly extends the Pathview project by supporting multiple major pathway databases besides KEGG.
 
 Key features:
 
@@ -23,22 +23,32 @@ Key features:
 
 * *xml2*: parse SBGN-ML files
 * *rsvg*: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
-* *pathview*: map between different ID types for gene and chemical compound.
 * *igraph*: find shortest paths
+* [*pathview*](https://bioconductor.org/packages/release/bioc/html/pathview.html): map between different ID types for gene and chemical compound
+* [*gage*](https://bioconductor.org/packages/release/bioc/html/gage.html): R package for pathway enrichment analysis.
+* [*SBGNview.data*](https://bioconductor.org/packages/release/data/experiment/html/SBGNview.data.html): demo gene expression datasets for SBGNview package
+* [*SummarizedExperiment*](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html): main function accepts data as SummarizedExperiment objects
+* *AnnotationDbi*: filter and select data for mapping between IDs
 
-## Install SBGNview
-Install **prerequisites**:
 ```{r setup, eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)){
      install.packages("BiocManager")
 }
-BiocManager::install( c("pathview", "xml2", "igraph", "rsvg"))
+BiocManager::install(c("xml2", "rsvg", "igraph", "pathview", "gage", "SummarizedExperiment", "AnnotationDbi"))
 ```
+
+Dependencies for Operating Systems:  
+**Windows 10**: none
+**Linux (Ubuntu)**: needs additional packages (libxml2-dev, libssl-dev, libcurl4-openssl-dev, librsvg2-dev) to be installed. Run the command below in a terminal to install the necessary packages. The same or similar packages can be found for other distributes of linux.
+```{r depend, eval = FALSE}
+sudo apt install libxml2-dev libssl-dev libcurl4-openssl-dev librsvg2-dev
+```
+
+## Install SBGNview
 Install **SBGNview** through Bioconductor: 
 ```{r install, eval = FALSE}
 BiocManager::install(c("SBGNview"))
 ```
-
 Install **SBGNview** through GitHub:
 ```{r install.1, eval = FALSE}
 install.packages("devtools")
@@ -46,7 +56,7 @@ devtools::install_github("datapplab/SBGNview")
 ```
 Clone the Git repository:
 ```{r clone.git, eval = FALSE}
-git clone  https://github.com/datapplab/SBGNview.git
+git clone https://github.com/datapplab/SBGNview.git
 ```
 
 
