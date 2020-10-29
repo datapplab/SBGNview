@@ -72,7 +72,12 @@ Accepted values:
 A SBGNview object.
 }
 \description{
-This is the main function to map, integrate and render omics data on pathway graphs. Two inputs are needed: 1. A pathway file in SBGN-ML format and 2. gene and/or compound omics data. The function generates image file of a pathway graph with the omics data mapped to the glyphs and rendered as pseudo-colors. It is similar to pathview except the pathways are rendered with SBGN notation. In addition, users can control more graph properties including node/edge attributes. We collected SBGN-ML files from several pathway databases: Reactome, MetaCyc, MetaCrop, PANTHER and SMPDB. Given a vector of patway IDs, SBGNview can automatically download and use these SBGN-ML files. To map omics data to glyphs, user just needs to specify omics data ID types. When using user customized SBGN-ML files, users need to provide a mapping file from omics data's molecule IDs to SBGN-ML file's glyph IDs.\cr
+This is the main function to map, integrate and render omics data on pathway graphs. 
+Two inputs are needed: 1. A pathway file in SBGN-ML format and 2. gene and/or compound omics data. 
+The function generates image file of a pathway graph with the omics data mapped to the glyphs and rendered as pseudo-colors. 
+If no gene and/or compound omics data is supplied to the function, the function will output the SVG image file (and other selected file formats) of the parsed input file . This is useful for viewing the pathway graph without overlaid omics data. 
+This function is similar to Pathview except the pathways are rendered with SBGN notation.
+In addition, users can control more graph properties including node/edge attributes. We collected SBGN-ML files from several pathway databases: Reactome, MetaCyc, MetaCrop, PANTHER and SMPDB. Given a vector of patway IDs, SBGNview can automatically download and use these SBGN-ML files. To map omics data to glyphs, user just needs to specify omics data ID types. When using user customized SBGN-ML files, users need to provide a mapping file from omics data's molecule IDs to SBGN-ML file's glyph IDs.\cr
 }
 \details{
 1. About SBGNview()
