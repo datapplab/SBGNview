@@ -14,6 +14,6 @@ SBGNview.obj
 Demo SBGNview object
 }
 \details{
-An example SBGNview object
+An example SBGNview object for demo purposes.
 }
 \keyword{datasets}

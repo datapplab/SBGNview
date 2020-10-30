@@ -19,7 +19,7 @@
 
 #########################################################################################################
 #' Demo SBGNview object
-#' @details An example SBGNview object
+#' @details An example SBGNview object for demo purposes. 
 #' @format A SBGNview object
 "SBGNview.obj"
 
