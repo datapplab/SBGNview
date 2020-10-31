@@ -20,8 +20,9 @@ SBGNview has collected pathway gene sets from the following databases: Reactome,
 
 # Install R packages
 
-## Install prerequisites
+## Installation preparation
 
+SBGNview depends or imports from the following R packages. Note these dependencies will be automatically installed when SBGNview is installed from BioConductor or GitHub. 
 * xml2: parse SBGN-ML files
 * rsvg: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
 * igraph: find shortest paths
@@ -31,6 +32,7 @@ SBGNview has collected pathway gene sets from the following databases: Reactome,
 * [SummarizedExperiment](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html): main function accepts data as SummarizedExperiment objects
 * AnnotationDbi: filter and select data for mapping between IDs
 
+For installation of SBGNview from local files, they need to be installed manually and explicitly.
 ```{r setup, eval = FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE)){
      install.packages("BiocManager")
@@ -38,7 +40,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE)){
 BiocManager::install(c("xml2", "rsvg", "igraph", "pathview", "gage", "SBGNview.data", "SummarizedExperiment", "AnnotationDbi"))
 ```
 
-Dependencies for Operating Systems:  
+Prerequisites for Operating Systems:  
 **Windows 10**: none
 
 **Linux (Ubuntu)**: needs additional packages (libxml2-dev, libssl-dev, libcurl4-openssl-dev, librsvg2-dev) to be installed. Run the command below in a terminal to install the necessary packages. The same or similar packages can be found for other distributes of linux.
@@ -49,15 +51,22 @@ sudo apt install libxml2-dev libssl-dev libcurl4-openssl-dev librsvg2-dev
 ## Install SBGNview
 Install **SBGNview** through [Bioconductor](https://bioconductor.org/packages/release/bioc/html/SBGNview.html). Requires R (version >= 3.6).
 ```{r install, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)){
+     install.packages("BiocManager")
+}
 BiocManager::install("SBGNview")
 ```
+Alternatively, install **SBGNview** through [GitHub](https://github.com/datapplab/SBGNview_2). Requires R (version >= 3.6).
+```r install, eval = FALSE}
+#install.packages("devtools")
+devtools::install_github("datapplab/SBGNview")
+```
+#Complete pathway analysis + visaulization workflow
 
-# IFNg dataset
-
-In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice. It contains normalized RNA-seq gene expression data described in this study: Greer, Renee L., Xiaoxi Dong, et al. "Akkermansia muciniphila mediates negative effects of IFNg on glucose metabolism." Nature communications 2016.
+In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice. It contains normalized RNA-seq gene expression data described in  Greer, Renee L., Xiaoxi Dong, et al, 2016.
 
 ## Load RNA-seq data
-The RNA abundance data was quantile normalized and log2 transformed, stored in a ["SummarizedExperiment"](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object. SBGNview can process "SummarizedExperiment" object and visualize data stored in 'assays'.
+The RNA abundance data was quantile normalized and log2 transformed, stored in a ["SummarizedExperiment"](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object. SBGNview count.data argument can be either a numeric matrix or a vector, like gene.data in pathview. In addition, it can be a "SummarizedExperiment" object, which is commonly used in BioConductor packages, 
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(SBGNview)
@@ -65,13 +74,13 @@ library(SummarizedExperiment)
 data("IFNg", "pathways.info")
 count.data <- assays(IFNg)$counts
 head(count.data)
-wt <- colnames(IFNg)[IFNg$group == "wt"]
-ko <- colnames(IFNg)[IFNg$group == "ko"]
+wt.cols <- which(IFNg$group == "wt")
+ko.cols <- which(IFNg$group == "ko")
 
 ```
 
-## Pathway enrichment analysis: run SBGNview collected gene set
-### Load gene set: mouse ensemble IDs
+## Pathway or enrichment analysis with SBGNview pathway collection
+### Load gene set for mouse with ensemble IDs
 ```{r , echo = TRUE , results = 'hide',   message = FALSE, warning = FALSE}
 ensemble.to.pathway <- getMolList(
     mol.list.ID.type = "ENSEMBL"
@@ -86,29 +95,32 @@ head(ensemble.to.pathway[[2]])
 ### Run pathway enrichment analysis using gage
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(gage)
-degs <- gage(exprs = count.data
-           ,gsets = ensemble.to.pathway
-           ,ref = which(colnames(count.data) %in% wt)
-           ,samp = which(colnames(count.data) %in% ko)
-           ,compare = "as.group"
+degs <- gage(exprs = count.data,
+           gsets = ensemble.to.pathway,
+           ref = wt.cols,
+           samp = ko.cols,
+           compare = "paired" #"as.group"
            )
-head(degs$greater)[,c(1,4:5)]
-head(degs$less)
-down.pathways <- degs$less
+head(degs$greater)[,3:5]
+head(degs$less)[,3:5]
+down.pathways <- row.names(degs$less)[1:10]
 head(down.pathways)
 ```
 
-## Visualize fold change on pathway maps
+## Visualize gene expression changes on SBGN pathway maps
 ### Generate fold change data for visualization
 The abundance values were log2 transformed. Here we calculate the fold change of IFNg KO group v.s. WT group. 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-mean.wt <- apply(count.data[,wt] ,1 ,"mean")
+ensemble.to.koVsWt <- count.data[,ko.cols]-count.data[,wt.cols]
+head(ensemble.to.koVsWt)
+
+#alternatively, we can also calculate mean fold changes per gene, which corresponds to gage analysis above with compare="as.group"
+mean.wt <- apply(count.data[,wt.cols] ,1 ,"mean")
 head(mean.wt)
-mean.ko <- apply(count.data[,ko],1,"mean")
+mean.ko <- apply(count.data[,ko.cols],1,"mean")
 head(mean.ko)
 # The abundance values were on log scale. Hence fold change is their difference.
 ensemble.to.koVsWt <- mean.ko - mean.wt
-head(ensemble.to.koVsWt)
 ```
 
 
@@ -116,32 +128,26 @@ head(ensemble.to.koVsWt)
 ### Visualize fold change data
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 data(sbgn.xmls)
-down.pathways <- do.call(rbind,strsplit(row.names(down.pathways),"::"))[,1]
+down.pathways <- sapply(strsplit(down.pathways,"::"), "[", 1)
 head(down.pathways)
 sbgnview.obj <- SBGNview(
     gene.data = ensemble.to.koVsWt,
     gene.id.type = "ENSEMBL",
-    input.sbgn = down.pathways[1],
+    input.sbgn = down.pathways[1],#can be down.pathways[1:3] etc
     output.file = "ifn.sbgnview.less",
     show.pathway.name = TRUE,
     max.gene.value = 2,
     min.gene.value = -2,
     mid.gene.value = 0,
     node.sum = "mean",
-    label.spliting.string = c("-","_"," "), 
     output.format = c("png"),
     
-    inhibition.edge.end.shift = 1,
-    font.size = 2,
-    logic.node.font.scale = 6,
-    font.size.scale.compartment = 1.5,
+    font.size = 2.3,
     org = "mmu",
     
-    text.length.factor.macromolecule = 0.8,
-    text.length.factor.compartment = 2,
     text.length.factor.complex = 3,
     if.scale.compartment.font.size = TRUE,
-    node.width.adjust.factor.compartment = 0.058 
+    node.width.adjust.factor.compartment = 0.04 
 )
 sbgnview.obj
 ```
@@ -153,7 +159,7 @@ include_graphics("ifn.sbgnview.less_R-HSA-877300_Interferon gamma signaling.svg"
 
 
 
-### Visualize RNA abundance data: SummarizedExperiment object as input
+## Visualize gene expression data as SummarizedExperiment object
 The 'cancer.ds' is a microarray dataset from a cancer study. It is used to demo SBGNview's visualization ability. 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 data("cancer.ds")
@@ -167,20 +173,14 @@ sbgnview.obj <- SBGNview(
     min.gene.value = -1,
     mid.gene.value = 0,
     node.sum = "mean",
-    label.spliting.string = c("-","_"," "), 
     output.format = c("png"),
     
-    inhibition.edge.end.shift = 1,
-    font.size = 2,
-    logic.node.font.scale = 6,
-    font.size.scale.compartment = 1.5,
+    font.size = 2.3,
     org = "hsa",
     
-    text.length.factor.macromolecule = 0.8,
-    text.length.factor.compartment = 2,
     text.length.factor.complex = 3,
     if.scale.compartment.font.size = TRUE,
-    node.width.adjust.factor.compartment = 0.058 
+    node.width.adjust.factor.compartment = 0.04
    )
 sbgnview.obj
 
