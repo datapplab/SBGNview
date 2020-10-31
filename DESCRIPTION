@@ -11,10 +11,10 @@ Description:
     (e.g. Reactome, MetaCyc, SMPDB, PANTHER, METACROP etc.).
     Extensive options are provided to control glyph and edge features.
     SBGNview can search for pathways by keywords, extract node information and highlight shortest path between two nodes.  
-Version: 0.99.37
+Version: 1.5.1
 Author:
-    Xiaoxi Dong, Weijun Luo
-Maintainer: Xiaoxi Dong <dfdongxiaoxi@gmail.com>
+    Xiaoxi Dong, Kovidh Vegesna, Weijun Luo
+Maintainer: Kovidh Vegesna <kvegesna@uncc.edu>, Weijun Luo <luo_weijun@yahoo.com>
 Depends:
     R (>= 3.6),
     pathview,
