@@ -19,7 +19,7 @@ Key features:
 # Installation
 
 ## Prerequisites
-*SBGNview* depends on the following packages:
+*SBGNview* depends or imports from the following R packages. Note these dependencies will be automatically installed when SBGNview is installed from BioConductor or GitHub
 
 * xml2: parse SBGN-ML files
 * rsvg: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg

@@ -18,7 +18,7 @@ vignette: >
 # Introduction
 SBGNview has collected pathway gene sets from the following databases: Reactome, PANTHER Pathway, SMPDB, MetaCyc and MetaCrop. These gene sets can be used for pathway enrichment analysis.
 
-# Install R packages
+# Installation
 
 ## Installation preparation
 
@@ -66,7 +66,7 @@ devtools::install_github("datapplab/SBGNview")
 In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice. It contains normalized RNA-seq gene expression data described in  Greer, Renee L., Xiaoxi Dong, et al, 2016.
 
 ## Load RNA-seq data
-The RNA abundance data was quantile normalized and log2 transformed, stored in a ["SummarizedExperiment"](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object. SBGNview count.data argument can be either a numeric matrix or a vector, like gene.data in pathview. In addition, it can be a "SummarizedExperiment" object, which is commonly used in BioConductor packages, 
+The RNA abundance data was quantile normalized and log2 transformed, stored in a ["SummarizedExperiment"](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object. SBGNview count.data argument can be either a numeric matrix or a vector, like gene.data in pathview. In addition, it can be a "SummarizedExperiment" object, which is commonly used in BioConductor packages. 
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(SBGNview)

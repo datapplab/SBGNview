@@ -47,8 +47,9 @@ Like **Pathview**, **SBGNview** supports multiple samples for each gene/compound
 
 # Installation
 
-## Install prerequisites
+## Installation preparation
 
+SBGNview depends or imports from the following R packages. Note these dependencies will be automatically installed when SBGNview is installed from BioConductor or GitHub. 
 * xml2: parse SBGN-ML files
 * rsvg: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
 * igraph: find shortest paths
@@ -65,7 +66,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE)){
 BiocManager::install(c("xml2", "rsvg", "igraph", "pathview", "gage", "SBGNview.data", "SummarizedExperiment", "AnnotationDbi"))
 ```
 
-Dependencies for Operating Systems:  
+Prerequisites for Operating Systems:  
 **Windows 10**: none
 
 **Linux (Ubuntu)**: needs additional packages (libxml2-dev, libssl-dev, libcurl4-openssl-dev, librsvg2-dev) to be installed. Run the command below in a terminal to install the necessary packages. The same or similar packages can be found for other distributes of linux.
@@ -76,6 +77,9 @@ sudo apt install libxml2-dev libssl-dev libcurl4-openssl-dev librsvg2-dev
 ## Install SBGNview
 Install **SBGNview** through [Bioconductor](https://bioconductor.org/packages/release/bioc/html/SBGNview.html).
 ```{r install, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE)){
+     install.packages("BiocManager")
+}
 BiocManager::install("SBGNview")
 ```
 
