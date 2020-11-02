@@ -50,6 +50,7 @@ Like **Pathview**, **SBGNview** supports multiple samples for each gene/compound
 ## Installation preparation
 
 SBGNview depends or imports from the following R packages. Note these dependencies will be automatically installed when SBGNview is installed from BioConductor or GitHub. 
+
 * xml2: parse SBGN-ML files
 * rsvg: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
 * igraph: find shortest paths
@@ -186,12 +187,11 @@ Many pathways from the above databases don't have desirable layout and often hav
 The package used to layout nodes and route spline edges is currently under development and will be released in the near future. 
 
 #### Information about pre-generated SBGN-ML file collection
-We can check the information of all pre-generated SBGN-ML files
+We can check the information of collected pathways using `pathways.info` and number of pathways collected using `pathways.stats`.
 ```{r , echo = TRUE,   message = FALSE, warning = FALSE}
-data("pathways.stat")
-input.pathway.ids = input.pathways$pathway.id
+data("pathways.info", "pathways.stats")
 head(pathways.info)
-pathways.stat
+pathways.stats
 ```
 
 There are two common scenarios of using *SBGNview*
@@ -522,6 +522,8 @@ include_graphics("test.show.glyph.id_P00001.svg")
 
 We can find the mapping between input IDs and node IDs:
 ```{r, echo = TRUE, results = 'hide', eval = TRUE, message = FALSE, warning = FALSE}
+input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
+input.pathway.ids = input.pathways$pathway.id
 mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
            input.type = "CompoundName",
            output.type = "pathwayCommons",
