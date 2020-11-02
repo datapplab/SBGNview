@@ -15,7 +15,7 @@
 #' Number of pathways collected
 #' @details The number of pathways in SBGNhub from each source database. It is calculated from data 'pathways.info'.
 #' @format A data.frame
-"pathways.stat"
+"pathways.stats"
 
 #########################################################################################################
 #' Demo SBGNview object
