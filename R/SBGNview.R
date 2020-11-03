@@ -141,7 +141,7 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
     # parse all SBGN-ML files
     for (i in seq_along(input.sbgn)) {
         input.sbgn.i <- input.sbgn[i]
-        message("\n\n\n Processing pathway: ", input.sbgn.i, "\n")
+        message("\n\n\nProcessing pathway: ", input.sbgn.i, "\n")
         # Find related information according to input sbgn
         parse.sbgn.list <- parse.input.sbgn(input.sbgn.i, output.file, show.pathway.name, 
             sbgn.dir, sbgn.gene.id.type, sbgn.cpd.id.type, sbgn.id.attr, SBGNview.data.folder)

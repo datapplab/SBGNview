@@ -28,7 +28,7 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
     input.sbgn.full.path <- paste(sbgn.dir, input.sbgn, sep = "/")
     if (!file.exists(input.sbgn.full.path)) {
         # if the SBGN-ML file is not downloaded, in this case, input.sbgn is pathway.id
-        message(input.sbgn, " does not look like a local file.\n Using it as pathway ID in 'pathways.info'\n\n ")
+        message(input.sbgn, " does not look like a local file.\nUsing it as pathway ID in 'pathways.info'\n\n ")
         is.input <- pathways.info[, "pathway.id"] == input.sbgn
         if (!any(is.input)) {
             stop("The input ID is not included in the pre-generated SBGN-ML file database! Please check 'data(\"pathways.info\")' for supported pathway IDs!\n\n")
@@ -38,9 +38,8 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
             
             pathway.name <- pathways.info[is.input, "pathway.name"]
             pathway.name <- gsub("[\\&\\/\\*\\?\\<\\>\\|\\:\"]", "_", pathway.name)
-            pathway.name.on.graph <- paste(sub.database, input.sbgn, pathway.name, 
-                sep = "::")
-            if.file.in.collection <- ""
+            pathway.name.on.graph <- paste(pathway.name, sub.database, input.sbgn, sep = "::")
+           
             if (show.pathway.name) {
                 output.file.sbgn <- paste(output.file.sbgn, "_", pathway.name, sep = "")
             }
@@ -52,8 +51,7 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
         }
     } else {
         # if the SBGN-ML file is downloaded. In this way input.sbgn is file.name
-        pathway.name.on.graph <- input.sbgn
-        message(input.sbgn, "looks like a local file. Using it directly.\n ")
+        message(input.sbgn, " looks like a local file. Using it directly.\n ")
         if (input.sbgn %in% pathways.info[, "file.name"]) {
             # if this local SBGN-ML file is our pregenerated file instead of user's own file
             is.input <- pathways.info[, "file.name"] == input.sbgn
@@ -70,6 +68,8 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
             message("Using user defined pathway SBGN-ML file!!\n")
             database <- "user.data"
         }
+        
+        pathway.name.on.graph <- paste(input.sbgn, database, sep = "::")
     }
     if (database == "MetaCrop") {
         sbgn.id.attr <- "label"
@@ -78,7 +78,7 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
     } else if (database == "pathwayCommons") {
         sbgn.id.attr <- "id"
     }
-    if.file.in.collection <- " Rendered by SBGNview"
+    if.file.in.collection <- "Rendered by SBGNview"
     pathway.name.on.graph <- list(pathway.name.on.graph = pathway.name.on.graph, 
         if.file.in.collection = if.file.in.collection)
     
@@ -1036,7 +1036,7 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
     if.use.number.for.long.label <- global.parameters.list$if.use.number.for.long.label
     # parse glyphs and plot glyphs and ports
     map.language <- xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//map")[[1]])["language"]
-    message("\n Map language is ", map.language, "\n")
+    message("\nMap language is ", map.language, "\n")
     if (is.null(map.language)) {
         map.language <- ""
     }

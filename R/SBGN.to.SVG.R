@@ -228,18 +228,28 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         
         # add pathway.name and stamp
         stamp.svg.list <- add.stamp(col.panel.w, col.panel.y, global.parameters.list, 
-            template.text, min.x, max.x, max.y, y.margin)
+            template.text, template.text.pathway.name, min.x, max.x, max.y, y.margin)
         pathway.name.svg <- stamp.svg.list$pathway.name.svg
         stamp.svg <- stamp.svg.list$stamp.svg
+        
+        # # added second line for db
+        # pathway.name.display.svg = stamp.svg.list$pathway.name.display.svg, 
+        # pathway.db.id.display.svg = stamp.svg.list$pathway.db.id.display.svg
+        # stamp.svg <- stamp.svg.list$stamp.svg
         
         # generate output xml content
         svg.dim.x = max.x+50+4*70
         svg.dim.y = max.y+col.panel.h+50+y.margin
         svg.header = sprintf (svg.header,svg.dim.x,svg.dim.y)
         
-        out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes, 
-            svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, stamp.svg, 
+        out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes,
+            svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, stamp.svg,
             svg.end, sep = "\n")
+        
+        # out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes, 
+        #              svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.display.svg, pathway.db.id.display.svg, 
+        #              stamp.svg, svg.end, sep = "\n")
+        
         Encoding(out) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
         
         # write output file
@@ -263,21 +273,42 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
 
 
 #########################################################################################################
-add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, 
+# custom template to print label on top left corner in output files as two lines
+# line 1: pathway name
+# line 2: (database::id)
+template.text.pathway.name <- "
+<text x=\"%f\" y=\"%f\" id=\"%s\"
+style=\"font-size:%fpx;text-anchor:%s;font-family:Arial,Helvetica;alignment-baseline:%s;stroke.opacity:%s;dominant-baseline:%s\"
+fill=\"%s\">
+<tspan x=\"%f\">%s</tspan>
+<tspan x=\"%f\" dy=\"%f\">%s</tspan>
+</text>
+"
+
+add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, template.text.pathway.name,
     min.x, max.x, max.y, y.margin) {
     pathway.name.font <- col.panel.w/7 * global.parameters.list$pathway.name.font.size
     pathway.name.y <- col.panel.y - pathway.name.font
+    
     pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph
-    pathway.name.display <- substr(pathway.name.display, 1, 100)
-    pathway.name.display <- paste0(pathway.name.display, "...")
-    pathway.name.svg <- sprintf(template.text, min.x + 10, pathway.name.y, "pathway.name", 
-        pathway.name.font, "left", "baseline", 1, "baseline", "black", pathway.name.display)
+    #pathway.name.display <- substr(pathway.name.display, 1, 100) # - only get 100 characters 
+    #pathway.name.display <- paste0(pathway.name.display, "...") # adds ... if text is too long
+    
+    # split pathway.name.display into 1) pathway name and 2) database :: id
+    split.name.db <- regmatches(pathway.name.display, regexpr("::", pathway.name.display), invert = TRUE)
+    name.of.pathway <- split.name.db[[1]][1]
+    db.and.id <- paste("(", split.name.db[[1]][2], ")", sep = "")
+    # Using template.text.pathway.name to display in two lines
+    pathway.name.svg <- sprintf(template.text.pathway.name, min.x + 10, pathway.name.y, "pathway.name",
+                                pathway.name.font, "left", "baseline", 1, "baseline", "black", 
+                                min.x + 10, name.of.pathway, min.x + 10, 30, db.and.id)
+   
     stamp.if.sbgnhub.h <- max.x/5/9
     stamp.y <- max(max.y, col.panel.y + col.panel.w) + stamp.if.sbgnhub.h + y.margin
     stamp.svg <- sprintf(template.text, 20, stamp.y, "stamp", pathway.name.font, 
         "left", "baseline", 1, "baseline", "black", global.parameters.list$pathway.name$if.file.in.collection)
-    return(list(pathway.name.svg = pathway.name.svg, stamp.svg = stamp.svg))
     
+    return(list(pathway.name.svg = pathway.name.svg, stamp.svg = stamp.svg))
 }
 
 #########################################################################################################
