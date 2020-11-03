@@ -232,11 +232,6 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         pathway.name.svg <- stamp.svg.list$pathway.name.svg
         stamp.svg <- stamp.svg.list$stamp.svg
         
-        # # added second line for db
-        # pathway.name.display.svg = stamp.svg.list$pathway.name.display.svg, 
-        # pathway.db.id.display.svg = stamp.svg.list$pathway.db.id.display.svg
-        # stamp.svg <- stamp.svg.list$stamp.svg
-        
         # generate output xml content
         svg.dim.x = max.x+50+4*70
         svg.dim.y = max.y+col.panel.h+50+y.margin
@@ -245,10 +240,6 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes,
             svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, stamp.svg,
             svg.end, sep = "\n")
-        
-        # out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes, 
-        #              svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.display.svg, pathway.db.id.display.svg, 
-        #              stamp.svg, svg.end, sep = "\n")
         
         Encoding(out) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
         
@@ -291,9 +282,7 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
     pathway.name.y <- col.panel.y - pathway.name.font
     
     pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph
-    #pathway.name.display <- substr(pathway.name.display, 1, 100) # - only get 100 characters 
-    #pathway.name.display <- paste0(pathway.name.display, "...") # adds ... if text is too long
-    
+
     # split pathway.name.display into 1) pathway name and 2) database :: id
     split.name.db <- regmatches(pathway.name.display, regexpr("::", pathway.name.display), invert = TRUE)
     name.of.pathway <- split.name.db[[1]][1]
