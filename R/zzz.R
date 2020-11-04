@@ -9,9 +9,8 @@
     data("mapped.ids", package = "SBGNview")
   }
   
-  message = "\n##############################################################################\nSBGNview is an open source R software package distributed under GNU General Public License version 3 (GPLv3). Details of GPLv3 are available at http://www.gnu.org/licenses/gpl-3.0.html. For more information about SBGNview, visit https://bioconductor.org/packages/release/bioc/html/SBGNview.html.\n\nTo get started, run browseVignettes(\"SBGNview\") to view vignettes for SBGNview. Use ls(\"package:SBGNview\") to get list of avaliable functions and use help(\"<functionName>\") to access a function's documentation.\n##############################################################################"
-  
-  packageStartupMessage(message)
+  disclaimer = "##############################################################################\nSBGNview is an open source software package distributed under GNU General Public License version 3 (GPLv3). Details of GPLv3 is available at http://www.gnu.org/licenses/gpl-3.0.html. \n\nUsers are required to formally cite the SBGNview paper and Pathview paper (not just mention them) in publications or products. For details, do 'citation(\"SBGNview\");  citation(\"Pathview\")' within R.\n##############################################################################\n"
+  packageStartupMessage(disclaimer)
   
 }
 
