@@ -353,9 +353,16 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
         }
     }else {
         if(cpd.or.gene == "gene"){
+            # pathway.id used for heterogeneous purposes and mapping gene to pathway
+            # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
+            # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"  
+            # ENZYME not in condition below b/c it can be mapped directly 
             if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
-               ! any(c(input.type,output.type) %in% c("KO")) 
+               !any(c(input.type,output.type) %in% c("KO")) 
             ){
+                #
+                message("mapping KO")
+                
                 ko.to.glyph.id = loadMappingTable(
                     input.type = output.type
                     ,output.type = "KO"
@@ -376,7 +383,7 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
                 input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
                 id.map = input.to.glyph.id[,c(input.type,output.type)]
             }else {
-                message("\n\n ID mapping not pre-generated. Try to use Pathview!!!\n\n")
+                message("\n\nID mapping not pre-generated. Try to use Pathview!!!\n\n")
                 id.map = geneannot.map.ko(in.ids = limit.to.ids
                                           ,in.type=input.type
                                           ,out.type=output.type
@@ -389,7 +396,7 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
                 }
             }
         }else if(cpd.or.gene == "compound"){
-            message("\n\n ID mapping not pre-generated. Try to use Pathview cpd!!!\n\n")
+            message("\n\nID mapping not pre-generated. Try to use Pathview cpd!!!\n\n")
             if(is.null(limit.to.ids)){
                 stop("Must provide input IDs when using pathview mapping!")
             }
@@ -441,13 +448,23 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
     if (!is.null(in.ids)) {
         in.ids <- gsub("\"", "", in.ids)
     }
-    message("\nusing pathview for id mapping:", in.type, " to ", out.type, "\n\n")
+    message("\nusing pathview for id mapping: ", in.type, " to ", out.type, "\n\n")
+    
     if (any(c(in.type, out.type) %in% "KO")) {
         filter.type <- in.type
         out.type <- setdiff(c(in.type, out.type), "KO")
         in.type <- "KO"
+        #
+        message("loadMappingTable for KO to ENTREZID")
+        
+        # break endless loop - this loop doesn't allow the rest of the code to run
+        # to break this, we need a mapping list. Since one doesn't exit, we generate mapping on the fly
+        # use KEGG API. KEGGREST Bioconductor Pkg
         mapping.list <- loadMappingTable(input.type = "KO", output.type = "ENTREZID", 
             cpd.or.gene = "gene", species = species, SBGNview.data.folder = SBGNview.data.folder)
+        #
+        message("loaded mapping list")
+        
         mapping.table <- mapping.list[[1]][[1]]
         if (out.type %in% c("ENTREZID", "ez", "entrezid")) {
             print("filter species")
@@ -479,9 +496,15 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
         if (is.null(in.ids)) {
             stop("Must provide input IDs when using pathview mapping!")
         }
-        id.map <- geneannot.map.all(in.ids = in.ids, in.type = in.type, out.type = out.type, 
-            org = species, unique.map = unique.map)
         
+        # id.map <- geneannot.map.all(in.ids = in.ids, in.type = in.type, out.type = out.type, 
+        #     org = species, unique.map = unique.map)
+        print(out.type)
+        id.map <- pathview::geneannot.map(in.ids = in.ids, 
+                                          in.type = in.type, 
+                                          out.type = out.type,
+                                          org = species, 
+                                          unique.map = unique.map)
     }
     return(id.map)
 }
@@ -1827,6 +1850,7 @@ geneannot.map.all <- function(in.ids, in.type, out.type, org = "Hs", pkg.name = 
     
     if (is.null(pkg.name)) {
         # pkg.name=paste('org', org, 'eg.db', sep='.')
+        message("data bods")
         data(bods)
         ridx <- grep(tolower(paste0(org, "[.]")), tolower(bods[, 1]))
         if (length(ridx) == 0) {
@@ -1838,17 +1862,22 @@ geneannot.map.all <- function(in.ids, in.type, out.type, org = "Hs", pkg.name = 
         }
         pkg.name <- bods[ridx, 1]
     }
-    all.mappings <- character(2)
+    all.mappings <- character(2) 
+    message("all mappings: ", all.mappings, " items")
     for (i in seq_len(length.out = nrow(bods))) {
         if (bods[i, 1] != pkg.name) {
             (next)()
         }
         pkg.name <- bods[i, 1]
         
-        if (!pkg.name %in% rownames(installed.packages())) {
-            (next)()
+        if (!pkg.name %in% rownames(installed.packages())) { 
+            #(next)() # if package not installed, evals to True, but doesn't install pkg.
+            # install pkg.name
+            message(pkg.name, " is not installed. Installing ", pkg.name)
+            BiocManager::install(pkg.name, update=FALSE)
+            
         }
-        message("Using package:", pkg.name, "\n")
+        message("Using package: ", pkg.name, "\n")
         db.obj <- eval(parse(text = paste0(pkg.name, "::", pkg.name)))
         id.types <- AnnotationDbi::columns(db.obj)  #columns(eval(as.name(pkg.name)))
         
