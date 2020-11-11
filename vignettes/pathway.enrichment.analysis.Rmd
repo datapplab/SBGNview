@@ -57,12 +57,14 @@ if (!requireNamespace("BiocManager", quietly = TRUE)){
 }
 BiocManager::install("SBGNview")
 ```
-Alternatively, install **SBGNview** through [GitHub](https://github.com/datapplab/SBGNview_2). Requires R (version >= 3.6).
-```r install, eval = FALSE}
-#install.packages("devtools")
+
+Alternatively, install **SBGNview** through [GitHub](https://github.com/datapplab/SBGNview). Requires R (version >= 3.6).
+```{r install, eval = FALSE}
+install.packages("devtools")
 devtools::install_github("datapplab/SBGNview")
 ```
-#Complete pathway analysis + visaulization workflow
+
+# Complete pathway analysis + visaulization workflow
 
 In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice. It contains normalized RNA-seq gene expression data described in  Greer, Renee L., Xiaoxi Dong, et al, 2016.
 

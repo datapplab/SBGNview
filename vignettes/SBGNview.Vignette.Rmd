@@ -84,6 +84,12 @@ if (!requireNamespace("BiocManager", quietly = TRUE)){
 BiocManager::install("SBGNview")
 ```
 
+Alternatively, install **SBGNview** through [GitHub](https://github.com/datapplab/SBGNview). Requires R (version >= 3.6).
+```{r install, eval = FALSE}
+install.packages("devtools")
+devtools::install_github("datapplab/SBGNview")
+```
+
 # Overview
 
 To visualize omics data on SBGN pathway map, we need two inputs:
