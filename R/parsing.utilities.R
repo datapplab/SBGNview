@@ -356,13 +356,14 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
             # pathway.id used for heterogeneous purposes and mapping gene to pathway
             # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
             # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"  
-            # ENZYME not in condition below b/c it can be mapped directly 
+            # ENZYME not in if condition below b/c it can be mapped directly 
             if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
                !any(c(input.type,output.type) %in% c("KO")) 
             ){
                 #
                 message("mapping KO")
                 
+                # load mapping table for mapping KO to glyph id
                 ko.to.glyph.id = loadMappingTable(
                     input.type = output.type
                     ,output.type = "KO"
@@ -371,6 +372,8 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
                     ,SBGNview.data.folder = SBGNview.data.folder
                 )
                 ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
+                
+                # load mapping table for mapping user input to KO id
                 input.to.ko = loadMappingTable(
                     input.type = input.type
                     ,output.type = "KO"
@@ -507,6 +510,119 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
                                           unique.map = unique.map)
     }
     return(id.map)
+}
+
+#########################################################################################################
+# copy of geneannot.map.ko to modify and test.
+# break loop caused by loadMappingTable
+# replace loadMappingTable with generate.ko.mapping.list.keggrest
+geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", unique.map, 
+                             SBGNview.data.folder = "./SBGNview.tmp.data") {
+    # pathview's geneannot.map can't map KO, so here included KO mapping
+    if (!is.null(in.ids)) {
+        in.ids <- gsub("\"", "", in.ids)
+    }
+    
+    #
+    message("using copy of geneannot.map.ko with KEGGREST::keggList")
+    
+    message("\nusing pathview for id mapping: ", in.type, " to ", out.type, "\n\n")
+    
+    if (any(c(in.type, out.type) %in% "KO")) {
+        filter.type <- in.type
+        out.type <- setdiff(c(in.type, out.type), "KO")
+        in.type <- "KO"
+        #
+        message("get mapping table")
+        
+        # break endless loop - this loop doesn't allow the rest of the code to run
+        # to break this, we need a mapping list. Since one doesn't exit, we generate mapping on the fly
+        # use KEGG API. KEGGREST Bioconductor Pkg
+        #mapping.list <- loadMappingTable(input.type = "KO", output.type = "ENTREZID", 
+        #                                  cpd.or.gene = "gene", species = species, SBGNview.data.folder = SBGNview.data.folder)
+        
+        mapping.list <- generate.ko.mapping.list.keggrest(in.type = in.type, species = species)
+        #
+        message("generated mapping list using keggREST")
+        
+        mapping.table <- mapping.list[[1]][[1]]
+        
+        if (out.type %in% c("ENTREZID", "ez", "entrezid")) {
+            #print("filter species")
+            
+            # filters based on the input species. not needed since using keggLink 
+            #id.map <- mapping.table[mapping.table[, "species"] == species, c(in.type, out.type)]
+            
+            id.map <- mapping.list
+            
+            if (!is.null(in.ids)) { # in.ids - Vector. Molecule IDs of 'input.type'.
+                mapping.table <- mapping.table[mapping.table[, filter.type] %in%
+                                                   in.ids, ]
+            }
+        } else {
+            if (species == "mmu") {
+                species <- "mouse"
+            }
+            
+            #
+            message("using pathview::eg2id")
+            
+            output.to.eg <- pathview::eg2id(eg = mapping.table[, "ENTREZID"], category = out.type, 
+                                            org = species, unique.map = unique.map)
+            
+            output.to.ko <- merge(output.to.eg, mapping.table, all.x = TRUE)
+            id.map <- output.to.ko[, c("KO", out.type)]
+            id.map <- id.map[!is.na(id.map[, out.type]), ]
+            # filter to output only input IDs
+            if (!is.null(in.ids)) {
+                id.map <- id.map[id.map[, filter.type] %in% in.ids, ]
+            }
+        }
+    } else {
+        if (species == "mmu") {
+            species <- "mouse"
+        }
+        if (is.null(in.ids)) {
+            stop("Must provide input IDs when using pathview mapping!")
+        }
+        
+        # id.map <- geneannot.map.all(in.ids = in.ids, in.type = in.type, out.type = out.type, 
+        #     org = species, unique.map = unique.map)
+        print(out.type)
+        id.map <- pathview::geneannot.map(in.ids = in.ids, in.type = in.type, out.type = out.type,
+                                          org = species, unique.map = unique.map)
+    }
+    return(id.map)
+}
+
+#########################################################################################################
+# generate mapping list on the fly for mapping KO in geneannot.map.ko
+# convert from ko to ncbi-geneid (ENTREZID) using KEGGREST::keggLink
+generate.ko.mapping.list.keggrest <- function(in.type = "ko", species = "eco"){
+    
+    in.type <- tolower(in.type)
+    
+    if(in.type == "ko"){
+        # find related entries by using database cross-references
+        link.info <- KEGGREST::keggLink(target = species, source = "ko")
+        
+        source.link.names <- names(link.info)
+        ordered.source.names <- character()
+        ordered.target.names <- character()
+        
+        for(i in source.link.names){
+            # clean name by remove info before :. i.e "ko:K01438" => "K01438"
+            # split at : and get 2nd element from returned list
+            source.cleaned <- strsplit(i, split = ":")[[1]][[2]]
+            target.cleaned <- strsplit(link.info[[i]], split = ":")[[1]][[2]]
+            
+            ordered.source.names <- append(ordered.source.names, source.cleaned)
+            ordered.target.names <- append(ordered.target.names, target.cleaned)
+        }
+        
+        mapping.list <- data.frame(KO = ordered.source.names, ENTREZID = ordered.target.names)
+    } 
+    return(mapping.list)
 }
 
 #########################################################################################################
