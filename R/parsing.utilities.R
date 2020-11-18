@@ -526,14 +526,14 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
     #
     message("using copy of geneannot.map.ko with KEGGREST")
     
-    message("\nusing pathview for id mapping: ", in.type, " to ", out.type, "\n\n")
+    message("\nmapping: ", in.type, " to ", out.type, "\n\n")
     
     if (any(c(in.type, out.type) %in% "KO")) {
-        filter.type <- in.type
+        #filter.type <- in.type
         in.type <- setdiff(c(in.type, out.type), "KO")
         out.type <- "KO"
         #
-        message("get mapping table")
+        message("generating mapping table")
         
         # break endless loop - this loop doesn't allow the rest of the code to run
         # to break this, we need a mapping list. Since one doesn't exit, we generate mapping on the fly
@@ -541,44 +541,44 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
         #mapping.list <- loadMappingTable(input.type = "KO", output.type = "ENTREZID", 
         #                                  cpd.or.gene = "gene", species = species, SBGNview.data.folder = SBGNview.data.folder)
         
-        mapping.table <- generate.ko.mapping.list.keggrest(in.type = in.type, out.type = out.type, 
-                                                           species = species. in.ids = in.ids)
+        id.map <- generate.ko.mapping.list.keggrest(in.type = in.type, out.type = out.type, 
+                                                           species = species, in.ids = in.ids)
         #
         message("generated mapping table using keggREST")
         
         #mapping.table <- mapping.list[[1]][[1]]
         
-        if (out.type %in% c("ENTREZID", "ez", "entrezid", "entrez")) {
-            #print("filter species")
-            
-            # filters based on the input species. not needed since using keggLink 
-            #id.map <- mapping.table[mapping.table[, "species"] == species, c(in.type, out.type)]
-            
-            id.map <- mapping.table
-            
-            if (!is.null(in.ids)) { # in.ids - Vector. Molecule IDs of 'input.type'.
-                mapping.table <- mapping.table[mapping.table[, filter.type] %in% in.ids, ]
-            }
-        } else {
-            if (species == "mmu") {
-                species <- "mouse"
-            }
-            
-            #
-            message("using pathview::eg2id")
-            
-            output.to.eg <- pathview::eg2id(eg = mapping.table[, "ENTREZID"], category = out.type, 
-                                            org = species, unique.map = unique.map)
-            
-            output.to.ko <- merge(output.to.eg, mapping.table, all.x = TRUE)
-            id.map <- output.to.ko[, c("KO", out.type)]
-            id.map <- id.map[!is.na(id.map[, out.type]), ]
-            # filter to output only input IDs
-            if (!is.null(in.ids)) {
-                id.map <- id.map[id.map[, filter.type] %in% in.ids, ]
-            }
-        }
-    } else {
+        # if (out.type %in% c("ENTREZID", "ez", "entrezid", "entrez")) {
+        #     #print("filter species")
+        #     
+        #     # filters based on the input species. not needed since using keggLink 
+        #     #id.map <- mapping.table[mapping.table[, "species"] == species, c(in.type, out.type)]
+        #     
+        #     id.map <- mapping.table
+        #     
+        #     if (!is.null(in.ids)) { # in.ids - Vector. Molecule IDs of 'input.type'.
+        #         mapping.table <- mapping.table[mapping.table[, filter.type] %in% in.ids, ]
+        #     }
+        # } else {
+        #     if (species == "mmu") {
+        #         species <- "mouse"
+        #     }
+        #     
+        #     #
+        #     message("using pathview::eg2id")
+        #     
+        #     output.to.eg <- pathview::eg2id(eg = mapping.table[, "ENTREZID"], category = out.type, 
+        #                                     org = species, unique.map = unique.map)
+        #     
+        #     output.to.ko <- merge(output.to.eg, mapping.table, all.x = TRUE)
+        #     id.map <- output.to.ko[, c("KO", out.type)]
+        #     id.map <- id.map[!is.na(id.map[, out.type]), ]
+        #     # filter to output only input IDs
+        #     if (!is.null(in.ids)) {
+        #         id.map <- id.map[id.map[, filter.type] %in% in.ids, ]
+        #     }
+        # }
+    } else { # input/output not KO
         if (species == "mmu") {
             species <- "mouse"
         }
