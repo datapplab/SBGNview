@@ -535,12 +535,6 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
         #
         message("generating mapping table")
         
-        # break endless loop - this loop doesn't allow the rest of the code to run
-        # to break this, we need a mapping list. Since one doesn't exit, we generate mapping on the fly
-        # use KEGG API. KEGGREST Bioconductor Pkg
-        #mapping.list <- loadMappingTable(input.type = "KO", output.type = "ENTREZID", 
-        #                                  cpd.or.gene = "gene", species = species, SBGNview.data.folder = SBGNview.data.folder)
-        
         id.map <- generate.ko.mapping.list.keggrest(in.type = in.type, out.type = out.type, 
                                                            species = species, in.ids = in.ids)
         #
@@ -607,13 +601,16 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", 
 #                entrez id to kegg id and kegg id to ko and merge the two lists for (entrez, ko) table
 #       else 
 #           map from in.type to kegg gene id and kegg id to ko and merge two lists for (in.type, ko) table
-#   else (species in bods) - use pathview::id2eg to map to entrezid
-#       if "kegg.geneid" == "ncbi.geneid" for species 
-#           map directly from KEGG ID to KO
-#           merge with id2eg map to get (in.type, ko) table
-#       else use 2nd mapping table
-#           map from entrez id to keggid merge with id2eg map list
-#           map from kegg id to ko and merge with first mereged list
+#   else (species in bods) 
+#       if in.type == entrez
+#           map to entrez similar to above
+#       else use pathview::id2eg to map to entrezid
+#           if "kegg.geneid" == "ncbi.geneid" for species 
+#               map directly from KEGG ID to KO
+#               merge with id2eg map to get (in.type, ko) table
+#           else use 2nd mapping table
+#               map from entrez id to keggid merge with id2eg map list
+#               map from kegg id to ko and merge with first mereged list
 generate.ko.mapping.list.keggrest <- function(in.type = "entrez", out.type = "ko", 
                                               species = "dsi", in.ids = NULL){
 
@@ -642,8 +639,8 @@ generate.ko.mapping.list.keggrest <- function(in.type = "entrez", out.type = "ko
                 # no need of 2nd mapping table. Map from KEGG ID to KO using keggLink 
                 message("mapping directly from KEGG ID to KO")
                 mapping.info <- KEGGREST::keggLink(target = species, source = out.type) # ko
-                ids1 <- gsub("^.+:", "", names(link.info))
-                ids2 <- gsub("^.+:", "", link.info)
+                ids1 <- gsub("^.+:", "", names(mapping.info))
+                ids2 <- gsub("^.+:", "", mapping.info)
                 mapping.list <- cbind(ids1, ids2)
                 rownames(mapping.list) <- NULL
                 colnames(mapping.list) <- c(out.type, species)
@@ -656,7 +653,7 @@ generate.ko.mapping.list.keggrest <- function(in.type = "entrez", out.type = "ko
                 ids2 <- gsub("^.+:", "", conv.info)
                 conv.list <- cbind(ids1, ids2)
                 rownames(conv.list) <- NULL
-                colnames(conv.list) <- c("ncbi-geneid", paste("keggid", species, sep = "-"))
+                colnames(conv.list) <- c("ENTREZID", paste("keggid", species, sep = "-"))
                 
                 message("mapping from KEGG ID to KO") # kegg id to ko
                 link.info <- KEGGREST::keggLink(target = "ko", source = species)
@@ -697,52 +694,96 @@ generate.ko.mapping.list.keggrest <- function(in.type = "entrez", out.type = "ko
         }
         
     } else { # species in bods
-        
+
         message("species in bods")
-        
-        # map from in.type to ENTREZID using pathview
-        in.to.eg <- pathview::id2eg(ids = in.ids, category = in.type, org = species) # in.type, entrez
-        
+        # get species info from korg
         ridx <- grep(paste("^", species, "$", sep = ""), korg[,3]) %% nrow(korg)
         
-        if(korg[ridx, 6] == "1"){ # check if KEGG id == ENTREZID in korg for bods species
+        if(in.type %in% c("entrez", "eg", "entrezid")){ # input type is entrez for bods species
             
-            message("mapping directly from KEGG ID to KO for bods species")
-            mapping.info <- KEGGREST::keggLink(target = species, source = out.type) # ko
-            ids1 <- gsub("^.+:", "", names(link.info))
-            ids2 <- gsub("^.+:", "", link.info)
-            map.list <- cbind(ids1, ids2)
-            rownames(map.list) <- NULL
-            colnames(map.list) <- c(out.type, species)
+            message("id mapping from ENTREZID to KO for bods species")
             
-            merge.list <- merge(in.to.eg, map.list) 
-            mapping.list <- merge.list[,2:3] 
+            if(korg[ridx, 6] == "1"){   # "kegg.geneid" == "ncbi.geneid". entrez.gnodes == 1
+                # no need of 2nd mapping table. Map from KEGG ID to KO using keggLink 
+                message("mapping directly from KEGG ID to KO for bods species")
+                mapping.info <- KEGGREST::keggLink(target = species, source = out.type) # ko
+                ids1 <- gsub("^.+:", "", names(mapping.info))
+                ids2 <- gsub("^.+:", "", mapping.info)
+                mapping.list <- cbind(ids1, ids2)
+                rownames(mapping.list) <- NULL
+                colnames(mapping.list) <- c(out.type, species)
+                
+            } else { # kegg ID is NOT entrez id. entrez.gnodes == 0. need 2 mapping tables
+                
+                message("mapping from ENTREZ ID to KEGG ID for bods species") # ncbi-geneid to kegg id
+                conv.info <- KEGGREST::keggConv(target = species, source = "ncbi-geneid")
+                ids1 <- gsub("^.+:", "", names(conv.info))
+                ids2 <- gsub("^.+:", "", conv.info)
+                conv.list <- cbind(ids1, ids2)
+                rownames(conv.list) <- NULL
+                colnames(conv.list) <- c("ENTREZID", paste("keggid", species, sep = "-"))
+                
+                message("mapping from KEGG ID to KO for bods species") # kegg id to ko
+                link.info <- KEGGREST::keggLink(target = "ko", source = species)
+                ids1 <- gsub("^.+:", "", names(link.info))
+                ids2 <- gsub("^.+:", "", link.info)
+                link.list <- cbind(ids1, ids2)
+                rownames(link.list) <- NULL
+                colnames(link.list) <- c(paste("keggid", species, sep = "-"), "ko")
+                
+                message("merging mapping lists")
+                merge.list <- merge(conv.list, link.list) # merge list. cols = keggid, ncbi-geneid, ko
+                mapping.list <- merge.list[,2:3] # take only ncbi-geneid, ko
+            }
+            # end if input type is entrez for speceis in bods
             
-        } else { # KEGG id == ENTREZID. need 2nd mapping table
-            message("mapping from ENTREZ ID to KEGG ID for bods species") # ncbi-geneid to kegg id
-            conv.info <- KEGGREST::keggConv(target = species, source = "ncbi-geneid")
-            ids1 <- gsub("^.+:", "", names(conv.info))
-            ids2 <- gsub("^.+:", "", conv.info)
-            conv.list <- cbind(ids1, ids2)
-            rownames(conv.list) <- NULL
-            colnames(conv.list) <- c("ncbi-geneid", paste("keggid", species, sep = "-"))
+        } else { # not entrez. other input type
+            # map from in.type to ENTREZID using pathview
+            message("mapping from ", in.type, " to ENTREZID using pathview::id2eg")
+            in.to.eg <- pathview::id2eg(ids = in.ids, category = in.type, org = species) # in.type, entrez
             
-            # in.type, entrezid merge with entrezid, keggid
-            merge.list.1 <- merge(in.to.eg, conv.list)
-            map.list.1 <- merge.list.1[,2:3]  # in.type, keggid
+            if(korg[ridx, 6] == "1") { # check if KEGG id == ENTREZID in korg for bods species
+                
+                message("mapping directly from KEGG ID to KO for bods species")
+                mapping.info <- KEGGREST::keggLink(target = species, source = out.type) # ko
+                ids1 <- gsub("^.+:", "", names(link.info))
+                ids2 <- gsub("^.+:", "", link.info)
+                map.list <- cbind(ids1, ids2)
+                rownames(map.list) <- NULL
+                colnames(map.list) <- c(out.type, species)
+                
+                merge.list <- merge(in.to.eg, map.list) 
+                mapping.list <- merge.list[,2:3] 
+                
+            } else { # KEGG id != ENTREZID. need 2nd mapping table
+                message("mapping from ENTREZ ID to KEGG ID for bods species") # ncbi-geneid to kegg id
+                conv.info <- KEGGREST::keggConv(target = species, source = "ncbi-geneid")
+                ids1 <- gsub("^.+:", "", names(conv.info))
+                ids2 <- gsub("^.+:", "", conv.info)
+                conv.list <- cbind(ids1, ids2)
+                rownames(conv.list) <- NULL
+                colnames(conv.list) <- c("ENTREZID", paste("keggid", species, sep = "-"))
+                
+                # in.type, entrezid merge with entrezid, keggid
+                merge.list.1 <- merge(in.to.eg, conv.list)
+                map.list.1 <- merge.list.1[,2:3]  # in.type, keggid
+                
+                message("mapping from KEGG ID to KO for bods species") # kegg id to ko
+                link.info <- KEGGREST::keggLink(target = "ko", source = species)
+                ids1 <- gsub("^.+:", "", names(link.info))
+                ids2 <- gsub("^.+:", "", link.info)
+                link.list <- cbind(ids1, ids2)
+                rownames(link.list) <- NULL
+                colnames(link.list) <- c(paste("keggid", species, sep = "-"), "ko") # keggid, ko
+                
+                message("merging mapping lists for bods species")
+                merge.list.2 <- merge(map.list.1, link.list) # in.type, ko
+                mapping.list <- merge.list.2[,2:3] 
+                
+            }
             
-            message("mapping from KEGG ID to KO for bods species") # kegg id to ko
-            link.info <- KEGGREST::keggLink(target = "ko", source = species)
-            ids1 <- gsub("^.+:", "", names(link.info))
-            ids2 <- gsub("^.+:", "", link.info)
-            link.list <- cbind(ids1, ids2)
-            rownames(link.list) <- NULL
-            colnames(link.list) <- c(paste("keggid", species, sep = "-"), "ko") # keggid, ko
-            
-            message("merging mapping lists for bods species")
-            merge.list.2 <- merge(conv.list, link.list) # in.type, ko
-            mapping.list <- merge.list[,2:3] 
-        }
+        } # end else in.type != entrez
+        
     } # end else species in bods
     
     return(mapping.list)
