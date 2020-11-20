@@ -85,7 +85,7 @@ BiocManager::install("SBGNview")
 ```
 
 Alternatively, install **SBGNview** through [GitHub](https://github.com/datapplab/SBGNview). Requires R (version >= 3.6).
-```{r install, eval = FALSE}
+```{r install-github, eval = FALSE}
 install.packages("devtools")
 devtools::install_github("datapplab/SBGNview")
 ```
