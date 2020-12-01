@@ -19,7 +19,9 @@ utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls",
 #' @importFrom AnnotationDbi select columns
 #' @importFrom SummarizedExperiment assays
 #' @import utils
- 
+
+#' @import httr
+
 #########################################################################################################
 parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.dir, 
     sbgn.gene.id.type, sbgn.cpd.id.type, sbgn.id.attr, SBGNview.data.folder = "./SBGNview.tmp.data") {
@@ -283,6 +285,155 @@ download.mapping.file <- function(input.type, output.type, species = NULL, SBGNv
 }
 
 #########################################################################################################
+# copy of donwload.mapping.file
+# check local directory for any mapping files, if not found then check SBGNView.data and SBGNhub
+download.mapping.file <- function(input.type, output.type, species = NULL, 
+                                  SBGNview.data.folder = "./SBGNview.tmp.data",
+                                  existing.data.folder) { # passed in from loadMappingTable to see if a mapping table exits in given path
+    options(warn = -1)
+    # R CMD check will give different sort result if you didn't specify 'method': the
+    # default sort method depends on the locale of your system. And R CMD check uses
+    # a different locale than my interactive session.  The issue resided in this: R
+    # interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C;
+    # https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+    type.pair.name.1 <- paste(sort(c(input.type, output.type), method = "radix", 
+                                   decreasing = FALSE), collapse = "_")
+    type.pair.name.2 <- paste(sort(c(input.type, output.type), method = "radix", 
+                                   decreasing = TRUE), collapse = "_")
+    type.pair.name.1.org <- paste(species, type.pair.name.1, sep = "_")
+    type.pair.name.2.org <- paste(species, type.pair.name.2, sep = "_")
+    try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org, type.pair.name.1, 
+                        type.pair.name.2)
+    
+    check.location <- "local"
+    
+    # check if mapping file exits in existing.data.folder
+    if(check.location == "local"){ 
+        # find.mapping.files.in.folder defined below
+        # if local files found. IF true, no need to check SBGNview.data, and SBGNhub
+        message("Checking local folder")
+        mapping.file.name <- find.mapping.files.in.folder(try.file.names, existing.data.folder)
+        
+        if(!is.null(mapping.file.name)){
+            message("Local mapping file found: ", mapping.file.name)
+        } else {
+            check.location <- "SBGNview.data"
+        }
+    }
+    
+    # check SBGNview.data for mapping file
+    if(check.location == "SBGNview.data"){
+        message("\nChecking SBGNview.data")
+        if.online.mapping.avai <- FALSE
+        if.mapping.in.data.package <- FALSE
+        for (i in seq_len(length(try.file.names))) {
+            type.pair.name.try <- try.file.names[i]
+            if.data.exists <- tryCatch(data(list = type.pair.name.try), warning = function(w) "no such data")
+            if (if.data.exists %in% c(type.pair.name.try, "mapping.list", "mapping.table")) {
+                mapping.file.name <- type.pair.name.try
+                message("ID mapping ", type.pair.name.try, " is included in SBGNview.data package. Loading it.")
+                if.mapping.in.data.package <- TRUE
+                (break)()
+            } else {
+                print("ID mapping not in data package for this pair")
+                print(type.pair.name.try)
+                print(if.data.exists)
+            }
+        }
+        
+        if (!if.mapping.in.data.package) {
+            message("Can't map this pair of IDs with SBGNview.data: ", type.pair.name.try)
+            check.location <- "SBGNhub"
+        } 
+        options(warn = 1)
+    } 
+    
+    # check SBGNhub
+    if(check.location == "SBGNhub"){
+        message("\nChecking SBGNhub for mapping file")
+        
+        search.sbgnhub.mapping.file(try.file.names = try.file.names, 
+                                    file.destination = existing.data.folder)
+        
+        mapping.file.name <- "online mapping not available"
+        
+        message("No mapping file found. Generating mapping with Pathview.")
+    }
+    
+    return(mapping.file.name)
+}
+
+#########################################################################################################
+# used by download.mapping.file function to find mapping files .RData in given directory
+find.mapping.files.in.folder <- function(try.file.names, existing.data.folder){
+    # read .RData files in given direcotry
+    files.in.exist.data.folder <-  list.files(path = existing.data.folder, pattern = "*.RData")
+    mapping.file.name <- NULL
+    
+    if(length(files.in.exist.data.folder) == 0){ # no matching files found
+        message("No matching files found")
+    } else {
+        file.names.in.folder <- sapply(files.in.exist.data.folder, 
+                                       function(x){ strsplit(x, split = ".RData")[[1]] })
+        file.names.in.folder <- cbind(names(file.names.in.folder), file.names.in.folder)
+        row.names(file.names.in.folder) <- NULL # cols = file+extension, file.name
+        
+        # check if try.file.names exist in files.in.exist.data.folder
+        for(try.file.name in try.file.names){
+            if(try.file.name %in% file.names.in.folder[, 2]){ # file exits in given folder
+                message(paste(try.file.name, " found in given folder", sep = ""))
+                # get file name with extension
+                mapping.file.name <- file.names.in.folder[file.names.in.folder[, 2] == try.file.name, ][1] 
+            } 
+        }
+        if(is.null(mapping.file.name)){
+            message("No matching mapping files found")
+        }
+    }
+    return(mapping.file.name)
+}
+
+#########################################################################################################
+# used by download.mapping.file function
+# search SBGNhub data/id.mapping directory for mapping file and download it if exits
+search.sbgnhub.mapping.file <- function(try.file.names, file.destination) {
+    for(fi in try.file.names){
+        github.api <- paste("https://api.github.com/search/code?q=filename:", 
+                            fi, "+repo:datapplab/SBGNhub/tree/master/data/id.mapping", sep = "")
+        request <- httr::GET(github.api) # get the information from the api
+        httr::warn_for_status(request) # warning if bad request from GET()
+        
+        json.info <- httr::content(request) # the content from request as list structure
+        json.items <- json.info$items # $items element contains information of any files found with file path
+        
+        if(length(json.items) == 0){ # if 0, no matching files found
+            next
+        } else { # check if file matches
+            
+            found.files <- c() # store the path to file for matching files found in hub
+            for(i in seq_len(length(json.items))){
+                found.files <- append(found.files, json.items[[i]][["path"]])
+            }
+            # if file in data/id.mapping directory
+            check.file.path <- paste("data/id.mapping/", fi, ".RData", sep = "")
+            
+            if(check.file.path %in% found.files){ # if file in data/id.mapping, then download file
+                
+                message(paste(fi, " in SBGNhub. Dowloading...", sep = ""))
+                
+                # need'?raw=true' end of url to download file 
+                file.url <- paste("https://github.com/datapplab/SBGNhub/blob/master/", 
+                                  check.file.path, "?raw=true", sep = "")
+                file.destination <- paste(file.destination, "/", fi, ".RData", sep = "")
+                # download.file
+                download.file(file.url, destfile = file.destination, method = "auto", mode = "wb")
+            } 
+            
+        } # end else (file match) 
+    } # end main for loop
+}
+
+#########################################################################################################
 #' Generate ID mapping table from input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
 #' @param input.type A character string. Gene or compound ID type
 #' @param output.type A character string. Gene or compound ID type
@@ -303,7 +454,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL, SBGNv
 #' @export
 
 loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
-                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){
+                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){ 
     
     input.type = gsub("entrez","ENTREZID",input.type)
     output.type = gsub("entrez","ENTREZID",output.type)
@@ -316,8 +467,8 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
         dir.create(SBGNview.data.folder)
     }
     
-    mapping.file.name = download.mapping.file(input.type, output.type, species, SBGNview.data.folder = SBGNview.data.folder)
-    
+    mapping.file.name <- download.mapping.file(input.type, output.type, species, SBGNview.data.folder = SBGNview.data.folder)
+
     if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name), 
                                                  warning = function(w) "no such data") %in% c(mapping.file.name, "mapping.list", "mapping.table" )
        ){
@@ -351,7 +502,7 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
                 id.map = id.map[id.map[,"species"] %in% species,c(input.type,output.type)]
             }
         }
-    }else {
+    } else {
         if(cpd.or.gene == "gene"){
             # pathway.id used for heterogeneous purposes and mapping gene to pathway
             # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
@@ -359,10 +510,8 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
             # ENZYME not in if condition below b/c it can be mapped directly 
             if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
                !any(c(input.type,output.type) %in% c("KO")) 
-            ){
-                #
-                message("mapping KO")
-                
+            ){ # if input and output don't contain KO
+             
                 # load mapping table for mapping KO to glyph id
                 ko.to.glyph.id = loadMappingTable(input.type = output.type,
                                                   output.type = "KO",
@@ -443,6 +592,159 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
 }
 
 #########################################################################################################
+#### copy of loadMappingTable for scenario2. load mapping files if they exits locally
+loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
+                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data",
+                             existing.data.folder = NULL){ 
+    # existing.data.folder passed into download.mapping.file to check mapping data in current working directory
+    
+    if(is.null(existing.data.folder)){ # if existing.data.folder is NULL, set to working directory
+        existing.data.folder <- getwd()
+    }
+    
+    input.type = gsub("entrez","ENTREZID",input.type)
+    output.type = gsub("entrez","ENTREZID",output.type)
+    if(input.type == output.type){
+        stop("Input type and output types are the same!")
+    }
+    species = gsub("Hs","hsa",species)
+    type.pair.name = paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+    if(!file.exists(SBGNview.data.folder)){
+        dir.create(SBGNview.data.folder)
+    }
+    # check local, SBGNview.data, SBGNhub for mapping file
+    mapping.file.name <- download.mapping.file(input.type = input.type,
+                                               output.type = output.type,
+                                               species = species,
+                                               SBGNview.data.folder = SBGNview.data.folder,
+                                               existing.data.folder = existing.data.folder)
+    
+    message(paste("mapping file: ", mapping.file.name, sep = ""))
+    
+    # if mapping.file.name exits in existing.data.folder, mapping.file.name has .RData extension
+    path.to.local.file <- paste(existing.data.folder, mapping.file.name, sep = "/")
+    if(file.exists(path.to.local.file)){
+        var.name <- load(file = path.to.local.file, envir = .GlobalEnv)
+        mapping.list <- get(var.name)
+    } 
+    # if condition from original loadMappingTable function made as else if
+    else if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name), 
+                                                 warning = function(w) "no such data") %in% c(mapping.file.name, "mapping.list", "mapping.table" )
+    ){
+        message("Loading ID mapping file: ",mapping.file.name," \n")
+        .GlobalEnv$mapping.list = NULL; .GlobalEnv$mapping.table = NULL
+        if.from.file = FALSE
+        if(file.exists(mapping.file.name)){
+            if.from.file = TRUE
+            var.name = load(mapping.file.name)
+        }else{
+            if(!exists(mapping.file.name)){
+                data(list = mapping.file.name)
+            }
+        }
+        if(!is.null(mapping.list)){ # if one of "output.type" or "input.type" is NOT "pathway.id", then the data's names is "mapping.list"
+            id.map = mapping.list[[1]][[1]]
+        }else if(!is.null(mapping.table)){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
+            id.map = mapping.table
+        }else if(if.from.file){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
+            id.map = get(var.name)
+        }else{
+            # print("loading mapping file from data package")
+            # print(mapping.file.name)
+            # data(list = mapping.file.name)
+            id.map = get(mapping.file.name)
+        }
+        message("Finished loading")
+        
+        if("species" %in% colnames(id.map) &  !is.null(id.map) ){
+            if(any(id.map[,"species"] %in% species) ){
+                id.map = id.map[id.map[,"species"] %in% species,c(input.type,output.type)]
+            }
+        }
+    } else { # use Pathview for mapping
+        if(cpd.or.gene == "gene"){
+            # pathway.id used for heterogeneous purposes and mapping gene to pathway
+            # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
+            # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"  
+            # ENZYME not in if condition below b/c it can be mapped directly 
+            if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
+               !any(c(input.type,output.type) %in% c("KO")) 
+            ){ # if input and output don't contain KO
+                
+                # load mapping table for mapping KO to glyph id
+                ko.to.glyph.id = loadMappingTable(input.type = output.type,
+                                                  output.type = "KO",
+                                                  cpd.or.gene = "gene",
+                                                  species = species,
+                                                  SBGNview.data.folder = SBGNview.data.folder)
+                ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
+                
+                # load mapping table for mapping user input to KO id
+                input.to.ko = loadMappingTable(input.type = input.type,
+                                               output.type = "KO",
+                                               cpd.or.gene = "gene",
+                                               limit.to.ids = limit.to.ids,
+                                               species = species,
+                                               SBGNview.data.folder = SBGNview.data.folder)
+                input.to.ko = input.to.ko$gene[[1]]
+                input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
+                id.map = input.to.glyph.id[,c(input.type,output.type)]
+            } else {
+                message("\nID mapping not pre-generated. Using Pathview!!!\n")
+                id.map = geneannot.map.ko(in.ids = limit.to.ids,
+                                          in.type = input.type,
+                                          out.type = output.type,
+                                          species = species,
+                                          unique.map= FALSE,
+                                          SBGNview.data.folder = SBGNview.data.folder)
+                if(is.vector(id.map)){
+                    id.map = as.matrix(t(id.map))
+                }
+            }
+        } else if(cpd.or.gene == "compound"){
+            message("\nID mapping not pre-generated. Using Pathview cpd!!!\n")
+            if(is.null(limit.to.ids)){
+                stop("Must provide input IDs when using pathview mapping!")
+            }
+            print(input.type)
+            print(output.type)
+            id.map =  pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type, 
+                                         out.type = output.type)
+        } else {
+            message("\nCouldn't fine ID mapping table between ", input.type, " and ", output.type, "!!!\n")
+            message("Tried online resource ", online.mapping.file, "\n")
+            message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
+            stop("ID mapping table not provided")
+        }
+        
+        id.map = id.map[!is.na(id.map[,2]),]
+        if(is.vector(id.map)){
+            id.map = as.matrix(t(id.map))
+        }
+        id.map = id.map[!is.na(id.map[,1]),]
+        if(is.vector(id.map)){
+            id.map = as.matrix(t(id.map))
+        }
+        id.map = unique(id.map)
+        
+        # add additional mapping using KO to glyph.id (code below was outside this else condition in original function)
+        mapping.list = list()
+        if(is.vector(id.map)){
+            id.map = as.matrix(t(id.map))
+        }
+        id.map[,1] = as.character(id.map[,1])
+        id.map[,2] = as.character(id.map[,2])
+        id.map = as.matrix(id.map)
+        mapping.list[[cpd.or.gene]]= list()
+        mapping.list[[cpd.or.gene]][[type.pair.name]] = id.map
+    }
+    
+    message("Generated ID mapping list")
+    
+    return(mapping.list)
+}
+
+#########################################################################################################
 # geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", unique.map, 
 #     SBGNview.data.folder = "./SBGNview.tmp.data") {
 #     # pathview's geneannot.map can't map KO, so here included KO mapping
@@ -455,8 +757,6 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
 #         filter.type <- in.type
 #         out.type <- setdiff(c(in.type, out.type), "KO")
 #         in.type <- "KO"
-#         #
-#         message("loadMappingTable for KO to ENTREZID")
 #         
 #         # break endless loop - this loop doesn't allow the rest of the code to run
 #         # to break this, we need a mapping list. Since one doesn't exit, we generate mapping on the fly
@@ -531,6 +831,12 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
         id.map <- generate.ko.mapping.list(in.type = in.type, out.type = out.type, 
                                            species = species, in.ids = in.ids)
         message("generated mapping list using keggREST")
+        message("saving mapping list to current working directory")
+        file.name <- paste(paste(species, toupper(in.type), toupper(out.type), sep = "_"), 
+                           ".RData", sep = "")
+        #saveRDS(id.map, file = file.name)
+        save(id.map, file = file.name)
+        
         
     } else { # input/output not KO
         if (species == "mmu") {
@@ -594,6 +900,7 @@ generate.ko.mapping.list <- function(in.type = "entrez", out.type = "ko",
                 message("mapping directly from ENTREZID to KO")
                 mapping.list <- get.keggrest.data(tar = out.type,  src = species, 
                                                   link.or.conv = "link", src.is.species = T)
+                colnames(mapping.list) <- c("ENTREZID", "KO")
                 
             } else { # kegg ID is NOT entrez id. entrez.gnodes == 0. need 2 mapping tables
                 
@@ -642,6 +949,7 @@ generate.ko.mapping.list <- function(in.type = "entrez", out.type = "ko",
                 message("mapping directly from ENTREZID to KO for bods species")
                 mapping.list <- get.keggrest.data(tar = out.type, src = species,
                                                   link.or.conv = "link", src.is.species = T)
+                colnames(mapping.list) <- c("ENTREZID", "KO")
                 
             } else { # kegg ID is NOT entrez id. entrez.gnodes == 0. need 2 mapping tables
                 
@@ -939,14 +1247,10 @@ get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.
 #'                     )
 #' @export
 
-sbgnNodes <- function(input.sbgn
-                      ,output.gene.id.type = NA
-                      ,output.cpd.id.type = NA
-                      ,database = NA
-                      ,species = NA
-                      ,show.ids.for.multiHit = NULL
-                      ,SBGNview.data.folder = "./SBGNview.tmp.data"
-                      ,sbgn.dir = "./SBGNview.tmp.data") {
+sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type = NA,
+                      database = NA, species = NA, show.ids.for.multiHit = NULL,
+                      SBGNview.data.folder = "./SBGNview.tmp.data",
+                      sbgn.dir = "./SBGNview.tmp.data") {
     if (!file.exists(SBGNview.data.folder)) {
         dir.create(SBGNview.data.folder)
     }
@@ -2046,13 +2350,13 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
         id.map <- as.matrix(id.map[, c(input.type, output.type)])
     } else {
         if (!all(c(input.type) %in% colnames(id.mapping.table))) {
-            message(input.type, "must be in column names of id.mapping.table!\n")
+            message(input.type, " must be in column names of id.mapping.table!\n")
             message("Column names of id.mapping.table are:\n")
             cat(colnames(id.mapping.table), "\n\n\n\n")
             stop()
         }
         if (!all(c(output.type) %in% colnames(id.mapping.table))) {
-            message(output.type, "must be in column names of id.mapping.table!\n")
+            message(output.type, " must be in column names of id.mapping.table!\n")
             message("Column names of id.mapping.table are:\n")
             cat(colnames(id.mapping.table), "\n\n\n\n")
             stop()
@@ -2389,21 +2693,24 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
             id.in.pathway <- "chebi"
         }
         output.pathways <- subset(pathways.info, database != "MetaCrop", select = "pathway.id")
+    } else { # if wrong value for database
+        stop("'database' argument value is incorrect. Acceptable values are: 'MetaCyc', 'pathwayCommons', 'MetaCrop'")
     }
     # metacrop initial list is using enzyme
     mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
         cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
     ref.to.pathway <- mapping.list[[1]][[1]]
     
-    
     if (mol.list.ID.type == id.in.pathway) {
         out.id.to.pathway <- ref.to.pathway
         # change KO to output id
     } else {
-        message(id.in.pathway, mol.list.ID.type, "\n\n")
+        message(id.in.pathway, " ", mol.list.ID.type, "\n\n")
+        
         out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = mol.list.ID.type, 
             cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
             species = org, SBGNview.data.folder = SBGNview.data.folder)
+    
         out.id.type.to.ref <- out.id.type.to.ref[[1]][[1]]
         # merge KO to pathway and KO to output id
         out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
@@ -2428,7 +2735,92 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
             "pathway.name"], sep = "::")
         names(pathway.ids) <- pathway.id.to.name[, "pathway.id"]
         names(out.id.to.pathway) <- pathway.ids[names(out.id.to.pathway)]
+    }
+    
+    if (combine.duplicated.set) {
+        sets <- lapply(out.id.to.pathway, function(ids) {
+            ids.str <- paste(sort(ids), collapse = "||")
+        })
+        sets <- unlist(sets)
+        pathways.same.set <- tapply(names(sets), as.factor(sets), function(pathways) {
+            pathways.joint <- paste(sort(pathways), collapse = "||")
+        })
+        out.id.to.pathway <- as.list(names(pathways.same.set))
+        names(out.id.to.pathway) <- pathways.same.set
+        out.id.to.pathway <- lapply(out.id.to.pathway, function(ids) {
+            strsplit(ids, "\\|\\|")[[1]]
+        })
+    }
+    names(out.id.to.pathway) <- substr(names(out.id.to.pathway), 1, truncate.name.length)
+    
+    sorted.names <- sort(names(out.id.to.pathway), method = "radix", decreasing = FALSE)
+    out.id.to.pathway <- out.id.to.pathway[sorted.names]
+    return(out.id.to.pathway)
+}
+
+#########################################################################################################
+# copy of getMolList function. Does reverse mapping: KO -> geneid 
+# giving an error 
+getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID", 
+                       org = "hsa", cpd.or.gene = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
+                       truncate.name.length = 50, SBGNview.data.folder = "./SBGNview.tmp.data") {
+    if (tolower(database) == "metacrop") {
+        if (cpd.or.gene == "gene") {
+            id.in.pathway <- "ENZYME"
+        } else {
+            id.in.pathway <- "CompoundName"
+        }
+        output.pathways <- subset(pathways.info, database == "MetaCrop", select = "pathway.id")
+    } else if (tolower(database) %in% c("pathwaycommons", "metacyc")) {
+        if (cpd.or.gene == "gene") {
+            id.in.pathway <- "KO"
+        } else {
+            id.in.pathway <- "chebi"
+        }
+        output.pathways <- subset(pathways.info, database != "MetaCrop", select = "pathway.id")
+    } else { # if wrong value for database
+        stop("'database' argument value is incorrect. Acceptable values are: 'MetaCyc', 'pathwayCommons', 'MetaCrop'")
+    }
+    # metacrop initial list is using enzyme
+    mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
+                                     cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
+    ref.to.pathway <- mapping.list[[1]][[1]]
+    View(ref.to.pathway)
+    
+    if (mol.list.ID.type == id.in.pathway) {
+        out.id.to.pathway <- ref.to.pathway
+        # change KO to output id
+    } else {
+        message(id.in.pathway, " ", mol.list.ID.type, "\n\n")
         
+        out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = mol.list.ID.type, 
+                                               cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
+                                               species = org, SBGNview.data.folder = SBGNview.data.folder)
+        
+        out.id.type.to.ref <- out.id.type.to.ref[[1]][[1]]
+        # merge KO to pathway and KO to output id
+        out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
+        out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
+        out.id.to.pathway <- unique(out.id.to.pathway)
+        out.id.to.pathway <- out.id.to.pathway[!is.na(out.id.to.pathway[, 2]), ]
+    }
+    out.id.to.pathway <- unique(out.id.to.pathway)
+    out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, "pathway.id"] %in% 
+                                               output.pathways$pathway.id, ]
+    out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, mol.list.ID.type] != 
+                                               "", ]
+    out.id.to.pathway <- split(as.character(out.id.to.pathway[, mol.list.ID.type]), 
+                               out.id.to.pathway[, "pathway.id"])
+    out.id.to.pathway <- out.id.to.pathway[!is.na(names(out.id.to.pathway))]
+    
+    if (output.pathway.name) {
+        # merge pathway names
+        pathway.id.to.name <- pathways.info[, c("pathway.id", "pathway.name")]
+        row.names(pathway.id.to.name) <- pathway.id.to.name[, "pathway.id"]
+        pathway.ids <- paste(pathway.id.to.name[, "pathway.id"], pathway.id.to.name[, 
+                                                                                    "pathway.name"], sep = "::")
+        names(pathway.ids) <- pathway.id.to.name[, "pathway.id"]
+        names(out.id.to.pathway) <- pathway.ids[names(out.id.to.pathway)]
     }
     
     if (combine.duplicated.set) {
