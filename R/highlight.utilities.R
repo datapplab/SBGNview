@@ -185,15 +185,6 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 }
 
 #########################################################################################################
-arcs.to.graph <- function(arcs, if.directed = TRUE) {
-    edge.df <- lapply(arcs, function(arc) {
-        return(c(source = arc@source, target = arc@target))
-    })
-    edge.df <- as.data.frame(do.call(rbind, edge.df), stringsAsFactors = FALSE)
-    grf <- igraph::graph_from_data_frame(edge.df, directed = if.directed)
-}
-
-#########################################################################################################
 #' Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.
 #' @param from.node A character string. The molecule ID of source node.
 #' @param to.node A character string. The molecule ID of target node.
@@ -256,8 +247,14 @@ highlightPath <- function(from.node = NULL, to.node = NULL, directed.graph = TRU
 #########################################################################################################
 # generate a new node set containing shortest paths connecting all nodes in the
 # input nodeset
+# 'arcs.to.graph' function removed and code from that function is added to this function.
 shortest.path.from.arcs <- function(arcs, from.node, to.node, directed.graph = TRUE) {
-    grf <- arcs.to.graph(arcs, if.directed = directed.graph)
+
+    # code from 'arcs.to.graph(arcs, if.directed = directed.graph)' function which was removed
+    edge.df <- lapply(arcs, function(arc) { return(c(source = arc@source, target = arc@target)) })
+    edge.df <- as.data.frame(do.call(rbind, edge.df), stringsAsFactors = FALSE)
+    grf <- igraph::graph_from_data_frame(edge.df, directed = directed.graph)
+    
     from.node.ids <- which(igraph::V(grf)$name %in% from.node)
     from.node.ids <- unique(from.node.ids)
     from.node.ids
@@ -277,7 +274,7 @@ shortest.path.from.arcs <- function(arcs, from.node, to.node, directed.graph = T
             node.paths[[pair.name]] <- list()
             
             all.paths <- igraph::all_shortest_paths(grf, from = from.node.ids[i], 
-                to = to.node.ids[j])
+                                                    to = to.node.ids[j])
             node.paths[[pair.name]][["from.node"]] <- from.node.name
             node.paths[[pair.name]][["to.node"]] <- to.node.name
             node.paths[[pair.name]][["path"]] <- all.paths
