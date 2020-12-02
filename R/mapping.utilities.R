@@ -396,3 +396,48 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
   return(in.data.target.id)
 }
 
+#########################################################################################################
+change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping.all.list, 
+                      show.ids.for.multiHit = NULL) {
+  
+  mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]]
+  output.ids <- as.character(mapping.table[mapping.table[, input.type] == input.id, 
+                                           output.type])
+  if (any(is.na(output.ids))) {
+    print(mapping.table[mapping.table[, input.type] == input.id, ])
+    stop("IDs have na")
+  }
+  if (!is.null(show.ids.for.multiHit)) {
+    if (any(tolower(output.ids) %in% tolower(show.ids.for.multiHit))) {
+      output.ids <- output.ids[tolower(output.ids) %in% tolower(show.ids.for.multiHit)]
+      output.ids <- unique(tolower(output.ids))
+      output.ids <- c("mapped", output.ids)
+    }
+  }
+  output.ids <- unique(output.ids)
+  output.ids <- paste(output.ids, collapse = "; ")  # If there are multiple id mapped, we combine all of them
+  
+  return(output.ids)
+}
+
+#########################################################################################################
+change.glyph.id <- function(glyph.id, glyph.class, id.mapping.all.list, output.gene.id.type = NA, 
+                            output.cpd.id.type = NA, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, show.ids.for.multiHit = NULL) {
+  cpd.or.gene <- glyph.class
+  if (glyph.class == "macromolecule") {
+    cpd.or.gene <- "gene"
+    output.type <- output.gene.id.type
+    input.type <- SBGN.file.gene.id.type
+  } else if (glyph.class == "simple chemical") {
+    cpd.or.gene <- "compound"
+    output.type <- output.cpd.id.type
+    input.type <- SBGN.file.cpd.id.type
+  }
+  if (input.type == output.type) {
+    return(glyph.id)
+  }
+  glyph.id <- change.id(input.id = glyph.id, cpd.or.gene, input.type, output.type, 
+                        id.mapping.all.list, show.ids.for.multiHit = show.ids.for.multiHit)
+}
+
+#########################################################################################################

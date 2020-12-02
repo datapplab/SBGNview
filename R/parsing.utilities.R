@@ -192,1032 +192,554 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
 }
 
 #########################################################################################################
-get.arcs.info <- function(sbgn) {
-    # Retrieve edge information
-    edge.spline.info.node <- xml2::xml_find_all(sbgn, ".//edge.spline.info")
-    # in the original design, the routed edges are in the format of svg. In updated
-    # version, the edges are recorded by their information in element
-    # 'edge.spline.info'(location etc.)
-    if (length(edge.spline.info.node) > 0) {
-        arcs.info <- "parse splines"
+parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
+                          arcs.user = list()) {
+    if (length(arcs.user) == 0) {
+        svg.splines <- ""
+        splines.list <- list()
+        arc.splines <- xml2::xml_find_all(sbgn.xml, ".//edge.spline.info")
+        arc.splines <- xml2::xml_find_all(arc.splines[[length(arc.splines)]], ".//arc.spline")  # if there are more than one version of routed edges, we use the latest version
+        
+        splines <- rep(NULL, times = length(arc.splines))
+        for (i in seq_along(arc.splines)) {
+            arc.spline <- arc.splines[[i]]
+            spline.info <- xml2::xml_attrs(arc.spline)  # extract attributes of this glyph
+            spline.arc <- new("spline.arc")
+            spline.arc@id <- paste(spline.info["id"], spline.info["class"], sep = "==")
+            # spline.arc@id = spline.info['id']
+            spline.arc@source <- spline.info["source"]
+            spline.arc@target <- spline.info["target"]
+            spline.arc@arc.class <- spline.info["class"]
+            spline.arc@global.parameters.list <- global.parameters.list
+            spline.arc@edge <- list(line.stroke.color = "black", line.stroke.opacity = 1, 
+                                    line.width = 2, tip.stroke.opacity = 1, tip.stroke.color = "black", 
+                                    tip.stroke.width = 1, tip.fill.color = "black", tip.fill.opacity = 1)
+            spline.class <- gsub(" ", "_", spline.info["class"])
+            
+            components <- get.spline.compo(arc.spline, spline.info, y.margin)
+            
+            spline.arc@components <- components
+            splines.list[[spline.arc@id]] <- spline.arc
+            if (if.plot.svg) {
+                spline.arc.svg <- plot.arc(spline.arc)
+            } else {
+                spline.arc.svg <- ""
+            }
+            splines[i] <- spline.arc.svg
+        }
+        svg.splines <- paste(splines, collapse = "\n")
     } else {
-        arcs.info <- "straight"
+        svg.splines <- ""
+        splines.list <- arcs.user
+        for (i in seq_len(length.out = length(arcs.user))) {
+            spline.arc <- arcs.user[[i]]
+            if (if.plot.svg) {
+                spline.arc.svg <- plot.arc(spline.arc)
+            } else {
+                spline.arc.svg <- ""
+            }
+            svg.splines <- paste(svg.splines, spline.arc.svg, sep = "\n")
+        }
     }
-    return(arcs.info)
+    return(list(svg.splines = svg.splines, splines.list = splines.list))
 }
 
 #########################################################################################################
-get.compartment.layer <- function(sbgn) {
-    compartment.layer.info <- xml2::xml_find_all(sbgn, ".//compartment.layer.info")
+get.spline.compo <- function(arc.spline, spline.info, y.margin) {
+    children <- xml2::xml_children(arc.spline)
+    components <- list()
+    for (i in seq_len(length(children))) {
+        child <- children[i]
+        child.attrs <- xml2::xml_attrs(child)[[1]]
+        spline.i <- 0
+        if (xml2::xml_name(child) == "source.arc") {
+            # state variables has different shape in PD and ER, so we need to switch the
+            # shape when needed for interaction arcs, they have shapes at both ends, so we
+            # need to change it: use 'assignment' arc to just plot one shape; also for source
+            # arc, the orientation should be reversed
+            if (spline.info["class"] == "interaction") {
+                child.attrs["class"] <- "assignment"
+            }
+            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), id = paste(spline.info["id"], 
+                                                                                      "source.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
+                       start.y = as.numeric(child.attrs["start.y"]) + y.margin, end.x = as.numeric(child.attrs["end.x"]), 
+                       end.y = as.numeric(child.attrs["end.y"]) + y.margin, stroke.opacity = 0)
+        } else if (xml2::xml_name(child) == "target.arc") {
+            # state variables has different shape in PD and ER, so we need to switch the
+            # shape when needed for interaction arcs, they have shapes at both ends, so we
+            # need to change it: use 'assignment' arc to just plot one shape; also for source
+            # arc, the orientation should be reversed
+            if (spline.info["class"] == "interaction") {
+                child.attrs["class"] <- "assignment"
+            }
+            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), id = paste(spline.info["id"], 
+                                                                                      "target.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
+                       start.y = as.numeric(child.attrs["start.y"]) + y.margin, end.x = as.numeric(child.attrs["end.x"]), 
+                       end.y = as.numeric(child.attrs["end.y"]) + y.margin, stroke.opacity = 0)
+        } else if (xml2::xml_name(child) == "spline") {
+            spline.i <- spline.i + 1
+            if.y <- grepl("\\.y", names(child.attrs))
+            child.attrs[if.y] <- as.numeric(child.attrs[if.y]) + y.margin
+            arc <- new("spline", id = paste(spline.info["id"], "spline", spline.i, 
+                                            sep = ":"), spline.coords = child.attrs)
+        }
+        components <- c(components, arc)
+    }
+    return(components)
+}
+
+#########################################################################################################
+parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
+                       arcs.user = list()) {
+    arcs.list <- list()
+    if (length(arcs.user) == 0) {
+        edge.paras <- list(line.stroke.color = "black", line.stroke.opacity = 1, 
+                           line.width = 2, tip.stroke.opacity = 1, tip.stroke.color = "black", tip.stroke.width = 1, 
+                           tip.fill.color = "black", tip.fill.opacity = 1)
+        all.arcs <- xml2::xml_find_all(sbgn.xml, ".//arc")
+        for (i in seq_len(length(all.arcs))) {
+            arc <- all.arcs[i]
+            arc.info <- xml2::xml_attrs(arc)[[1]]  # extract attributes of this glyph
+            if (is.na(arc.info["id"])) {
+                arc.info["id"] <- paste(arc.info["source"], arc.info["target"], sep = "->")
+            }
+            arc.class <- gsub(" ", "_", arc.info["class"])
+            arc.segments <- get.arc.segments(arc, arcs.list, arc.class, y.margin, 
+                                             arc.info, edge.paras, global.parameters.list, glyphs)
+            svg.arc <- arc.segments$svg.arc
+            arcs.list <- arc.segments$arcs.list
+        }
+    } else {
+        arcs.list <- arcs.user
+        svg.arc <- ""
+        for (i in seq_len(length.out = length(arcs.list))) {
+            svg.arc <- paste(svg.arc, plot.arc(arcs.list[[i]]), sep = "\n")
+        }
+    }
+    return(list(svg.arc = svg.arc, arcs.list = arcs.list))
+}
+
+#########################################################################################################
+get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge.paras, 
+                             global.parameters.list, glyphs) {
+    svg.arc <- ""
+    arc.line <- c(arc.info["source"], arc.info["target"], arc.info["id"], start.x = "", 
+                  start.y = "", end.x = "", end.y = "")
+    children <- xml2::xml_children(arc)
+    for (i in seq_len(length(children))) {
+        child <- children[i]
+        coordinates <- xml2::xml_attrs(child)[[1]]
+        coordinates["y"] <- as.numeric(coordinates["y"]) + y.margin
+        
+        if (xml2::xml_name(child) == "start") {
+            # state variables has different shape in PD and ER, so we need to switch the
+            # shape when needed
+            arc.line["start.x"] <- coordinates["x"]
+            arc.line["start.y"] <- coordinates["y"]
+            
+        } else if (xml2::xml_name(child) == "next") {
+            arc.line["end.x"] <- coordinates["x"]
+            arc.line["end.y"] <- coordinates["y"]
+            if (is.na(arc.line["id"])) {
+                arc.line["id"] <- paste("next", arc.info["source"], arc.info["target"], 
+                                        sep = "->")
+            }
+            arc <- new("next.sbgn.arc", id = paste(arc.line["id"], arc.line["start.x"], 
+                                                   sep = "_"), start.x = as.numeric(arc.line["start.x"]), start.y = as.numeric(arc.line["start.y"]), 
+                       end.x = as.numeric(arc.line["end.x"]), end.y = as.numeric(arc.line["end.y"]))
+            arc@global.parameters.list <- global.parameters.list
+            arc@arc.class <- "next"
+            arc@edge <- edge.paras
+            
+            arcs.list[[arc@id]] <- arc
+            svg.arc <- paste(svg.arc, plot.arc(arc), sep = "\n")
+            arc.line["start.x"] <- coordinates["x"]  # after ploting this 'next', set the new_arc's start coordinates
+            arc.line["start.y"] <- coordinates["y"]
+            
+        } else if (xml2::xml_name(child) == "end") {
+            arc.line["end.x"] <- coordinates["x"]
+            arc.line["end.y"] <- coordinates["y"]
+            if (sum(as.numeric(arc.line[c("start.x", "start.y", "end.x", "end.y")])) == 
+                0) {
+                arc.line <- find.arc.coordinates(arc.line, glyphs)
+            }
+            if (is.na(arc.line["id"])) {
+                arc.line["id"] <- paste(arc.info["source"], arc.info["target"], sep = "->")
+            }
+            arc <- new(paste(arc.class, ".sbgn.arc", sep = ""), id = paste(arc.line["id"], 
+                                                                           arc.line["start.x"], sep = "_"), start.x = as.numeric(arc.line["start.x"]), 
+                       start.y = as.numeric(arc.line["start.y"]), end.x = as.numeric(arc.line["end.x"]), 
+                       end.y = as.numeric(arc.line["end.y"]))
+            arc@arc.class <- arc.class
+            arc@source <- arc.info["source"]
+            arc@target <- arc.info["target"]
+            arc@global.parameters.list <- global.parameters.list
+            arc@edge <- edge.paras
+            arcs.list[[arc@id]] <- arc
+            svg.arc <- paste(svg.arc, plot.arc(arc), sep = "\n")
+        }
+    }
+    return(list(arcs.list = arcs.list, svg.arc = svg.arc))
+}
+
+#########################################################################################################
+find.arc.coordinates <- function(arc.line, glyphs) {
+    arc.source <- arc.line["source"]
+    arc.target <- arc.line["target"]
+    
+    node.source <- glyphs[[arc.source]]
+    source.points <- list()
+    
+    if (is(node.source, "port")) {
+        source.points[["port"]] <- c(x = node.source@x, y = node.source@y)
+    } else {
+        s.h <- node.source@h
+        s.w <- node.source@w
+        s.x <- node.source@x - s.w/2
+        s.y <- node.source@y - s.h/2
+        source.points[["n.s.1"]] <- c(x = s.x + s.w/2, y = s.y)
+        source.points[["n.s.2"]] <- c(x = s.x + s.w/2, y = s.y + s.h)
+        source.points[["n.s.3"]] <- c(x = s.x, y = s.y + s.h/2)
+        source.points[["n.s.4"]] <- c(x = s.x + s.w, y = s.y + s.h/2)
+    }
+    
+    node.target <- glyphs[[arc.target]]
+    
+    target.points <- list()
+    if (is(node.target, "port")) {
+        target.points[["port"]] <- c(x = node.target@x, y = node.target@y)
+    } else {
+        t.h <- node.target@h
+        t.w <- node.target@w
+        t.x <- node.target@x - t.w/2
+        t.y <- node.target@y - t.h/2
+        target.points[["n.t.1"]] <- c(x = t.x + t.w/2, y = t.y)
+        target.points[["n.t.2"]] <- c(x = t.x + t.w/2, y = t.y + t.h)
+        target.points[["n.t.3"]] <- c(x = t.x, y = t.y + t.h/2)
+        target.points[["n.t.4"]] <- c(x = t.x + t.w, y = t.y + t.h/2)
+    }
+    min.dist <- Inf
+    min.node.pairs <- data.frame()
+    all.pairs <- expand.grid(source.points, target.points)
+    for (i in seq_len(nrow(all.pairs))) {
+        node.pairs <- all.pairs[i, ]
+        s.xy <- node.pairs[1][[1]]
+        t.xy <- node.pairs[2][[1]]
+        distance <- (s.xy["x"] - t.xy["x"])^2 + (s.xy["y"] - t.xy["y"])^2
+        if (distance < min.dist) {
+            min.dist <- distance
+            min.node.pairs <- node.pairs
+        }
+    }
+    
+    arc.line["start.x"] <- min.node.pairs[1][[1]]["x"]
+    arc.line["start.y"] <- min.node.pairs[1][[1]]["y"]
+    arc.line["end.x"] <- min.node.pairs[2][[1]]["x"]
+    arc.line["end.y"] <- min.node.pairs[2][[1]]["y"]
+    return(arc.line)
+    
+}
+
+#########################################################################################################
+parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, max.x, 
+                        global.parameters.list, sbgn.id.attr, glyphs.user = list(), compartment.layer.info, 
+                        if.plot.cardinality) {
+    
+    if.plot.annotation.nodes <- global.parameters.list$if.plot.annotation.nodes
+    if.use.number.for.long.label <- global.parameters.list$if.use.number.for.long.label
+    # parse glyphs and plot glyphs and ports
+    map.language <- xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//map")[[1]])["language"]
+    message("\nMap language is ", map.language, "\n")
+    if (is.null(map.language)) {
+        map.language <- ""
+    }
+    # glyph set list
+    glyph.names <- c()
+    # find plot parameters svg contents
+    svg.ports <- ""
+    svg.nodes <- ""
+    svg.nodes.complex <- ""
+    svg.nodes.compartment <- list()
+    svg.cardinality <- ""  # the cadinality node are supposed to be in front of the arcs, so need to print it again at the end of the svg file
+    node.set.list <- list(molecules.with.state.variables = list())
+    if.has.chemical.nodes <- FALSE
+    if.has.non.chemical.nodes <- FALSE
+    glyph.coors <- list()
+    user.defined.glyphs <- names(glyphs.user)
+    
+    
+    shorter.label.mapping.list <- c("shorter label", "original label")
+    long.words.count.list <- list()
+    no.id.node.count.list <- list()
+    all.glyphs.xml <- xml2::xml_find_all(sbgn.xml, ".//glyph")
+    nodes.objs <- list()
+    for (i in seq_along(all.glyphs.xml)) {
+        glyph <- all.glyphs.xml[[i]]
+        glyph.info <- xml2::xml_attrs(glyph)  # extract attributes of this glyph
+        # Add compartment to free nodes
+        if (is.na(glyph.info["compartmentRef"])) {
+            glyph.info["compartmentRef"] <- "free.node"
+        }
+        
+        glyph.class <- gsub(" ", "_", glyph.info["class"])
+        if (glyph.class %in% c("simple_chemical_multimer", "simple_chemical")) {
+            if.has.chemical.nodes <- TRUE
+        }
+        if (glyph.class %in% c("macromolecule", "nucleic_acid_feature")) {
+            if.has.non.chemical.nodes <- TRUE
+        }
+        node <- new(paste(glyph.class, ".sbgn", sep = ""))
+        node@glyph.class <- glyph.info["class"]
+        
+        # Some glyphs don't have ID, generate IDs for them
+        parsed.ids.record <- generate.glyph.id(glyph.id = glyph.info["id"], glyph.class = glyph.info["class"], 
+                                               glyph, node.set.list, no.id.node.count.list)
+        node@id <- parsed.ids.record$glyph.id
+        node.set.list <- parsed.ids.record$node.set.list
+        no.id.node.count.list <- parsed.ids.record$no.id.node.count.list
+        
+        ##### use user glyph if found
+        if (node@id %in% user.defined.glyphs) {  
+            node <- glyphs.user[[node@id]]
+            label.margin <- node@label.margin
+            svg.port <- node@svg.port
+            if (length(node@clone) > 0) {
+                node.clone <- node@clone[[1]]
+            } else {
+                node.clone <- ""
+            }
+            if (is.null(node)) {
+                message("No node found in user defined glyphs!\n")
+                print(user.defined.glyphs)
+                print(node@id)
+                print(node)
+            }
+        } else {
+            parse.result <- generate.node.obj(glyph, glyph.class, glyph.info, node, 
+                                              if.plot.svg, y.margin, sbgn.id.attr, user.data, max.x, global.parameters.list, 
+                                              if.use.number.for.long.label, if.plot.annotation.nodes, map.language, 
+                                              long.words.count.list, shorter.label.mapping.list)
+            node <- parse.result$node
+            long.words.count.list <- parse.result$long.words.count.list
+            shorter.label.mapping.list <- parse.result$shorter.label.mapping.list
+            node.clone <- node@clone
+        }
+        glyph.names <- c(glyph.names, node@id)
+        if (if.plot.svg) {
+            if (glyph.class == "annotation" & !if.plot.annotation.nodes) {
+            } else if (is(node, "complex.sbgn")) {
+                svg.nodes.complex <- paste(svg.nodes.complex, plot.glyph(node), sep = "\n")
+            } else if (is(node, "compartment.sbgn")) {
+                # if this node is a clone marker
+                svg.nodes.compartment <- c(svg.nodes.compartment, plot.glyph(node))
+                names(svg.nodes.compartment)[length(svg.nodes.compartment)] <- node@id
+            } else if (!is.character(node.clone)) {
+                # if this node is a clone marker
+                svg.nodes <- paste(svg.nodes, plot.glyph(node), plot.glyph(node.clone), 
+                                   sep = "\n")
+            } else if (is(node, "cardinality.sbgn") | is(node, "stoichiometry.sbgn")) {
+                svg.cardinality <- paste(svg.cardinality, plot.glyph(node), sep = "\n")
+            } else {
+                svg.nodes <- paste(svg.nodes, plot.glyph(node), sep = "\n")
+            }
+            svg.ports <- paste(svg.ports, svg.port, sep = "\n")
+        }
+        
+        ############################################################################### 
+        if (glyph.class %in% c("complex", "compartment")) {
+            label.margin <- node@label.margin
+            glyph.coor <- c(node@x - node@w/2, node@y - node@h/2 - label.margin - 
+                                6, node@x + node@w/2, node@y + node@h/2)  # find the node boundaries. We'll use them to find a place to put color panel
+        } else {
+            glyph.coor <- c(node@x - node@w/2, node@y - node@h/2, node@x + node@w/2, 
+                            node@y + node@h/2)  # find the node boundaries. We'll use them to find a place to put color panel
+        }
+        glyph.coors[[node@id]] <- glyph.coor
+        nodes.objs <- c(nodes.objs, node)
+    }
+    glyph.coors <- do.call(rbind, glyph.coors)
+    colnames(glyph.coors) <- c("x", "y", "xw", "yh")
+    names(nodes.objs) <- glyph.names
+    # parse compartment
     if (length(compartment.layer.info) > 0) {
-        compartment.layer.info <- strsplit(xml2::xml_text(compartment.layer.info[1]), 
-            "-compartment.layer.info-")[[1]]
-    } else {
-        compartment.layer.info <- "original"
-    }
-    return(compartment.layer.info)
-}
-
-#########################################################################################################
-find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale) {
-    box.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//bbox")))
-    x <- as.numeric(box.info[, "x"])
-    w <- as.numeric(box.info[, "w"])
-    max.xw <- max(x + w)
-    
-    y <- as.numeric(box.info[, "y"])
-    h <- as.numeric(box.info[, "h"])
-    max.yh <- max(y + h)
-    
-    min.y <- min(y)
-    min.x <- min(x)
-    
-    if (arcs.info == "straight") {
-        # if there is no spline edges, calculate margin to move both nodes and edges
-        # coordinates. This will give room for color legend
-        y.margin <- max(100, max(max.yh, max.xw)/10) * max(1, color.panel.scale)
-    } else {
-        # if there is routed edges' svg in the SBGN-ML file, we can't move the nodes
-        y.margin <- max(100, max(max.xw, max.yh)/5 * color.panel.scale)
-    }
-    return(list(max.xw = max.xw, max.yh = max.yh, min.y = min.y, min.x = min.x, y.margin = y.margin))
-}
-
-#########################################################################################################
-download.mapping.file <- function(input.type, output.type, species = NULL, SBGNview.data.folder = "./SBGNview.tmp.data/") {
-    options(warn = -1)
-    # R CMD check will give different sort result if you didn't specify 'method': the
-    # default sort method depends on the locale of your system. And R CMD check uses
-    # a different locale than my interactive session.  The issue resided in this: R
-    # interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C;
-    # https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-    type.pair.name.1 <- paste(sort(c(input.type, output.type), method = "radix", 
-        decreasing = FALSE), collapse = "_")
-    type.pair.name.2 <- paste(sort(c(input.type, output.type), method = "radix", 
-        decreasing = TRUE), collapse = "_")
-    type.pair.name.1.org <- paste(species, type.pair.name.1, sep = "_")
-    type.pair.name.2.org <- paste(species, type.pair.name.2, sep = "_")
-    try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org, type.pair.name.1, 
-        type.pair.name.2)
-    if.online.mapping.avai <- FALSE
-    if.mapping.in.data.package <- FALSE
-    for (i in seq_len(length(try.file.names))) {
-        type.pair.name.try <- try.file.names[i]
-        if.data.exists <- tryCatch(data(list = type.pair.name.try), warning = function(w) "no such data")
-        if (if.data.exists %in% c(type.pair.name.try, "mapping.list", "mapping.table")) {
-            mapping.file.name <- type.pair.name.try
-            message("ID mapping ", type.pair.name.try, " is included in SBGNview.data package. Loading it.")
-            if.mapping.in.data.package <- TRUE
-            (break)()
-        } else {
-            print("ID mapping not in data package for this pair")
-            print(type.pair.name.try)
-            print(if.data.exists)
+        if (!identical(compartment.layer.info, "original")) {
+            svg.nodes.compartment <- svg.nodes.compartment[compartment.layer.info]
         }
     }
-    if (!if.mapping.in.data.package) {
-        # stop("Can't map this pair of IDs with SBGNview.data!", type.pair.name.try,  "\n")
-        warning("Can't map this pair of IDs with SBGNview.data! Generating mapping with Pathview!", type.pair.name.try,  "\n")
-        mapping.file.name = "online mapping not available"
+    svg.nodes.compartment <- paste(svg.nodes.compartment, collapse = "\n")
+    # check cardinality
+    if (!if.plot.cardinality) {
+        svg.cardinality <- ""
     }
-    options(warn = 1)
-    return(mapping.file.name)
+    out.list <- list(glyphs = nodes.objs, svg.ports = svg.ports, svg.nodes = svg.nodes, 
+                     svg.nodes.complex = svg.nodes.complex, svg.nodes.compartment = svg.nodes.compartment, 
+                     svg.cardinality = svg.cardinality, if.has.chemical.nodes = if.has.chemical.nodes, 
+                     if.has.non.chemical.nodes = if.has.non.chemical.nodes, glyph.coors = glyph.coors, 
+                     shorter.label.mapping.list = shorter.label.mapping.list)
+    return(out.list)
 }
 
 #########################################################################################################
-# copy of donwload.mapping.file
-# check local directory for any mapping files, if not found then check SBGNView.data and SBGNhub
-download.mapping.file <- function(input.type, output.type, species = NULL, 
-                                  SBGNview.data.folder = "./SBGNview.tmp.data",
-                                  existing.data.folder) { # passed in from loadMappingTable to see if a mapping table exits in given path
-    options(warn = -1)
-    # R CMD check will give different sort result if you didn't specify 'method': the
-    # default sort method depends on the locale of your system. And R CMD check uses
-    # a different locale than my interactive session.  The issue resided in this: R
-    # interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C;
-    # https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-    type.pair.name.1 <- paste(sort(c(input.type, output.type), method = "radix", 
-                                   decreasing = FALSE), collapse = "_")
-    type.pair.name.2 <- paste(sort(c(input.type, output.type), method = "radix", 
-                                   decreasing = TRUE), collapse = "_")
-    type.pair.name.1.org <- paste(species, type.pair.name.1, sep = "_")
-    type.pair.name.2.org <- paste(species, type.pair.name.2, sep = "_")
-    try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org, type.pair.name.1, 
-                        type.pair.name.2)
-    
-    check.location <- "local"
-    
-    # check if mapping file exits in existing.data.folder
-    if(check.location == "local"){ 
-        # find.mapping.files.in.folder defined below
-        # if local files found. IF true, no need to check SBGNview.data, and SBGNhub
-        message("Checking local folder")
-        mapping.file.name <- find.mapping.files.in.folder(try.file.names, existing.data.folder)
-        
-        if(!is.null(mapping.file.name)){
-            message("Local mapping file found: ", mapping.file.name)
-        } else {
-            check.location <- "SBGNview.data"
-        }
-    }
-    
-    # check SBGNview.data for mapping file
-    if(check.location == "SBGNview.data"){
-        message("\nChecking SBGNview.data")
-        if.online.mapping.avai <- FALSE
-        if.mapping.in.data.package <- FALSE
-        for (i in seq_len(length(try.file.names))) {
-            type.pair.name.try <- try.file.names[i]
-            if.data.exists <- tryCatch(data(list = type.pair.name.try), warning = function(w) "no such data")
-            if (if.data.exists %in% c(type.pair.name.try, "mapping.list", "mapping.table")) {
-                mapping.file.name <- type.pair.name.try
-                message("ID mapping ", type.pair.name.try, " is included in SBGNview.data package. Loading it.")
-                if.mapping.in.data.package <- TRUE
-                (break)()
+generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id.node.count.list) {
+    if (is.na(glyph.id)) {
+        if (glyph.class %in% c("unit of information", "state variable")) {
+            glyph.parent <- xml2::xml_parent(glyph)
+            parent.id <- xml2::xml_attr(glyph.parent, "id")
+            if (is.null(node.set.list[["molecules.with.state.variables"]][[parent.id]])) {
+                node.set.list[["molecules.with.state.variables"]][[parent.id]] <- 1
             } else {
-                print("ID mapping not in data package for this pair")
-                print(type.pair.name.try)
-                print(if.data.exists)
+                node.set.list[["molecules.with.state.variables"]][[parent.id]] <- node.set.list[["molecules.with.state.variables"]][[parent.id]] + 
+                    1
             }
-        }
-        
-        if (!if.mapping.in.data.package) {
-            message("Can't map this pair of IDs with SBGNview.data: ", type.pair.name.try)
-            check.location <- "SBGNhub"
-        } 
-        options(warn = 1)
-    } 
-    
-    # check SBGNhub
-    if(check.location == "SBGNhub"){
-        message("\nChecking SBGNhub for mapping file")
-        
-        search.sbgnhub.id.mapping(try.file.names = try.file.names, 
-                                    file.destination = existing.data.folder)
-        
-        mapping.file.name <- "downloaded mapping file from SBGNhub"
-        
-        #message("No mapping file found. Generating mapping with Pathview.")
-    }
-    
-    return(mapping.file.name)
-}
-
-#########################################################################################################
-# used by download.mapping.file function to find mapping files .RData in given directory
-find.mapping.files.in.folder <- function(try.file.names, existing.data.folder){
-    # read .RData files in given direcotry
-    files.in.exist.data.folder <-  list.files(path = existing.data.folder, pattern = "*.RData")
-    mapping.file.name <- NULL
-    
-    if(length(files.in.exist.data.folder) == 0){ # no matching files found
-        message("No matching files found")
-    } else {
-        file.names.in.folder <- sapply(files.in.exist.data.folder, 
-                                       function(x){ strsplit(x, split = ".RData")[[1]] })
-        file.names.in.folder <- cbind(names(file.names.in.folder), file.names.in.folder)
-        row.names(file.names.in.folder) <- NULL # cols = file+extension, file.name
-        
-        # check if try.file.names exist in files.in.exist.data.folder
-        for(try.file.name in try.file.names){
-            if(try.file.name %in% file.names.in.folder[, 2]){ # file exits in given folder
-                message(paste(try.file.name, " found in given folder", sep = ""))
-                # get file name with extension
-                mapping.file.name <- file.names.in.folder[file.names.in.folder[, 2] == try.file.name, ][1] 
-            } 
-        }
-        if(is.null(mapping.file.name)){
-            message("No matching mapping files found")
-        }
-    }
-    return(mapping.file.name)
-}
-
-#########################################################################################################
-# used by download.mapping.file function
-# search SBGNhub data/id.mapping directory for mapping file and download it if exits
-search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
-    for(fi in try.file.names){
-        github.api <- paste("https://api.github.com/search/code?q=filename:", 
-                            fi, "+repo:datapplab/SBGNhub/tree/master/data/id.mapping", sep = "")
-        request <- httr::GET(github.api) # get the information from the api
-        httr::warn_for_status(request) # warning if bad request from GET()
-        
-        json.info <- httr::content(request) # the content from request as list structure
-        json.items <- json.info$items # $items element contains information of any files found with file path
-        
-        if(length(json.items) == 0){ # if 0, no matching files found
-            next
-        } else { # check if file matches
+            v.i <- node.set.list[["molecules.with.state.variables"]][[parent.id]]
+            glyph.id <- paste(parent.id, v.i, sep = ".info.")
             
-            found.files <- c() # store the path to file for matching files found in hub
-            for(i in seq_len(length(json.items))){
-                found.files <- append(found.files, json.items[[i]][["path"]])
-            }
-            # if file in data/id.mapping directory
-            check.file.path <- paste("data/id.mapping/", fi, ".RData", sep = "")
-            
-            if(check.file.path %in% found.files){ # if file in data/id.mapping, then download file
-                
-                message(paste(fi, " in SBGNhub. Dowloading...", sep = ""))
-                
-                # need'?raw=true' end of url to download file 
-                file.url <- paste("https://github.com/datapplab/SBGNhub/blob/master/", 
-                                  check.file.path, "?raw=true", sep = "")
-                file.destination <- paste(file.destination, "/", fi, ".RData", sep = "")
-                # download.file
-                download.file(file.url, destfile = file.destination, method = "auto", mode = "wb")
-            } 
-            
-        } # end else (file match) 
-    } # end main for loop
-}
-
-#########################################################################################################
-#' Generate ID mapping table from input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
-#' @param input.type A character string. Gene or compound ID type
-#' @param output.type A character string. Gene or compound ID type
-#' @param species A character string. Three letter KEGG species code.
-#' @param cpd.or.gene A character string. Either 'gene' or 'compound'
-#' @param limit.to.ids Vector. Molecule IDs of 'input.type'.
-#' @param SBGNview.data.folder A character string. 
-#' @return A list containing the mapping table. 
-#' @examples 
-#'  data(mapped.ids)
-#'  entrez.to.pathwayCommons = loadMappingTable(
-#'                                 input.type = 'ENTREZID'
-#'                                 ,output.type = 'pathwayCommons'
-#'                                 ,species = 'hsa'
-#'                                 ,cpd.or.gene = 'gene'
-#'                              )
-#'                              
-#' @export
-
-loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
-                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){ 
-    
-    input.type = gsub("entrez","ENTREZID",input.type)
-    output.type = gsub("entrez","ENTREZID",output.type)
-    if(input.type == output.type){
-        stop("Input type and output types are the same!")
-    }
-    species = gsub("Hs","hsa",species)
-    type.pair.name = paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-    if(!file.exists(SBGNview.data.folder)){
-        dir.create(SBGNview.data.folder)
-    }
-    
-    mapping.file.name <- download.mapping.file(input.type, output.type, species, SBGNview.data.folder = SBGNview.data.folder)
-
-    if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name), 
-                                                 warning = function(w) "no such data") %in% c(mapping.file.name, "mapping.list", "mapping.table" )
-       ){
-        message("Loading ID mapping file: ",mapping.file.name," \n")
-        .GlobalEnv$mapping.list = NULL; .GlobalEnv$mapping.table = NULL
-        if.from.file = FALSE
-        if(file.exists(mapping.file.name)){
-            if.from.file = TRUE
-            var.name = load(mapping.file.name)
-        }else{
-            if(!exists(mapping.file.name)){
-                data(list = mapping.file.name)
-            }
-        }
-        if(!is.null(mapping.list)){ # if one of "output.type" or "input.type" is NOT "pathway.id", then the data's names is "mapping.list"
-            id.map = mapping.list[[1]][[1]]
-        }else if(!is.null(mapping.table)){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
-            id.map = mapping.table
-        }else if(if.from.file){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
-            id.map = get(var.name)
-        }else{
-            # print("loading mapping file from data package")
-            # print(mapping.file.name)
-            # data(list = mapping.file.name)
-            id.map = get(mapping.file.name)
-        }
-        message("Finished loading")
-        
-        if("species" %in% colnames(id.map) &  !is.null(id.map) ){
-            if(any(id.map[,"species"] %in% species) ){
-                id.map = id.map[id.map[,"species"] %in% species,c(input.type,output.type)]
-            }
-        }
-    } else {
-        if(cpd.or.gene == "gene"){
-            # pathway.id used for heterogeneous purposes and mapping gene to pathway
-            # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
-            # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"  
-            # ENZYME not in if condition below b/c it can be mapped directly 
-            if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
-               !any(c(input.type,output.type) %in% c("KO")) 
-            ){ # if input and output don't contain KO
-             
-                # load mapping table for mapping KO to glyph id
-                ko.to.glyph.id = loadMappingTable(input.type = output.type,
-                                                  output.type = "KO",
-                                                  cpd.or.gene = "gene",
-                                                  species = species,
-                                                  SBGNview.data.folder = SBGNview.data.folder)
-                ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
-                
-                # load mapping table for mapping user input to KO id
-                input.to.ko = loadMappingTable(input.type = input.type,
-                                               output.type = "KO",
-                                               cpd.or.gene = "gene",
-                                               limit.to.ids = limit.to.ids,
-                                               species = species,
-                                               SBGNview.data.folder = SBGNview.data.folder)
-                input.to.ko = input.to.ko$gene[[1]]
-                input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
-                id.map = input.to.glyph.id[,c(input.type,output.type)]
-            } else {
-                message("\nID mapping not pre-generated. Using Pathview!!!\n")
-                id.map = geneannot.map.ko(in.ids = limit.to.ids,
-                                          in.type = input.type,
-                                          out.type = output.type,
-                                          species = species,
-                                          unique.map= FALSE,
-                                          SBGNview.data.folder = SBGNview.data.folder)
-                if(is.vector(id.map)){
-                    id.map = as.matrix(t(id.map))
-                }
-            }
-        } else if(cpd.or.gene == "compound"){
-            message("\nID mapping not pre-generated. Using Pathview cpd!!!\n")
-            if(is.null(limit.to.ids)){
-                stop("Must provide input IDs when using pathview mapping!")
-            }
-            print(input.type)
-            print(output.type)
-            id.map =  pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type, 
-                                         out.type = output.type)
+        } else if (!glyph.class %in% names(no.id.node.count.list)) {
+            # some nodes don't have id(cardinality), we need to gennerate an id for them
+            no.id.node.count.list[[glyph.class]] <- 0
         } else {
-            message("\nCouldn't fine ID mapping table between ", input.type, " and ", output.type, "!!!\n")
-            message("Tried online resource ", online.mapping.file, "\n")
-            message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
-            stop("ID mapping table not provided")
+            no.id.node.count.list[[glyph.class]] <- no.id.node.count.list[[glyph.class]] + 
+                1
         }
-        
-        id.map = id.map[!is.na(id.map[,2]),]
-        if(is.vector(id.map)){
-            id.map = as.matrix(t(id.map))
-        }
-        id.map = id.map[!is.na(id.map[,1]),]
-        if(is.vector(id.map)){
-            id.map = as.matrix(t(id.map))
-        }
-        id.map = unique(id.map)
+        index.id <- no.id.node.count.list[[glyph.class]]
+        glyph.id <- paste(glyph.class, index.id, sep = ":")
     }
-    
-    # if(!is.null(limit.to.ids)){
-    #     # some IDs are quoted, need to remove the quote characters
-    #     id.map[,input.type] = gsub("^\"","",id.map[,input.type])
-    #     id.map[,input.type] = gsub("\"$","",id.map[,input.type])
-    #     id.map = id.map[id.map[,input.type] %in% limit.to.ids,]
-    # }
-
-    # add additional mapping using KO to glyph.id
-    mapping.list = list()
-    if(is.vector(id.map)){
-        id.map = as.matrix(t(id.map))
-    }
-    id.map[,1] = as.character(id.map[,1])
-    id.map[,2] = as.character(id.map[,2])
-    id.map = as.matrix(id.map)
-    mapping.list[[cpd.or.gene]]= list()
-    mapping.list[[cpd.or.gene]][[type.pair.name]] = id.map
-    message("Generated ID mapping list")
-    
-    return(mapping.list)
+    return(list(glyph.id = glyph.id, node.set.list = node.set.list, no.id.node.count.list = no.id.node.count.list))
 }
 
 #########################################################################################################
-#### copy of loadMappingTable for scenario2. load mapping files if they exits locally
-loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
-                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data",
-                             existing.data.folder = NULL){ 
-    # existing.data.folder passed into download.mapping.file to check mapping data in current working directory
+# used in generate.node.obj function from mapping.utilities.R
+parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, node, 
+                                 if.plot.svg, y.margin) {
     
-    if(is.null(existing.data.folder)){ # if existing.data.folder is NULL, set to working directory
-        existing.data.folder <- getwd()
-    }
-    
-    input.type = gsub("entrez","ENTREZID",input.type)
-    output.type = gsub("entrez","ENTREZID",output.type)
-    if(input.type == output.type){
-        stop("Input type and output types are the same!")
-    }
-    species = gsub("Hs","hsa",species)
-    type.pair.name = paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-    if(!file.exists(SBGNview.data.folder)){
-        dir.create(SBGNview.data.folder)
-    }
-    # check local, SBGNview.data, SBGNhub for mapping file
-    mapping.file.name <- download.mapping.file(input.type = input.type,
-                                               output.type = output.type,
-                                               species = species,
-                                               SBGNview.data.folder = SBGNview.data.folder,
-                                               existing.data.folder = existing.data.folder)
-    
-    message(paste("mapping file: ", mapping.file.name, sep = ""))
-    
-    # if mapping.file.name exits in existing.data.folder, mapping.file.name has .RData extension
-    path.to.local.file <- paste(existing.data.folder, mapping.file.name, sep = "/")
-    if(file.exists(path.to.local.file)){
-        var.name <- load(file = path.to.local.file, envir = .GlobalEnv)
-        mapping.list <- get(var.name)
-    } 
-    # if condition from original loadMappingTable function made as else if
-    else if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name), 
-                                                 warning = function(w) "no such data") %in% c(mapping.file.name, "mapping.list", "mapping.table" )
-    ){
-        message("Loading ID mapping file: ",mapping.file.name," \n")
-        .GlobalEnv$mapping.list = NULL; .GlobalEnv$mapping.table = NULL
-        if.from.file = FALSE
-        if(file.exists(mapping.file.name)){
-            if.from.file = TRUE
-            var.name = load(mapping.file.name)
-        }else{
-            if(!exists(mapping.file.name)){
-                data(list = mapping.file.name)
-            }
-        }
-        if(!is.null(mapping.list)){ # if one of "output.type" or "input.type" is NOT "pathway.id", then the data's names is "mapping.list"
-            id.map = mapping.list[[1]][[1]]
-        }else if(!is.null(mapping.table)){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
-            id.map = mapping.table
-        }else if(if.from.file){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
-            id.map = get(var.name)
-        }else{
-            # print("loading mapping file from data package")
-            # print(mapping.file.name)
-            # data(list = mapping.file.name)
-            id.map = get(mapping.file.name)
-        }
-        message("Finished loading")
+    if.complex.empty <- TRUE
+    node.clone <- ""
+    node.label <- ""
+    svg.port <- ""
+    glyph.port.info <- c()
+    children <- xml2::xml_children(glyph)
+    for (i in seq_len(length(children))) {
+        child <- children[[i]]
         
-        if("species" %in% colnames(id.map) &  !is.null(id.map) ){
-            if(any(id.map[,"species"] %in% species) ){
-                id.map = id.map[id.map[,"species"] %in% species,c(input.type,output.type)]
+        if (xml2::xml_name(child) == "state") {
+            # state variables has different shape in PD and ER, so we need to switch the
+            # shape when needed
+            if (map.language == "entity relationship") {
+                original.id <- node@id
+                node <- new(paste(glyph.class, ".ER.sbgn", sep = ""))
+                node@id <- original.id
+                node@glyph.class <- glyph.info["class"]
             }
-        }
-    } else { # use Pathview for mapping
-        if(cpd.or.gene == "gene"){
-            # pathway.id used for heterogeneous purposes and mapping gene to pathway
-            # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
-            # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"  
-            # ENZYME not in if condition below b/c it can be mapped directly 
-            if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
-               !any(c(input.type,output.type) %in% c("KO")) 
-            ){ # if input and output don't contain KO
-                
-                # load mapping table for mapping KO to glyph id
-                ko.to.glyph.id = loadMappingTable(input.type = output.type,
-                                                  output.type = "KO",
-                                                  cpd.or.gene = "gene",
-                                                  species = species,
-                                                  SBGNview.data.folder = SBGNview.data.folder)
-                ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
-                
-                # load mapping table for mapping user input to KO id
-                input.to.ko = loadMappingTable(input.type = input.type,
-                                               output.type = "KO",
-                                               cpd.or.gene = "gene",
-                                               limit.to.ids = limit.to.ids,
-                                               species = species,
-                                               SBGNview.data.folder = SBGNview.data.folder)
-                input.to.ko = input.to.ko$gene[[1]]
-                input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
-                id.map = input.to.glyph.id[,c(input.type,output.type)]
+            glyph.label <- xml2::xml_attrs(child)  # find the label information for this glyph
+            if (is.na(glyph.label["variable"])) {
+                # sometimes there is no variable name, in this case we just show the value
+                node@label <- glyph.label["value"]
             } else {
-                message("\nID mapping not pre-generated. Using Pathview!!!\n")
-                id.map = geneannot.map.ko(in.ids = limit.to.ids,
-                                          in.type = input.type,
-                                          out.type = output.type,
-                                          species = species,
-                                          unique.map= FALSE,
-                                          SBGNview.data.folder = SBGNview.data.folder)
-                if(is.vector(id.map)){
-                    id.map = as.matrix(t(id.map))
-                }
+                node@label <- paste(glyph.label["value"], "@", glyph.label["variable"], 
+                                    sep = "")
             }
-        } else if(cpd.or.gene == "compound"){
-            message("\nID mapping not pre-generated. Using Pathview cpd!!!\n")
-            if(is.null(limit.to.ids)){
-                stop("Must provide input IDs when using pathview mapping!")
+        } else if (xml2::xml_name(child) == "clone") {
+            # if this parent node has a clone marker
+            node.clone <- new("clone.sbgn")  # create a node for the marker
+            if (glyph.class == "simple_chemical") {
+                node.clone <- new("clone_simple_chemical.sbgn")
             }
-            print(input.type)
-            print(output.type)
-            id.map =  pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type, 
-                                         out.type = output.type)
-        } else {
-            message("\nCouldn't fine ID mapping table between ", input.type, " and ", output.type, "!!!\n")
-            message("Tried online resource ", online.mapping.file, "\n")
-            message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
-            stop("ID mapping table not provided")
-        }
-        
-        id.map = id.map[!is.na(id.map[,2]),]
-        if(is.vector(id.map)){
-            id.map = as.matrix(t(id.map))
-        }
-        id.map = id.map[!is.na(id.map[,1]),]
-        if(is.vector(id.map)){
-            id.map = as.matrix(t(id.map))
-        }
-        id.map = unique(id.map)
-        
-        # add additional mapping using KO to glyph.id (code below was outside this else condition in original function)
-        mapping.list = list()
-        if(is.vector(id.map)){
-            id.map = as.matrix(t(id.map))
-        }
-        id.map[,1] = as.character(id.map[,1])
-        id.map[,2] = as.character(id.map[,2])
-        id.map = as.matrix(id.map)
-        mapping.list[[cpd.or.gene]]= list()
-        mapping.list[[cpd.or.gene]][[type.pair.name]] = id.map
-    }
-    
-    message("Generated ID mapping list")
-    
-    return(mapping.list)
-}
-
-#########################################################################################################
-# geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", unique.map, 
-#     SBGNview.data.folder = "./SBGNview.tmp.data") {
-#     # pathview's geneannot.map can't map KO, so here included KO mapping
-#     if (!is.null(in.ids)) {
-#         in.ids <- gsub("\"", "", in.ids)
-#     }
-#     message("\nusing pathview for id mapping: ", in.type, " to ", out.type, "\n\n")
-#     
-#     if (any(c(in.type, out.type) %in% "KO")) {
-#         filter.type <- in.type
-#         out.type <- setdiff(c(in.type, out.type), "KO")
-#         in.type <- "KO"
-#         
-#         # break endless loop - this loop doesn't allow the rest of the code to run
-#         # to break this, we need a mapping list. Since one doesn't exit, we generate mapping on the fly
-#         # use KEGG API. KEGGREST Bioconductor Pkg
-#         mapping.list <- loadMappingTable(input.type = "KO", output.type = "ENTREZID", 
-#             cpd.or.gene = "gene", species = species, SBGNview.data.folder = SBGNview.data.folder)
-#         #
-#         message("loaded mapping list")
-#         
-#         mapping.table <- mapping.list[[1]][[1]]
-#         if (out.type %in% c("ENTREZID", "ez", "entrezid")) {
-#             print("filter species")
-#             id.map <- mapping.table[mapping.table[, "species"] == species, c(in.type, 
-#                 out.type)]
-#             if (!is.null(in.ids)) {
-#                 mapping.table <- mapping.table[mapping.table[, filter.type] %in% 
-#                   in.ids, ]
-#             }
-#         } else {
-#             if (species == "mmu") {
-#                 species <- "mouse"
-#             }
-#             output.to.eg <- pathview::eg2id(eg = mapping.table[, "ENTREZID"], category = out.type, 
-#                 org = species, unique.map = unique.map)
-#             
-#             output.to.ko <- merge(output.to.eg, mapping.table, all.x = TRUE)
-#             id.map <- output.to.ko[, c("KO", out.type)]
-#             id.map <- id.map[!is.na(id.map[, out.type]), ]
-#             # filter to output only input IDs
-#             if (!is.null(in.ids)) {
-#                 id.map <- id.map[id.map[, filter.type] %in% in.ids, ]
-#             }
-#         }
-#     } else {
-#         if (species == "mmu") {
-#             species <- "mouse"
-#         }
-#         if (is.null(in.ids)) {
-#             stop("Must provide input IDs when using pathview mapping!")
-#         }
-#         
-#         # id.map <- geneannot.map.all(in.ids = in.ids, in.type = in.type, out.type = out.type, 
-#         #     org = species, unique.map = unique.map)
-#         print(out.type)
-#         id.map <- pathview::geneannot.map(in.ids = in.ids, 
-#                                           in.type = in.type, 
-#                                           out.type = out.type,
-#                                           org = species, 
-#                                           unique.map = unique.map)
-#     }
-#     return(id.map)
-# }
-
-#########################################################################################################
-# working copy of geneannot.map.ko to modify and test
-# break loop caused by loadMappingTable
-# replace loadMappingTable with generate.ko.mapping.list
-geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", unique.map, 
-                             SBGNview.data.folder = "./SBGNview.tmp.data") {
-    # pathview's geneannot.map can't map KO, so here included KO mapping
-    if (!is.null(in.ids)) {
-        in.ids <- gsub("\"", "", in.ids)
-    }
-    
-    message("mapping: ", in.type, " to ", out.type, "\n")
-    
-    if (any(c(in.type, out.type) %in% c("KO", "ko"))) {
-        in.type <- setdiff(c(in.type, out.type), c("KO", "ko"))
-        out.type <- "KO"
-        
-        message("generating mapping list")
-        id.map <- generate.ko.mapping.list(in.type = in.type, out.type = out.type, 
-                                           species = species, in.ids = in.ids)
-        message("generated mapping list using keggREST")
-        message("saving mapping list to current working directory")
-        file.name <- paste(paste(species, toupper(in.type), toupper(out.type), sep = "_"), 
-                           ".RData", sep = "")
-        #saveRDS(id.map, file = file.name)
-        save(id.map, file = file.name)
-        
-        
-    } else { # input/output not KO
-        if (species == "mmu") {
-            species <- "mouse"
-        }
-        if (is.null(in.ids)) {
-            stop("Must provide input IDs when using pathview mapping!")
-        }
-        id.map <- pathview::geneannot.map(in.ids = in.ids, in.type = in.type, out.type = out.type,
-                                          org = species, unique.map = unique.map)
-    }
-    return(id.map)
-}
-
-#########################################################################################################
-# generate mapping list on the fly for mapping between KO and other types in geneannot.map.ko
-# Pseudocode:
-# input = in.type, out.type ("ko"), species, in.ids
-#   if species not in bods 
-#       if in.type = entrez id
-#           if can't be map to entrez -> stop
-#           if "kegg.geneid" == "ncbi.geneid" for species 
-#               no need of 2nd mapping table. Map from KEGG ID to KO using keggLink
-#           else use two mapping tables 
-#                entrez id to kegg id and kegg id to ko and merge the two lists for (entrez, ko) table
-#       else 
-#           map from in.type to kegg gene id and kegg id to ko and merge two lists for (in.type, ko) table
-#   else (species in bods) 
-#       if in.type == entrez
-#           map to entrez similar to above
-#       else use pathview::id2eg to map to entrezid
-#           if "kegg.geneid" == "ncbi.geneid" for species 
-#               map directly from KEGG ID to KO
-#               merge with id2eg map to get (in.type, ko) table
-#           else use 2nd mapping table
-#               map from entrez id to keggid merge with id2eg map list
-#               map from kegg id to ko and merge with first mereged list
-generate.ko.mapping.list <- function(in.type = "entrez", out.type = "ko", 
-                                     species = "dsi", in.ids = NULL){
-    in.type <- tolower(in.type)
-    out.type <- tolower(out.type)
-    species <- tolower(species)
-    data("korg", "bods") # korg cols:: 3 = kegg.code; 6 = entrez.gnodes; 7 = kegg.geneid; 8 = ncbi.geneid
-
-    if(!species %in% korg[, 3] & !species %in% bods[, 3]){ # stop if species is NOT in korg or bods
-        stop("incorrect KEGG species code")
-    } 
-    
-    if(!species %in% bods[, 3]){ # species not in bods
-        # get species row index from korg
-        ridx <- grep(paste("^", species, "$", sep = ""), korg[, 3]) %% nrow(korg)
-        
-        message("'", species, "'", " species in korg dataset from Pathview")
-        
-        if(any(in.type %in% c("entrez", "eg", "entrezid"))){ # in.type == entrez
-            
-            if(is.na(korg[ridx, 8])){ # if ncbi.geneid == NA, can't map to entrezid
-                stop("can't map between ENTREZID and KO for ", species)
+            clone.children <- xml2::xml_children(child)
+            if (length(clone.children) == 0) {
+                # if the marker has no label
+                node.clone@label <- ""
+            } else {
+                child.clone.label <- clone.children[1]  # if the marker has a label, find it
+                child.clone.label.label <- xml2::xml_attrs(child.clone.label)  # find the label information for this glyph
+                node.clone@label <- child.clone.label.label[[1]]
             }
-            if(korg[ridx, 6] == "1"){   # "kegg.geneid" == "ncbi.geneid" (entrez.gnodes == 1)
-                message("mapping directly from ENTREZID to KO")
-                mapping.list <- get.keggrest.data(tar = out.type,  src = species, 
-                                                  link.or.conv = "link", src.is.species = T)
-                colnames(mapping.list) <- c("ENTREZID", "KO")
-                
-            } else { # kegg ID is NOT entrez id. entrez.gnodes == 0. need 2 mapping tables
-                
-                message("mapping from ENTREZID to KEGG ID") # ncbi-geneid to kegg id
-                conv.list <- get.keggrest.data(tar = species, src = "ncbi-geneid",
-                                               link.or.conv = "conv", tar.is.species = T)
-                
-                message("mapping from KEGG ID to KO") # kegg id to ko
-                link.list <- get.keggrest.data(tar = "ko", src = species, 
-                                               link.or.conv = "link", src.is.species = T)
-                
-                message("merging mapping lists")
-                merge.list <- merge(conv.list, link.list) # merge list. cols = keggid, ncbi-geneid, ko
-                mapping.list <- merge.list[,2:3] # take only ncbi-geneid, ko
+        } else if (xml2::xml_name(child) == "label") {
+            glyph.label <- xml2::xml_attrs(child)  # find the label information for this glyph
+            
+            node.label <- glyph.label["text"]
+            node@label <- glyph.label["text"]
+            glyph.info["label"] <- glyph.label
+        } else if (xml2::xml_name(child) == "entity") {
+            glyph.entity <- xml2::xml_attrs(child)  # find the label information for this glyph
+            if (map.language == "activity flow" & glyph.class == "unit_of_information") {
+                glyph.class <- gsub(" ", "_", glyph.entity)
+                original.id <- node@id
+                node <- new(paste(glyph.class, ".sbgn", sep = ""))
+                node@id <- original.id
+                node@glyph.class <- glyph.entity
+                node@label <- node.label
+                node@label_location <- "center"
             }
-        } else { # in.type is NOT entrez and species NOT in bods
-                 # map from in.type to kegg gene id =>  ko
-            ######
-            ### check in.type and if we can map from in.type to ko
+        } else if (xml2::xml_name(child) == "bbox") {
+            glyph.box.information <- xml2::xml_attrs(child)  # find the box information for this glyph
+            glyph.box.information["y"] <- as.numeric(glyph.box.information["y"]) + 
+                y.margin
+            node@x <- as.numeric(glyph.box.information["x"])
+            node@y <- as.numeric(glyph.box.information["y"])
+            node@h <- as.numeric(glyph.box.information["h"])
+            node@w <- as.numeric(glyph.box.information["w"])
             
-            message("mapping from ", in.type, " to KEGG ID") # in.type to kegg id
-            conv.list <- get.keggrest.data(tar = species, src = in.type, 
-                                           link.or.conv = "conv", tar.is.species = T)
-            
-            message("mapping from KEGG ID to KO") # kegg id to ko
-            link.list <- get.keggrest.data(tar = "ko", src = species, 
-                                           link.or.conv = "link", src.is.species = T)
-            
-            message("merging mapping lists")
-            merge.list <- merge(conv.list, link.list) # merge mapping lists
-            mapping.list <- merge.list[,2:3]
-        }
-        
-    } else { # species in bods
-
-        message("'", species, "'", " species in bods dataset from Pathview")
-        # get species info from korg
-        ridx <- grep(paste("^", species, "$", sep = ""), korg[,3]) %% nrow(korg)
-        
-        if(any(in.type %in% c("entrez", "eg", "entrezid"))){ # input type is entrez for bods species
-            
-            message("id mapping from ENTREZID to KO for bods species")
-            
-            if(korg[ridx, 6] == "1"){   # "kegg.geneid" == "ncbi.geneid". entrez.gnodes == 1
-                # no need of 2nd mapping table
-                message("mapping directly from ENTREZID to KO for bods species")
-                mapping.list <- get.keggrest.data(tar = out.type, src = species,
-                                                  link.or.conv = "link", src.is.species = T)
-                colnames(mapping.list) <- c("ENTREZID", "KO")
-                
-            } else { # kegg ID is NOT entrez id. entrez.gnodes == 0. need 2 mapping tables
-                
-                message("mapping from ENTREZID to KEGG ID for bods species") # ncbi-geneid to kegg id
-                conv.list <- get.keggrest.data(tar = species, src = "ncbi-geneid",
-                                               link.or.conv = "conv", tar.is.species = T)
-                
-                message("mapping from KEGG ID to KO for bods species") # kegg id to ko
-                link.list <- get.keggrest.data(tar = "ko", src = species,
-                                               link.or.conv = "link", src.is.species = T)
-                
-                message("merging mapping lists")
-                merge.list <- merge(conv.list, link.list) # merge list. cols = keggid, ncbi-geneid, ko
-                mapping.list <- merge.list[,2:3] # take only ncbi-geneid, ko
-                
-            } # end if condition for input type is entrez for species in bods
-            
-        } else { # input type not entrez. other input type
-            # map from in.type to ENTREZID using pathview
-            message("mapping from ", toupper(in.type), " to ENTREZID for '", 
-                    species, "' using pathview::id2eg")
-            
-            if(is.null(in.ids)){
-                stop("need vector of input ids to use pathview::id2eg")
+            node@x <- node@x + node@w/2
+            node@y <- node@y + node@h/2
+        } else if (xml2::xml_name(child) == "port") {
+            glyph.port.info <- xml2::xml_attrs(child)  # find the box information for this glyph
+            glyph.port.info["y"] <- as.numeric(glyph.port.info["y"]) + y.margin
+            # if port has coordinates, plot it
+            if (as.numeric(glyph.port.info["x"]) + as.numeric(glyph.port.info["y"]) != 
+                0) {
+                svg.port <- paste(svg.port, plot.arc.ports(glyph.port.info, node), 
+                                  sep = "\n")
             }
-            
-            in.to.eg <- pathview::id2eg(ids = in.ids, category = in.type, org = species) # in.type, entrez
-            
-            if(korg[ridx, 6] == "1") { # check if KEGG id == ENTREZID in korg for bods species
-                
-                message("mapping directly from ENTREZID to KO for bods species") 
-                map.list <- get.keggrest.data(tar = out.type, src = species,  
-                                              link.or.conv = "link", src.is.species = T) # kegg, ko
-                colnames(map.list) <- c("ENTREZID", "KO")
-                
-                message("merging mapping lists for bods species")
-                merge.list <- merge(in.to.eg, map.list) # merge in.type, entrezid with keggid, ko
-                mapping.list <- merge.list[,2:3] 
-                
-            } else { # KEGG id != ENTREZID. need 2nd mapping table
-                message("mapping from ENTREZID to KEGG ID for bods species") # ncbi-geneid to kegg id
-                conv.list <- get.keggrest.data(tar = species, src = "ncbi-geneid",
-                                               link.or.conv = "conv", tar.is.species = T)
-                
-                # in.type, entrezid merge with entrezid, keggid
-                merge.list.1 <- merge(in.to.eg, conv.list)
-                map.list.1 <- merge.list.1[,2:3]  # in.type, keggid
-                
-                message("mapping from KEGG ID to KO for bods species") # kegg id to ko
-                link.list <- get.keggrest.data(tar = "ko", src = species,
-                                               link.or.conv = "link", src.is.species = T)
-                
-                # merge in.type, keggid with  keggid, ko
-                message("merging mapping lists for bods species")
-                merge.list.2 <- merge(map.list.1, link.list) 
-                mapping.list <- merge.list.2[,2:3] # in.type, ko
-            }
-            
-        } # end else in.type != entrez
-        
-    } # end else species in bods
-    
-    return(mapping.list)
-}
-
-#########################################################################################################
-# use keggLink and keggConv to get mapping data and format to a list for generate.ko.mapping.list
-get.keggrest.data <- function(tar, src, link.or.conv, tar.is.species = F, src.is.species = F){
-    # tar and src should be lower case
-    if(link.or.conv == "link"){ # keggLink
-        kegg.data <- KEGGREST::keggLink(target = tar, source = src)
-    } else { # keggConv
-        kegg.data <- KEGGREST::keggConv(target = tar, source = src)
-    }
-    
-    ids1 <- gsub("^.+:", "", names(kegg.data))
-    ids2 <- gsub("^.+:", "", kegg.data)
-    map.list <- cbind(ids1, ids2)
-    rownames(map.list) <- NULL
-    
-    if(src == "ncbi-geneid") { src <- "ENTREZID" }
-    if(src.is.species == TRUE) {src <- paste("KEGGID", src, sep = "-")}
-    if(tar.is.species == TRUE) {tar <- paste("KEGGID", tar, sep = "-")}
-        
-    colnames(map.list) <- c(toupper(src), toupper(tar))
-    
-    return(map.list)
-}
-
-#########################################################################################################
-load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gene.id.type = NULL, 
-    output.gene.id.type = NULL, output.cpd.id.type = NULL, species = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") {
-    idmapping.all.list <- list()
-    cpd.id.mapping.list <- list()
-    gene.id.mapping.list <- list()
-    if (!is.null(output.cpd.id.type)) {
-        if (SBGN.file.cpd.id.type != output.cpd.id.type) {
-            input.cpd.type <- SBGN.file.cpd.id.type
-            cpd.id.mapping.list <- loadMappingTable(output.type = output.cpd.id.type, 
-                input.type = input.cpd.type, cpd.or.gene = "compound", species = species, 
-                SBGNview.data.folder = SBGNview.data.folder)
+            node@svg.port <- svg.port
+        } else if (xml2::xml_name(child) == "glyph" & xml2::xml_attr(child, "class") != 
+                   "annotation") {
+            if.complex.empty <- FALSE
         }
     }
     
-    if (!is.null(output.gene.id.type)) {
-        if (SBGN.file.gene.id.type != output.gene.id.type) {
-            input.gene.type <- SBGN.file.gene.id.type
-            gene.id.mapping.list <- loadMappingTable(output.type = output.gene.id.type, 
-                input.type = input.gene.type, cpd.or.gene = "gene", species = species, 
-                SBGNview.data.folder = SBGNview.data.folder)
-        }
-    }
-    id.mapping.all.list <- c(cpd.id.mapping.list, gene.id.mapping.list)
-    return(id.mapping.all.list)
+    return(list(node = node, node.clone = node.clone, glyph.port.info = glyph.port.info, 
+                svg.port = svg.port, node.label = node.label, glyph.info = glyph.info, if.complex.empty = if.complex.empty))
 }
 
 #########################################################################################################
-change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping.all.list, 
-                      show.ids.for.multiHit = NULL) {
-    
-    mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]]
-    output.ids <- as.character(mapping.table[mapping.table[, input.type] == input.id, 
-        output.type])
-    if (any(is.na(output.ids))) {
-        print(mapping.table[mapping.table[, input.type] == input.id, ])
-        stop("IDs have na")
-    }
-    if (!is.null(show.ids.for.multiHit)) {
-        if (any(tolower(output.ids) %in% tolower(show.ids.for.multiHit))) {
-            output.ids <- output.ids[tolower(output.ids) %in% tolower(show.ids.for.multiHit)]
-            output.ids <- unique(tolower(output.ids))
-            output.ids <- c("mapped", output.ids)
-        }
-    }
-    output.ids <- unique(output.ids)
-    output.ids <- paste(output.ids, collapse = "; ")  # If there are multiple id mapped, we combine all of them
-    
-    return(output.ids)
-}
-
-#########################################################################################################
-change.glyph.id <- function(glyph.id, glyph.class, id.mapping.all.list, output.gene.id.type = NA, 
-    output.cpd.id.type = NA, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, show.ids.for.multiHit = NULL) {
-    cpd.or.gene <- glyph.class
-    if (glyph.class == "macromolecule") {
-        cpd.or.gene <- "gene"
-        output.type <- output.gene.id.type
-        input.type <- SBGN.file.gene.id.type
-    } else if (glyph.class == "simple chemical") {
-        cpd.or.gene <- "compound"
-        output.type <- output.cpd.id.type
-        input.type <- SBGN.file.cpd.id.type
-    }
-    if (input.type == output.type) {
-        return(glyph.id)
-    }
-    glyph.id <- change.id(input.id = glyph.id, cpd.or.gene, input.type, output.type, 
-        id.mapping.all.list, show.ids.for.multiHit = show.ids.for.multiHit)
-}
-
-#########################################################################################################
-load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, output.gene.id.type, 
-    output.cpd.id.type, SBGNview.data.folder = "./SBGNview.tmp.data") {
-    if (database == "MetaCrop") {
-        sbgn.id.attr <- "label"
-        SBGN.file.gene.id.type <- "ENZYME"
-        SBGN.file.cpd.id.type <- "CompoundName"
-    } else if (database == "MetaCyc") {
-        sbgn.id.attr <- "id"
-        SBGN.file.gene.id.type <- "metacyc.SBGN"
-        SBGN.file.cpd.id.type <- "metacyc.SBGN"
-    } else if (database == "pathwayCommons") {
-        sbgn.id.attr <- "id"
-        SBGN.file.gene.id.type <- "pathwayCommons"
-        SBGN.file.cpd.id.type <- "pathwayCommons"
-    }
-    
-    if (is.na(output.gene.id.type)) {
-        output.gene.id.type.use <- SBGN.file.gene.id.type
+plot.arc.ports <- function(glyph.port.info, node) {
+    port.x <- as.numeric(glyph.port.info["x"])
+    port.y <- as.numeric(glyph.port.info["y"])
+    node.x <- node@x
+    node.y <- node@y
+    node.h <- node@h
+    node.w <- node@w
+    if (abs(port.y - node.y) < node.h/2 & port.x < node.x) {
+        # sometimes there is small difference between the coordinates of port and it's
+        # glyph. So we need to use abs(port.y- node.y)<node.h/2.
+        x1 <- node.x - node.w/2
+        y1 <- node.y
+        x2 <- port.x
+        y2 <- port.y
+    } else if (abs(port.y - node.y) < node.h/2 & port.x > node.x) {
+        x1 <- node.x + node.w/2
+        y1 <- node.y
+        x2 <- port.x
+        y2 <- port.y
+    } else if (port.y < node.y & abs(port.x - node.x) < node.w/2) {
+        x1 <- node.x
+        y1 <- node.y - node.h/2
+        x2 <- port.x
+        y2 <- port.y
+    } else if (port.y > node.y & abs(port.x - node.x) < node.w/2) {
+        x1 <- node.x
+        y1 <- node.y + node.h/2
+        x2 <- port.x
+        y2 <- port.y
     } else {
-        output.gene.id.type.use <- output.gene.id.type
+        x1 <- port.x
+        y1 <- port.y
+        x2 <- node.x
+        y2 <- node.y
     }
-    if (is.na(output.cpd.id.type)) {
-        output.cpd.id.type.use <- SBGN.file.cpd.id.type
-    } else {
-        output.cpd.id.type.use <- output.cpd.id.type
-    }
-    mapped.id.names <- paste(c(SBGN.file.cpd.id.type, SBGN.file.gene.id.type, output.gene.id.type.use, 
-        output.cpd.id.type.use), collapse = "_")
-    if (mapped.id.names %in% names(all.pairs.id.mapping.list)) {
-        id.mapping.all.list <- all.pairs.id.mapping.list[[mapped.id.names]]
-    } else {
-        id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
-            output.gene.id.type.use, output.cpd.id.type.use, species = species, SBGNview.data.folder = SBGNview.data.folder)
-        all.pairs.id.mapping.list[[mapped.id.names]] <- id.mapping.all.list
-    }
-    return(list(all.pairs.id.mapping.list = all.pairs.id.mapping.list, id.mapping.all.list = id.mapping.all.list, 
-        output.cpd.id.type.use = output.cpd.id.type.use, output.gene.id.type.use = output.gene.id.type.use, 
-        SBGN.file.cpd.id.type = SBGN.file.cpd.id.type, SBGN.file.gene.id.type = SBGN.file.gene.id.type))
-}
-
-#########################################################################################################
-get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
-    output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, id.mapping.all.list, 
-    show.ids.for.multiHit) {
-    node.set.list <- list(all.nodes = matrix(ncol = 8, nrow = 0))
-    all.glyphs <- xml2::xml_find_all(sbgn, ".//glyph")
-    for (i in seq_len(length(all.glyphs))) {
-        glyph <- all.glyphs[[i]]
-        nodes.info <- c(glyph.id = "", id = "", class = "", parent.complex = "", 
-            parent.submap = "", parent.compartment = "", parent.macromolecule = "", 
-            parent.node = "")
-        nodes.info
-        glyph.class <- xml2::xml_attr(glyph, "class")
-        glyph.id <- xml2::xml_attr(glyph, "id")
-        glyph.id.original <- glyph.id
-        
-        if (if.other.id.types.available & glyph.class %in% c("macromolecule", "simple chemical")) {
-            # print(glyph.id)
-            if (xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", 
-                "submap") & !is.na(glyph.id)) {
-                parent.id <- xml2::xml_attr(xml2::xml_parent(glyph), "id")
-                glyph.id <- gsub(paste("_", parent.id, sep = ""), "", glyph.id)  # get rid of the complex name. That's how pathwayCommons name molecules within complex
-            }
-            glyph.id <- change.glyph.id(glyph.id, glyph.class, id.mapping.all.list, 
-                output.gene.id.type.use, output.cpd.id.type.use, SBGN.file.cpd.id.type, 
-                SBGN.file.gene.id.type, show.ids.for.multiHit = show.ids.for.multiHit)
-        }
-        nodes.info["id"] <- glyph.id
-        nodes.info["class"] <- glyph.class
-        
-        glyph.compartment <- xml2::xml_attr(glyph, "compartmentRef")
-        if (!is.na(glyph.compartment) & !is.na(glyph.id) & glyph.class != "unit of information" & 
-            glyph.class != "state variable" & glyph.class != "source and sink") {
-            # 'source and sink' will be assigned to their neighbor's compartment
-            nodes.info["parent.compartment"] <- glyph.compartment
-        }
-        # generate nodes for layout, for the nodes not in any compartment. exclude
-        # state.variable, nodes with no id, , still needs complex, because the network is
-        # generated from edge list, so that step determins if a node is included in the
-        # network, not this step
-        if (is.na(glyph.compartment) & !is.na(glyph.id) & glyph.class != "unit of information" & 
-            glyph.class != "state variable") {
-            nodes.info["parent.compartment"] <- "free.node.compartment"
-        }
-        # test if the parent of this node is complex if the node's parent have a class
-        # attribute
-        if (!is.na(xml2::xml_attr(xml2::xml_parent(glyph), "class")) & !glyph.class %in% 
-            c("annotation", "unit of information", "state variable")) {
-            if (xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", 
-                "submap") & !is.na(glyph.id)) {
-                parent.id <- xml2::xml_attr(xml2::xml_parent(glyph), "id")
-                if (xml2::xml_attr(xml2::xml_parent(glyph), "class") == "submap") {
-                  nodes.info["parent.submap"] <- parent.id
-                } else {
-                  nodes.info["parent.complex"] <- parent.id
-                }
-            }
-        }
-        # generate state variable to molecule mapping
-        if ((glyph.class == "unit of information" | glyph.class == "state variable")) {
-            parent.id <- xml2::xml_attr(xml2::xml_parent(glyph), "id")
-            nodes.info["parent.macromolecule"] <- parent.id
-        }
-        nodes.info[["glyph.id"]] <- glyph.id.original
-        node.set.list[["all.nodes"]] <- rbind(node.set.list[["all.nodes"]], nodes.info)
-    }
-    return(node.set.list)
+    LineCoordinates <- paste("x1=", x1, " y1=", y1, " x2=", x2, " y2=", y2, "", sep = "\"")
+    svg.port <- plot.line(LineCoordinates, glyph.port.info["id"], stroke.color = "black")
+    return(svg.port)
 }
 
 #########################################################################################################
@@ -1305,472 +827,109 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
 }
 
 #########################################################################################################
-# parse ports
-xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
-    ports <- list()
-    ports.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//port")))
-    if (!is.null(ports.info)) {
-        ports <- apply(ports.info, 1, function(port) {
-            port.object <- new("port", x = as.numeric(port["x"]), y = as.numeric(port["y"]) + 
-                y.margin, id = port["id"])
-            return(port.object)
-        })
-        names(ports) <- ports.info[, "id"]
-    }
-    return(ports)
-}
-
-#########################################################################################################
-get.spline.compo <- function(arc.spline, spline.info, y.margin) {
-    children <- xml2::xml_children(arc.spline)
-    components <- list()
-    for (i in seq_len(length(children))) {
-        child <- children[i]
-        child.attrs <- xml2::xml_attrs(child)[[1]]
-        spline.i <- 0
-        if (xml2::xml_name(child) == "source.arc") {
-            # state variables has different shape in PD and ER, so we need to switch the
-            # shape when needed for interaction arcs, they have shapes at both ends, so we
-            # need to change it: use 'assignment' arc to just plot one shape; also for source
-            # arc, the orientation should be reversed
-            if (spline.info["class"] == "interaction") {
-                child.attrs["class"] <- "assignment"
-            }
-            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), id = paste(spline.info["id"], 
-                "source.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
-                start.y = as.numeric(child.attrs["start.y"]) + y.margin, end.x = as.numeric(child.attrs["end.x"]), 
-                end.y = as.numeric(child.attrs["end.y"]) + y.margin, stroke.opacity = 0)
-        } else if (xml2::xml_name(child) == "target.arc") {
-            # state variables has different shape in PD and ER, so we need to switch the
-            # shape when needed for interaction arcs, they have shapes at both ends, so we
-            # need to change it: use 'assignment' arc to just plot one shape; also for source
-            # arc, the orientation should be reversed
-            if (spline.info["class"] == "interaction") {
-                child.attrs["class"] <- "assignment"
-            }
-            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), id = paste(spline.info["id"], 
-                "target.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
-                start.y = as.numeric(child.attrs["start.y"]) + y.margin, end.x = as.numeric(child.attrs["end.x"]), 
-                end.y = as.numeric(child.attrs["end.y"]) + y.margin, stroke.opacity = 0)
-        } else if (xml2::xml_name(child) == "spline") {
-            spline.i <- spline.i + 1
-            if.y <- grepl("\\.y", names(child.attrs))
-            child.attrs[if.y] <- as.numeric(child.attrs[if.y]) + y.margin
-            arc <- new("spline", id = paste(spline.info["id"], "spline", spline.i, 
-                sep = ":"), spline.coords = child.attrs)
-        }
-        components <- c(components, arc)
-    }
-    return(components)
-}
-
-#########################################################################################################
-parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
-    arcs.user = list()) {
-    if (length(arcs.user) == 0) {
-        svg.splines <- ""
-        splines.list <- list()
-        arc.splines <- xml2::xml_find_all(sbgn.xml, ".//edge.spline.info")
-        arc.splines <- xml2::xml_find_all(arc.splines[[length(arc.splines)]], ".//arc.spline")  # if there are more than one version of routed edges, we use the latest version
+get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
+                               output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, id.mapping.all.list, 
+                               show.ids.for.multiHit) {
+    node.set.list <- list(all.nodes = matrix(ncol = 8, nrow = 0))
+    all.glyphs <- xml2::xml_find_all(sbgn, ".//glyph")
+    for (i in seq_len(length(all.glyphs))) {
+        glyph <- all.glyphs[[i]]
+        nodes.info <- c(glyph.id = "", id = "", class = "", parent.complex = "", 
+                        parent.submap = "", parent.compartment = "", parent.macromolecule = "", 
+                        parent.node = "")
+        nodes.info
+        glyph.class <- xml2::xml_attr(glyph, "class")
+        glyph.id <- xml2::xml_attr(glyph, "id")
+        glyph.id.original <- glyph.id
         
-        splines <- rep(NULL, times = length(arc.splines))
-        for (i in seq_along(arc.splines)) {
-            arc.spline <- arc.splines[[i]]
-            spline.info <- xml2::xml_attrs(arc.spline)  # extract attributes of this glyph
-            spline.arc <- new("spline.arc")
-            spline.arc@id <- paste(spline.info["id"], spline.info["class"], sep = "==")
-            # spline.arc@id = spline.info['id']
-            spline.arc@source <- spline.info["source"]
-            spline.arc@target <- spline.info["target"]
-            spline.arc@arc.class <- spline.info["class"]
-            spline.arc@global.parameters.list <- global.parameters.list
-            spline.arc@edge <- list(line.stroke.color = "black", line.stroke.opacity = 1, 
-                line.width = 2, tip.stroke.opacity = 1, tip.stroke.color = "black", 
-                tip.stroke.width = 1, tip.fill.color = "black", tip.fill.opacity = 1)
-            spline.class <- gsub(" ", "_", spline.info["class"])
-            
-            components <- get.spline.compo(arc.spline, spline.info, y.margin)
-            
-            spline.arc@components <- components
-            splines.list[[spline.arc@id]] <- spline.arc
-            if (if.plot.svg) {
-                spline.arc.svg <- plot.arc(spline.arc)
-            } else {
-                spline.arc.svg <- ""
+        if (if.other.id.types.available & glyph.class %in% c("macromolecule", "simple chemical")) {
+            # print(glyph.id)
+            if (xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", 
+                                                                        "submap") & !is.na(glyph.id)) {
+                parent.id <- xml2::xml_attr(xml2::xml_parent(glyph), "id")
+                glyph.id <- gsub(paste("_", parent.id, sep = ""), "", glyph.id)  # get rid of the complex name. That's how pathwayCommons name molecules within complex
             }
-            splines[i] <- spline.arc.svg
+            glyph.id <- change.glyph.id(glyph.id, glyph.class, id.mapping.all.list, 
+                                        output.gene.id.type.use, output.cpd.id.type.use, SBGN.file.cpd.id.type, 
+                                        SBGN.file.gene.id.type, show.ids.for.multiHit = show.ids.for.multiHit)
         }
-        svg.splines <- paste(splines, collapse = "\n")
-    } else {
-        svg.splines <- ""
-        splines.list <- arcs.user
-        for (i in seq_len(length.out = length(arcs.user))) {
-            spline.arc <- arcs.user[[i]]
-            if (if.plot.svg) {
-                spline.arc.svg <- plot.arc(spline.arc)
-            } else {
-                spline.arc.svg <- ""
+        nodes.info["id"] <- glyph.id
+        nodes.info["class"] <- glyph.class
+        
+        glyph.compartment <- xml2::xml_attr(glyph, "compartmentRef")
+        if (!is.na(glyph.compartment) & !is.na(glyph.id) & glyph.class != "unit of information" & 
+            glyph.class != "state variable" & glyph.class != "source and sink") {
+            # 'source and sink' will be assigned to their neighbor's compartment
+            nodes.info["parent.compartment"] <- glyph.compartment
+        }
+        # generate nodes for layout, for the nodes not in any compartment. exclude
+        # state.variable, nodes with no id, , still needs complex, because the network is
+        # generated from edge list, so that step determins if a node is included in the
+        # network, not this step
+        if (is.na(glyph.compartment) & !is.na(glyph.id) & glyph.class != "unit of information" & 
+            glyph.class != "state variable") {
+            nodes.info["parent.compartment"] <- "free.node.compartment"
+        }
+        # test if the parent of this node is complex if the node's parent have a class
+        # attribute
+        if (!is.na(xml2::xml_attr(xml2::xml_parent(glyph), "class")) & !glyph.class %in% 
+            c("annotation", "unit of information", "state variable")) {
+            if (xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", 
+                                                                        "submap") & !is.na(glyph.id)) {
+                parent.id <- xml2::xml_attr(xml2::xml_parent(glyph), "id")
+                if (xml2::xml_attr(xml2::xml_parent(glyph), "class") == "submap") {
+                    nodes.info["parent.submap"] <- parent.id
+                } else {
+                    nodes.info["parent.complex"] <- parent.id
+                }
             }
-            svg.splines <- paste(svg.splines, spline.arc.svg, sep = "\n")
         }
+        # generate state variable to molecule mapping
+        if ((glyph.class == "unit of information" | glyph.class == "state variable")) {
+            parent.id <- xml2::xml_attr(xml2::xml_parent(glyph), "id")
+            nodes.info["parent.macromolecule"] <- parent.id
+        }
+        nodes.info[["glyph.id"]] <- glyph.id.original
+        node.set.list[["all.nodes"]] <- rbind(node.set.list[["all.nodes"]], nodes.info)
     }
-    return(list(svg.splines = svg.splines, splines.list = splines.list))
+    return(node.set.list)
 }
 
 #########################################################################################################
-get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge.paras, 
-    global.parameters.list, glyphs) {
-    svg.arc <- ""
-    arc.line <- c(arc.info["source"], arc.info["target"], arc.info["id"], start.x = "", 
-        start.y = "", end.x = "", end.y = "")
-    children <- xml2::xml_children(arc)
-    for (i in seq_len(length(children))) {
-        child <- children[i]
-        coordinates <- xml2::xml_attrs(child)[[1]]
-        coordinates["y"] <- as.numeric(coordinates["y"]) + y.margin
-        
-        if (xml2::xml_name(child) == "start") {
-            # state variables has different shape in PD and ER, so we need to switch the
-            # shape when needed
-            arc.line["start.x"] <- coordinates["x"]
-            arc.line["start.y"] <- coordinates["y"]
-            
-        } else if (xml2::xml_name(child) == "next") {
-            arc.line["end.x"] <- coordinates["x"]
-            arc.line["end.y"] <- coordinates["y"]
-            if (is.na(arc.line["id"])) {
-                arc.line["id"] <- paste("next", arc.info["source"], arc.info["target"], 
-                  sep = "->")
-            }
-            arc <- new("next.sbgn.arc", id = paste(arc.line["id"], arc.line["start.x"], 
-                sep = "_"), start.x = as.numeric(arc.line["start.x"]), start.y = as.numeric(arc.line["start.y"]), 
-                end.x = as.numeric(arc.line["end.x"]), end.y = as.numeric(arc.line["end.y"]))
-            arc@global.parameters.list <- global.parameters.list
-            arc@arc.class <- "next"
-            arc@edge <- edge.paras
-            
-            arcs.list[[arc@id]] <- arc
-            svg.arc <- paste(svg.arc, plot.arc(arc), sep = "\n")
-            arc.line["start.x"] <- coordinates["x"]  # after ploting this 'next', set the new_arc's start coordinates
-            arc.line["start.y"] <- coordinates["y"]
-            
-        } else if (xml2::xml_name(child) == "end") {
-            arc.line["end.x"] <- coordinates["x"]
-            arc.line["end.y"] <- coordinates["y"]
-            if (sum(as.numeric(arc.line[c("start.x", "start.y", "end.x", "end.y")])) == 
-                0) {
-                arc.line <- find.arc.coordinates(arc.line, glyphs)
-            }
-            if (is.na(arc.line["id"])) {
-                arc.line["id"] <- paste(arc.info["source"], arc.info["target"], sep = "->")
-            }
-            arc <- new(paste(arc.class, ".sbgn.arc", sep = ""), id = paste(arc.line["id"], 
-                arc.line["start.x"], sep = "_"), start.x = as.numeric(arc.line["start.x"]), 
-                start.y = as.numeric(arc.line["start.y"]), end.x = as.numeric(arc.line["end.x"]), 
-                end.y = as.numeric(arc.line["end.y"]))
-            arc@arc.class <- arc.class
-            arc@source <- arc.info["source"]
-            arc@target <- arc.info["target"]
-            arc@global.parameters.list <- global.parameters.list
-            arc@edge <- edge.paras
-            arcs.list[[arc@id]] <- arc
-            svg.arc <- paste(svg.arc, plot.arc(arc), sep = "\n")
-        }
+simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
+    all.nodes <- node.ids.from.sbgn(sbgn.file, ...)
+    if (is.null(all.nodes)) {
+        return("no.nodes")
     }
-    return(list(arcs.list = arcs.list, svg.arc = svg.arc))
+    user.data <- runif(length(all.nodes), -11, 11)
+    user.data <- as.data.frame(matrix(runif(length(all.nodes) * n.samples, -1, 1), 
+        ncol = n.samples))
+    row.names(user.data) <- all.nodes
+    user.data <- generate.user.data(user.data)
+    return(user.data)
+}
+
+#########################################################################################################
+node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule", "simple chemical"), 
+                               if.include.complex.member = FALSE) {
+    message("reading SBGN-ML file for node ids: ", sbgn.file)
+    sbgn <- xml2::read_xml(sbgn.file)
+    xml2::xml_attrs(sbgn) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
+    # glyph.info = do.call(rbind,xml_attr(xml_find_all(sbgn,'.//glyph'),'id'))
+    glyph.info <- xml2::xml_attr(xml2::xml_find_all(sbgn, ".//glyph"), "id")
     
-}
-
-#########################################################################################################
-# parse arcs
-parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
-    arcs.user = list()) {
-    arcs.list <- list()
-    if (length(arcs.user) == 0) {
-        edge.paras <- list(line.stroke.color = "black", line.stroke.opacity = 1, 
-            line.width = 2, tip.stroke.opacity = 1, tip.stroke.color = "black", tip.stroke.width = 1, 
-            tip.fill.color = "black", tip.fill.opacity = 1)
-        all.arcs <- xml2::xml_find_all(sbgn.xml, ".//arc")
-        for (i in seq_len(length(all.arcs))) {
-            arc <- all.arcs[i]
-            arc.info <- xml2::xml_attrs(arc)[[1]]  # extract attributes of this glyph
-            if (is.na(arc.info["id"])) {
-                arc.info["id"] <- paste(arc.info["source"], arc.info["target"], sep = "->")
-            }
-            arc.class <- gsub(" ", "_", arc.info["class"])
-            arc.segments <- get.arc.segments(arc, arcs.list, arc.class, y.margin, 
-                arc.info, edge.paras, global.parameters.list, glyphs)
-            svg.arc <- arc.segments$svg.arc
-            arcs.list <- arc.segments$arcs.list
-        }
-    } else {
-        arcs.list <- arcs.user
-        svg.arc <- ""
-        for (i in seq_len(length.out = length(arcs.list))) {
-            svg.arc <- paste(svg.arc, plot.arc(arcs.list[[i]]), sep = "\n")
-        }
+    glyph.class <- xml2::xml_attr(xml2::xml_find_all(sbgn, ".//glyph"), "class")
+    if (!identical(output.glyph.class, "all")) {
+        glyph.info <- glyph.info[glyph.class %in% output.glyph.class]
     }
-    return(list(svg.arc = svg.arc, arcs.list = arcs.list))
-}
-
-#########################################################################################################
-generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id.node.count.list) {
-    if (is.na(glyph.id)) {
-        if (glyph.class %in% c("unit of information", "state variable")) {
-            glyph.parent <- xml2::xml_parent(glyph)
-            parent.id <- xml2::xml_attr(glyph.parent, "id")
-            if (is.null(node.set.list[["molecules.with.state.variables"]][[parent.id]])) {
-                node.set.list[["molecules.with.state.variables"]][[parent.id]] <- 1
-            } else {
-                node.set.list[["molecules.with.state.variables"]][[parent.id]] <- node.set.list[["molecules.with.state.variables"]][[parent.id]] + 
-                  1
-            }
-            v.i <- node.set.list[["molecules.with.state.variables"]][[parent.id]]
-            glyph.id <- paste(parent.id, v.i, sep = ".info.")
-            
-        } else if (!glyph.class %in% names(no.id.node.count.list)) {
-            # some nodes don't have id(cardinality), we need to gennerate an id for them
-            no.id.node.count.list[[glyph.class]] <- 0
-        } else {
-            no.id.node.count.list[[glyph.class]] <- no.id.node.count.list[[glyph.class]] + 
-                1
-        }
-        index.id <- no.id.node.count.list[[glyph.class]]
-        glyph.id <- paste(glyph.class, index.id, sep = ":")
+    if (!if.include.complex.member) {
+        # this function need to be improved. Now we assume complex members have 'Complex'
+        # in their IDs, which may only apply to pathwayCommons naming.
+        glyph.info <- glyph.info[!grepl("Complex", glyph.info)]
     }
-    return(list(glyph.id = glyph.id, node.set.list = node.set.list, no.id.node.count.list = no.id.node.count.list))
-}
-
-#########################################################################################################
-parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, max.x, 
-    global.parameters.list, sbgn.id.attr, glyphs.user = list(), compartment.layer.info, 
-    if.plot.cardinality) {
-    
-    if.plot.annotation.nodes <- global.parameters.list$if.plot.annotation.nodes
-    if.use.number.for.long.label <- global.parameters.list$if.use.number.for.long.label
-    # parse glyphs and plot glyphs and ports
-    map.language <- xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//map")[[1]])["language"]
-    message("\nMap language is ", map.language, "\n")
-    if (is.null(map.language)) {
-        map.language <- ""
-    }
-    # glyph set list
-    glyph.names <- c()
-    # find plot parameters svg contents
-    svg.ports <- ""
-    svg.nodes <- ""
-    svg.nodes.complex <- ""
-    svg.nodes.compartment <- list()
-    svg.cardinality <- ""  # the cadinality node are supposed to be in front of the arcs, so need to print it again at the end of the svg file
-    node.set.list <- list(molecules.with.state.variables = list())
-    if.has.chemical.nodes <- FALSE
-    if.has.non.chemical.nodes <- FALSE
-    glyph.coors <- list()
-    user.defined.glyphs <- names(glyphs.user)
-    
-    
-    shorter.label.mapping.list <- c("shorter label", "original label")
-    long.words.count.list <- list()
-    no.id.node.count.list <- list()
-    all.glyphs.xml <- xml2::xml_find_all(sbgn.xml, ".//glyph")
-    nodes.objs <- list()
-    for (i in seq_along(all.glyphs.xml)) {
-        glyph <- all.glyphs.xml[[i]]
-        glyph.info <- xml2::xml_attrs(glyph)  # extract attributes of this glyph
-        # Add compartment to free nodes
-        if (is.na(glyph.info["compartmentRef"])) {
-            glyph.info["compartmentRef"] <- "free.node"
-        }
-        
-        glyph.class <- gsub(" ", "_", glyph.info["class"])
-        if (glyph.class %in% c("simple_chemical_multimer", "simple_chemical")) {
-            if.has.chemical.nodes <- TRUE
-        }
-        if (glyph.class %in% c("macromolecule", "nucleic_acid_feature")) {
-            if.has.non.chemical.nodes <- TRUE
-        }
-        node <- new(paste(glyph.class, ".sbgn", sep = ""))
-        node@glyph.class <- glyph.info["class"]
-        
-        # Some glyphs don't have ID, generate IDs for them
-        parsed.ids.record <- generate.glyph.id(glyph.id = glyph.info["id"], glyph.class = glyph.info["class"], 
-            glyph, node.set.list, no.id.node.count.list)
-        node@id <- parsed.ids.record$glyph.id
-        node.set.list <- parsed.ids.record$node.set.list
-        no.id.node.count.list <- parsed.ids.record$no.id.node.count.list
-        
-        ##### use user glyph if found
-        if (node@id %in% user.defined.glyphs) {  
-            node <- glyphs.user[[node@id]]
-            label.margin <- node@label.margin
-            svg.port <- node@svg.port
-            if (length(node@clone) > 0) {
-                node.clone <- node@clone[[1]]
-            } else {
-                node.clone <- ""
-            }
-            if (is.null(node)) {
-                message("No node found in user defined glyphs!\n")
-                print(user.defined.glyphs)
-                print(node@id)
-                print(node)
-            }
-        } else {
-            parse.result <- generate.node.obj(glyph, glyph.class, glyph.info, node, 
-                if.plot.svg, y.margin, sbgn.id.attr, user.data, max.x, global.parameters.list, 
-                if.use.number.for.long.label, if.plot.annotation.nodes, map.language, 
-                long.words.count.list, shorter.label.mapping.list)
-            node <- parse.result$node
-            long.words.count.list <- parse.result$long.words.count.list
-            shorter.label.mapping.list <- parse.result$shorter.label.mapping.list
-            node.clone <- node@clone
-        }
-        glyph.names <- c(glyph.names, node@id)
-        if (if.plot.svg) {
-            if (glyph.class == "annotation" & !if.plot.annotation.nodes) {
-            } else if (is(node, "complex.sbgn")) {
-                svg.nodes.complex <- paste(svg.nodes.complex, plot.glyph(node), sep = "\n")
-            } else if (is(node, "compartment.sbgn")) {
-                # if this node is a clone marker
-                svg.nodes.compartment <- c(svg.nodes.compartment, plot.glyph(node))
-                names(svg.nodes.compartment)[length(svg.nodes.compartment)] <- node@id
-            } else if (!is.character(node.clone)) {
-                # if this node is a clone marker
-                svg.nodes <- paste(svg.nodes, plot.glyph(node), plot.glyph(node.clone), 
-                  sep = "\n")
-            } else if (is(node, "cardinality.sbgn") | is(node, "stoichiometry.sbgn")) {
-                svg.cardinality <- paste(svg.cardinality, plot.glyph(node), sep = "\n")
-            } else {
-                svg.nodes <- paste(svg.nodes, plot.glyph(node), sep = "\n")
-            }
-            svg.ports <- paste(svg.ports, svg.port, sep = "\n")
-        }
-        
-        ############################################################################### 
-        if (glyph.class %in% c("complex", "compartment")) {
-            label.margin <- node@label.margin
-            glyph.coor <- c(node@x - node@w/2, node@y - node@h/2 - label.margin - 
-                6, node@x + node@w/2, node@y + node@h/2)  # find the node boundaries. We'll use them to find a place to put color panel
-        } else {
-            glyph.coor <- c(node@x - node@w/2, node@y - node@h/2, node@x + node@w/2, 
-                node@y + node@h/2)  # find the node boundaries. We'll use them to find a place to put color panel
-        }
-        glyph.coors[[node@id]] <- glyph.coor
-        nodes.objs <- c(nodes.objs, node)
-    }
-    glyph.coors <- do.call(rbind, glyph.coors)
-    colnames(glyph.coors) <- c("x", "y", "xw", "yh")
-    names(nodes.objs) <- glyph.names
-    # parse compartment
-    if (length(compartment.layer.info) > 0) {
-        if (!identical(compartment.layer.info, "original")) {
-            svg.nodes.compartment <- svg.nodes.compartment[compartment.layer.info]
-        }
-    }
-    svg.nodes.compartment <- paste(svg.nodes.compartment, collapse = "\n")
-    # check cardinality
-    if (!if.plot.cardinality) {
-        svg.cardinality <- ""
-    }
-    out.list <- list(glyphs = nodes.objs, svg.ports = svg.ports, svg.nodes = svg.nodes, 
-        svg.nodes.complex = svg.nodes.complex, svg.nodes.compartment = svg.nodes.compartment, 
-        svg.cardinality = svg.cardinality, if.has.chemical.nodes = if.has.chemical.nodes, 
-        if.has.non.chemical.nodes = if.has.non.chemical.nodes, glyph.coors = glyph.coors, 
-        shorter.label.mapping.list = shorter.label.mapping.list)
-    return(out.list)
-}
-
-#########################################################################################################
-parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, node, 
-    if.plot.svg, y.margin) {
-    
-    if.complex.empty <- TRUE
-    node.clone <- ""
-    node.label <- ""
-    svg.port <- ""
-    glyph.port.info <- c()
-    children <- xml2::xml_children(glyph)
-    for (i in seq_len(length(children))) {
-        child <- children[[i]]
-        
-        if (xml2::xml_name(child) == "state") {
-            # state variables has different shape in PD and ER, so we need to switch the
-            # shape when needed
-            if (map.language == "entity relationship") {
-                original.id <- node@id
-                node <- new(paste(glyph.class, ".ER.sbgn", sep = ""))
-                node@id <- original.id
-                node@glyph.class <- glyph.info["class"]
-            }
-            glyph.label <- xml2::xml_attrs(child)  # find the label information for this glyph
-            if (is.na(glyph.label["variable"])) {
-                # sometimes there is no variable name, in this case we just show the value
-                node@label <- glyph.label["value"]
-            } else {
-                node@label <- paste(glyph.label["value"], "@", glyph.label["variable"], 
-                  sep = "")
-            }
-        } else if (xml2::xml_name(child) == "clone") {
-            # if this parent node has a clone marker
-            node.clone <- new("clone.sbgn")  # create a node for the marker
-            if (glyph.class == "simple_chemical") {
-                node.clone <- new("clone_simple_chemical.sbgn")
-            }
-            clone.children <- xml2::xml_children(child)
-            if (length(clone.children) == 0) {
-                # if the marker has no label
-                node.clone@label <- ""
-            } else {
-                child.clone.label <- clone.children[1]  # if the marker has a label, find it
-                child.clone.label.label <- xml2::xml_attrs(child.clone.label)  # find the label information for this glyph
-                node.clone@label <- child.clone.label.label[[1]]
-            }
-        } else if (xml2::xml_name(child) == "label") {
-            glyph.label <- xml2::xml_attrs(child)  # find the label information for this glyph
-            
-            node.label <- glyph.label["text"]
-            node@label <- glyph.label["text"]
-            glyph.info["label"] <- glyph.label
-        } else if (xml2::xml_name(child) == "entity") {
-            glyph.entity <- xml2::xml_attrs(child)  # find the label information for this glyph
-            if (map.language == "activity flow" & glyph.class == "unit_of_information") {
-                glyph.class <- gsub(" ", "_", glyph.entity)
-                original.id <- node@id
-                node <- new(paste(glyph.class, ".sbgn", sep = ""))
-                node@id <- original.id
-                node@glyph.class <- glyph.entity
-                node@label <- node.label
-                node@label_location <- "center"
-            }
-        } else if (xml2::xml_name(child) == "bbox") {
-            glyph.box.information <- xml2::xml_attrs(child)  # find the box information for this glyph
-            glyph.box.information["y"] <- as.numeric(glyph.box.information["y"]) + 
-                y.margin
-            node@x <- as.numeric(glyph.box.information["x"])
-            node@y <- as.numeric(glyph.box.information["y"])
-            node@h <- as.numeric(glyph.box.information["h"])
-            node@w <- as.numeric(glyph.box.information["w"])
-            
-            node@x <- node@x + node@w/2
-            node@y <- node@y + node@h/2
-        } else if (xml2::xml_name(child) == "port") {
-            glyph.port.info <- xml2::xml_attrs(child)  # find the box information for this glyph
-            glyph.port.info["y"] <- as.numeric(glyph.port.info["y"]) + y.margin
-            # if port has coordinates, plot it
-            if (as.numeric(glyph.port.info["x"]) + as.numeric(glyph.port.info["y"]) != 
-                0) {
-                svg.port <- paste(svg.port, plot.arc.ports(glyph.port.info, node), 
-                  sep = "\n")
-            }
-            node@svg.port <- svg.port
-        } else if (xml2::xml_name(child) == "glyph" & xml2::xml_attr(child, "class") != 
-            "annotation") {
-            if.complex.empty <- FALSE
-        }
-    }
- 
-    return(list(node = node, node.clone = node.clone, glyph.port.info = glyph.port.info, 
-        svg.port = svg.port, node.label = node.label, glyph.info = glyph.info, if.complex.empty = if.complex.empty))
+    glyph.info <- unique(glyph.info)
+    glyph.info <- glyph.info[!is.na(glyph.info)]
+    return(glyph.info)
 }
 
 #########################################################################################################
@@ -1805,667 +964,75 @@ generate.user.data <- function(user.data) {
 }
 
 #########################################################################################################
-node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule", 
-    "simple chemical"), if.include.complex.member = FALSE) {
-    message("reading SBGN-ML file for node ids: ", sbgn.file)
-    sbgn <- xml2::read_xml(sbgn.file)
-    xml2::xml_attrs(sbgn) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
-    # glyph.info = do.call(rbind,xml_attr(xml_find_all(sbgn,'.//glyph'),'id'))
-    glyph.info <- xml2::xml_attr(xml2::xml_find_all(sbgn, ".//glyph"), "id")
-    
-    glyph.class <- xml2::xml_attr(xml2::xml_find_all(sbgn, ".//glyph"), "class")
-    if (!identical(output.glyph.class, "all")) {
-        glyph.info <- glyph.info[glyph.class %in% output.glyph.class]
-    }
-    if (!if.include.complex.member) {
-        # this function need to be improved. Now we assume complex members have 'Complex'
-        # in their IDs, which may only apply to pathwayCommons naming.
-        glyph.info <- glyph.info[!grepl("Complex", glyph.info)]
-    }
-    glyph.info <- unique(glyph.info)
-    glyph.info <- glyph.info[!is.na(glyph.info)]
-    return(glyph.info)
-}
-
-#########################################################################################################
-simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
-    all.nodes <- node.ids.from.sbgn(sbgn.file, ...)
-    if (is.null(all.nodes)) {
-        return("no.nodes")
-    }
-    user.data <- runif(length(all.nodes), -11, 11)
-    user.data <- as.data.frame(matrix(runif(length(all.nodes) * n.samples, -1, 1), 
-        ncol = n.samples))
-    row.names(user.data) <- all.nodes
-    user.data <- generate.user.data(user.data)
-    return(user.data)
-}
-
-#########################################################################################################
-#' Download pre-generated SBGN-ML file from GitHub
-#' 
-#' This function can generate a SBGN-ML file of our pre-collected SBGN-ML files 
-#' 
-#' @param pathway.id The ID of pathway. For accepted pathway IDs, please check \code{data('pathways.info')}. IDs are in column 'pathway.id' (pathways.info[,'pathway.id'])
-#' @param download.folder The output folder to store created SBGN-ML files.
-#' @return A vector of character strings. The path to the created SBGN-ML files.
-#' @examples 
-#' data('pathways.info')
-#' data(sbgn.xmls)
-#' input.sbgn = downloadSbgnFile(
-#'                   pathway.id = pathways.info[1,'pathway.id'],
-#'                   download.folder = './')
-#' @export
-
-downloadSbgnFile <- function(pathway.id, download.folder = ".") {
-    if (!file.exists(download.folder)) {
-        dir.create(download.folder)
-    }
-    if (any(pathway.id %in% c("AF_Reference_Card.sbgn", "PD_Reference_Card.sbgn", 
-        "ER_Reference_Card.sbgn"))) {
-        sbgn.file.names <- pathway.id
-    } else {
-        sbgn.file.names <- pathways.info[pathways.info[, "pathway.id"] %in% pathway.id, 
-            "file.name"]
-    }
-    if (length(sbgn.file.names) == 0) {
-        print("pathway.id")
-        stop("Only pathway IDs in pathways.info[,\"pathway.id\"] are supported!!!\n ")
-    }
-    database.name <- pathways.info[pathways.info[, "pathway.id"] %in% pathway.id, 
-        "database"]
-    output.files <- c()
-    for (i in seq_len(length.out = length(sbgn.file.names))) {
-        sbgn.file.name <- gsub("\"", "", sbgn.file.names[i])
-        output.file <- paste(download.folder, "/", sbgn.file.name, sep = "")
-        if (!file.exists(output.file)) {
-            if (sbgn.file.name %in% names(sbgn.xmls)) {
-                write(sbgn.xmls[[sbgn.file.name]], file = output.file)
-            } else {
-                stop(sbgn.file.name, " is not included in SBGNview.data package!")
-            }
-            
-        } else {
-            message("SBGN file exists:")
-            message(output.file)
-        }
-        output.files <- c(output.files, (as.character(output.file)))
-    }
-    output.files
-    return(output.files)
-}
-
-#########################################################################################################
-geneannot.map.all <- function(in.ids, in.type, out.type, org = "Hs", pkg.name = NULL, 
-    unique.map = TRUE, na.rm = TRUE, keep.order = FALSE) {
-    
-    if (is.null(pkg.name)) {
-        # pkg.name=paste('org', org, 'eg.db', sep='.')
-        message("data bods")
-        data(bods)
-        ridx <- grep(tolower(paste0(org, "[.]")), tolower(bods[, 1]))
-        if (length(ridx) == 0) {
-            ridx <- grep(tolower(org), tolower(bods[, 2:3]))%%nrow(bods)
-            if (length(ridx) == 0) 
-                stop("Wrong org value!")
-            if (any(ridx == 0)) 
-                ridx[ridx == 0] <- nrow(bods)
-        }
-        pkg.name <- bods[ridx, 1]
-    }
-    all.mappings <- character(2) 
-    message("all mappings: ", all.mappings, " items")
-    for (i in seq_len(length.out = nrow(bods))) {
-        if (bods[i, 1] != pkg.name) {
-            (next)()
-        }
-        pkg.name <- bods[i, 1]
-        
-        if (!pkg.name %in% rownames(installed.packages())) { 
-            #(next)() # if package not installed, evals to True, but doesn't install pkg.
-            # install pkg.name
-            message(pkg.name, " is not installed. Installing ", pkg.name)
-            BiocManager::install(pkg.name, update=FALSE)
-            
-        }
-        message("Using package: ", pkg.name, "\n")
-        db.obj <- eval(parse(text = paste0(pkg.name, "::", pkg.name)))
-        id.types <- AnnotationDbi::columns(db.obj)  #columns(eval(as.name(pkg.name)))
-        
-        in.type <- toupper(in.type)
-        out.type <- toupper(out.type)
-        eii <- in.type == toupper("entrez") | in.type == toupper("eg")
-        if (any(eii)) 
-            in.type[eii] <- "entrez"
-        eio <- out.type == toupper("entrez") | out.type == toupper("eg")
-        if (any(eio)) 
-            out.type[eio] <- "entrez"
-        if (in.type == out.type) 
-            stop("in.type and out.type are the same, no need to map!")
-        
-        nin <- length(in.type)
-        if (nin != 1) 
-            stop("in.type must be of length 1!")
-        out.type <- out.type[!out.type %in% in.type]
-        nout <- length(out.type)
-        
-        msg <- paste0("must from: ", paste(id.types, collapse = ", "), "!")
-        if (!in.type %in% id.types) 
-            stop("'in.type' ", msg)
-        if (!all(out.type %in% id.types)) 
-            stop("'out.type' ", msg)
-        
-        in.ids0 <- in.ids
-        in.ids <- unique(as.character(in.ids))  #unique necessary for select()# if(unique.map)
-        out.ids <- character(length(in.ids))
-        res <- try(suppressWarnings(AnnotationDbi::select(db.obj, keys = in.ids, 
-            keytype = in.type, columns = c(in.type, out.type))))
-        all.mappings <- rbind(all.mappings, res)
-    }
-    res <- as.data.frame(all.mappings[-1, ])
-    
-    res <- res[, c(in.type, out.type)]
-    
-    na.idx <- is.na(res[, 2])
-    if (sum(na.idx) > 0) {
-        n.na <- length(unique(res[na.idx, 1]))
-        if (n.na > 0) {
-            print(paste("Note:", n.na, "of", length(in.ids), "unique input IDs unmapped."))
-        }
-        if (na.rm) 
-            res <- res[!na.idx, ]
-    }
-    
-    cns <- colnames(res)
-    
-    res <- as.matrix(res)
-    rownames(res) <- NULL
-    return(res)
-}
-
-#########################################################################################################
-find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mol.name.match, 
-    SBGNview.data.folder = "./SBGNview.tmp.data/") {
-    if (is.null(keywords)) {
-        pathways <- pathways.info[, c("pathway.id", "pathway.name", "sub.database", 
-            "database")]
-    } else if (keyword.type == "pathway.name") {
-        keywords <- tolower(keywords)
-        pathways.info[, "pathway.name"] <- tolower(pathways.info[, "pathway.name"])
-        
-        
-        if.selected <- grepl(pattern = keywords[1], ignore.case = TRUE, pathways.info$pathway.name)
-        if (length(keywords) > 1) {
-            for (i in 2:length(keywords)) {
-                if (keywords.logic == "and") {
-                  if.selected <- if.selected & grepl(pattern = keywords[i], ignore.case = TRUE, 
-                    pathways.info$pathway.name)
-                } else if (keywords.logic == "or") {
-                  if.selected <- if.selected | grepl(pattern = keywords[i], ignore.case = TRUE, 
-                    pathways.info$pathway.name)
-                } else {
-                  stop("keywords.logic must be one of 'and' or 'or'!! ")
-                }
-            }
-        }
-        pathways <- pathways.info[if.selected, c("pathway.id", "pathway.name", "sub.database", 
-            "database")]
-        
-        
-    } else {
-        # using IDs to search for pathway type.pair.name =
-        # paste(keyword.type,'_pathway.id',sep='')
-        data(mapped.ids)
-        # if (keyword.type %in% mapped.ids$gene) {
-        if (keyword.type %in% unique(mapped.ids$gene[,2])) {
-            cpd.or.gene <- "gene"
-        } else if (keyword.type %in% mapped.ids$cpd) {
-            cpd.or.gene <- "compound"
-        }
-        mapping.list <- loadMappingTable(input.type = keyword.type, output.type = "pathway.id", 
-            species = NULL, SBGNview.data.folder = SBGNview.data.folder, cpd.or.gene = cpd.or.gene)
-        mapping.table <- mapping.list[[1]][[1]]
-        if (keyword.type == "CompoundName") {
-            if (keywords.logic == "and") {
-                keywords.logic <- "or"
-                warning("Searching pathways by Compound Names. Using keywords.logic='or'. Please don't set keywords.logic to 'and'!!!\n")
-            }
-            keywords <- tolower(keywords)
-            mapping.table[, keyword.type] <- tolower(as.character(mapping.table[, 
-                keyword.type]))
-            if (mol.name.match == "exact.match") {
-                if.selected <- tolower(mapping.table[, keyword.type]) %in% keywords
-                pathways <- mapping.table[if.selected, ]
-            } else if (mol.name.match == "presence.of.input-string.in.target-name") {
-                if.selected <- grepl(pattern = paste(keywords, collapse = "|"), ignore.case = TRUE, 
-                  mapping.table[, keyword.type])
-                sum(if.selected)
-                pathways <- mapping.table[if.selected, ]
-            } else if (mol.name.match == "jaccard") {
-                best.match <- match.names(input.names = tolower(keywords), output.names = tolower(mapping.table[, 
-                  keyword.type]))
-                pathways <- merge(best.match, mapping.table, by.x = "output.name", 
-                  by.y = keyword.type)
-                names(pathways)[1] <- c("CompoundName")
-            }
-        } else {
-            pathways <- mapping.table[tolower(mapping.table[, keyword.type]) %in% 
-                tolower(keywords), ]
-        }
-    }
-    return(pathways = pathways)
-}
-
-#########################################################################################################
-filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways.info.file.folder = "./SBGNview.tmp.data") {
-    org <- tolower(org)
-    data("pathway.species.pct_Mapped")
-    if (org == "all") {
-        org <- unique(pathway.species.pct_Mapped$species)
-    }
-    pathway.species.pct_Mapped[, "species"] <- as.character(pathway.species.pct_Mapped[, 
-        "species"])
-    pathway.species.pct_Mapped[, "pathway"] <- as.character(pathway.species.pct_Mapped[, 
-        "pathway"])
-    
-    if (!is.null(pathway.completeness)) {
-        message("Using user provided pathway completeness cutoff: the same cutoff for different pathways!\n")
-        
-        pathway.ids <- pathway.species.pct_Mapped[pathway.species.pct_Mapped$species %in% 
-            org & pathway.species.pct_Mapped$pct.mapped.species.pathway >= pathway.completeness, 
-            ]
-    } else {
-        message("Using pre-generated pathway-specific completeness cutoff: different cutoff for different pathways! Pathway 'exist' and 'not exist' accross all species defined by this cutoff have the largest ANOVA F statistic when comparing completeness between 'exist' and 'not exist' groups. \n")
-        pathway.ids <- pathway.species.pct_Mapped[pathway.species.pct_Mapped$species %in% 
-            org, ]
-        data("pathway.completeness.cutoff.info")
-        pathway.specific.cutoff <- pathway.completeness.cutoff.info$cutoff
-        names(pathway.specific.cutoff) <- pathway.completeness.cutoff.info$pathway
-        if.pass.cutoff <- pathway.ids$pct.mapped.species.pathway > pathway.specific.cutoff[pathway.ids$pathway]
-        pathway.ids <- pathway.ids[if.pass.cutoff, ]
-    }
-    colnames(pathway.ids)[1] <- "pathway.id"
-    pathways <- merge(pathways, pathway.ids, all = FALSE)
-    return(pathways)
-}
-
-#########################################################################################################
-#' Retrieve pathways by keywords
-#' 
-#' This function searches for pathways by input keywords.
-#' 
-#' @param keywords A character string or vector. The search is case in-sensitive.
-#' @param keywords.logic A character string. Options are 'and' or 'or'. This will tell the function if the search require 'all' or 'any' of the keywords to be present. It only makes difference when keyword.type is 'pathway.name'.
-#' @param keyword.type A character string. Either 'pathway.name' or one of the ID types in \code{data('mapped.ids')}
-#' @param org  A character string. The KEGG species code.
-#' @param SBGNview.data.folder A character string. 
-#' @details If 'keyword.type' is 'pathway.name' (default), this function will search for the presence of any keyword in the pathway.name column of data(pathways.info). The search is case in-sensitive. If 'keyword.type' is one of the identifier types and 'keywords' are corresponding identifiers, this function will return pathways that include nodes mapped to input identifiers. 
-#' @return A dataframe. Contains information of pathways found.
-#' @examples 
-#' data(pathways.info)
-#' input.pathways <- findPathways('Adrenaline and noradrenaline biosynthesis')
-#' @export
-
-findPathways <- function(keywords = NULL, keywords.logic = "or", keyword.type = "pathway.name", 
-    org = NULL,   SBGNview.data.folder = "./SBGNview.tmp.data/") {
-    pathway.completeness = NULL
-    mol.name.match = c("exact.match", "jaccard", 
-        "presence.of.input-string.in.target-name")[1]
-    if (!file.exists(SBGNview.data.folder)) {
-        dir.create(SBGNview.data.folder)
-    }
-    
-    keywords <- as.vector(keywords)
-    
-    pathways <- find.pathways.by.keywords(keywords, keyword.type, keywords.logic, 
-        mol.name.match, SBGNview.data.folder = SBGNview.data.folder)
-    
-    if (!is.null(org)) {
-        pathways <- filter.pathways.by.org(pathways, org, pathway.completeness, pathways.info.file.folder = "./SBGNview.tmp.data")
-    }
-    pathways.with.name <- pathways.info[, c("pathway.id", "pathway.name")]
-    pathways <- merge(pathways, pathways.with.name, all.x = TRUE)
-    pathways <- unique(pathways)
-    
-    return(pathways)
-}
-
-#########################################################################################################
-# given two vectors of characters/words, this function find the best match
-# between words in the two vectors, by spliting a word into sub-strings and use
-# 'jaccard' to calculate two words' similarity (similarity between thier
-# sub-string vectors). It for one name, the function will output the pair with
-# largest similarity score.
-match.names <- function(input.names, output.names, output.file = NULL) {
-    input.names <- tolower(input.names)
-    output.names <- tolower(output.names)
-    input.names <- unique(input.names)
-    output.names <- unique(output.names)
-    
-    all.pairs <- expand.grid(input.names, output.names)
-    
-    # calculate jaccard of all possible matches
-    ot <- apply(all.pairs, 1, function(pair) {
-        p1n <- pair[1]
-        p2n <- pair[2]
-        p1 <- strsplit(p1n, "[^a-zA-Z0-9]+", perl = TRUE)[[1]]
-        p1 <- unique(p1)
-        p1
-        p2 <- strsplit(p2n, "[^a-zA-Z0-9]+", perl = TRUE)[[1]]
-        p2 <- unique(p2)
-        p2
-        inter <- length(intersect(p1, p2))
-        uni <- length(unique(union(p1, p2)))
-        jc <- inter/uni
-        return(c(p1n, p2n, jc))
-    })
-    ot <- t(ot)
-    
-    ot <- as.data.frame(ot, stringsAsFactors = FALSE)
-    names(ot) <- c("input.name", "output.name", "jaccard")
-    ot$jaccard <- as.numeric(ot$jaccard)
-    
-    # extract the pairs with max jaccard
-    ot1 <- ot
-    mapped.table <- by(ot1, as.factor(ot1$input.name), function(df) {
-        if.max <- df$jaccard == max(df$jaccard)
-        mx.df <- df[if.max, ]
-    })
-    mapped.table <- do.call(rbind, mapped.table)
-    row.names(mapped.table) <- c()
-    if (!is.null(output.file)) {
-        write.table(mapped.table, output.file, sep = "\t", row.names = FALSE, quote = FALSE)
-    }
-    return(mapped.table)
-}
-
-#########################################################################################################
-#' Retrieve gene list or compound list from collected databases
-#' 
-#' @param database Character string. The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.
-#' @param mol.list.ID.type Character string. The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}
-#' @param org Character string. The three letter species code used by KEGG. E.g. 'hsa','mmu'
-#' @param cpd.or.gene Character string. One of 'gene' or 'compound'
-#' @param output.pathway.name Logical. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'
-#' @param combine.duplicated.set Logical.  Some pathways have the same geneset. If this parameter is set to 'TRUE', the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with '||'
-#' @param truncate.name.length Integer. The pathway names will be truncated to at most that length. 
-#' @param SBGNview.data.folder A character string.
-#' @return A list. Each element is a genelist of a pathway.
-#' @examples 
-#' data(pathways.info)
-#' mol.list <- getMolList(
-#'                  database = 'pathwayCommons',
-#'                  mol.list.ID.type = 'ENTREZID',
-#'                  org = 'hsa'
-#' )
-#'   
-#' @export
-
-getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID", 
-    org = "hsa", cpd.or.gene = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
-    truncate.name.length = 50, SBGNview.data.folder = "./SBGNview.tmp.data") {
-    if (tolower(database) == "metacrop") {
-        if (cpd.or.gene == "gene") {
-            id.in.pathway <- "ENZYME"
-        } else {
-            id.in.pathway <- "CompoundName"
-        }
-        output.pathways <- subset(pathways.info, database == "MetaCrop", select = "pathway.id")
-    } else if (tolower(database) %in% c("pathwaycommons", "metacyc")) {
-        if (cpd.or.gene == "gene") {
-            id.in.pathway <- "KO"
-        } else {
-            id.in.pathway <- "chebi"
-        }
-        output.pathways <- subset(pathways.info, database != "MetaCrop", select = "pathway.id")
-    } else { # if wrong value for database
-        stop("'database' argument value is incorrect. Acceptable values are: 'MetaCyc', 'pathwayCommons', 'MetaCrop'")
-    }
-    # metacrop initial list is using enzyme
-    mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
-        cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
-    ref.to.pathway <- mapping.list[[1]][[1]]
-    
-    if (mol.list.ID.type == id.in.pathway) {
-        out.id.to.pathway <- ref.to.pathway
-        # change KO to output id
-    } else {
-        message(id.in.pathway, " ", mol.list.ID.type, "\n\n")
-        
-        out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = mol.list.ID.type, 
-            cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
-            species = org, SBGNview.data.folder = SBGNview.data.folder)
-    
-        out.id.type.to.ref <- out.id.type.to.ref[[1]][[1]]
-        # merge KO to pathway and KO to output id
-        out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
-        out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
-        out.id.to.pathway <- unique(out.id.to.pathway)
-        out.id.to.pathway <- out.id.to.pathway[!is.na(out.id.to.pathway[, 2]), ]
-    }
-    out.id.to.pathway <- unique(out.id.to.pathway)
-    out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, "pathway.id"] %in% 
-        output.pathways$pathway.id, ]
-    out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, mol.list.ID.type] != 
-        "", ]
-    out.id.to.pathway <- split(as.character(out.id.to.pathway[, mol.list.ID.type]), 
-        out.id.to.pathway[, "pathway.id"])
-    out.id.to.pathway <- out.id.to.pathway[!is.na(names(out.id.to.pathway))]
-    
-    if (output.pathway.name) {
-        # merge pathway names
-        pathway.id.to.name <- pathways.info[, c("pathway.id", "pathway.name")]
-        row.names(pathway.id.to.name) <- pathway.id.to.name[, "pathway.id"]
-        pathway.ids <- paste(pathway.id.to.name[, "pathway.id"], pathway.id.to.name[, 
-            "pathway.name"], sep = "::")
-        names(pathway.ids) <- pathway.id.to.name[, "pathway.id"]
-        names(out.id.to.pathway) <- pathway.ids[names(out.id.to.pathway)]
-    }
-    
-    if (combine.duplicated.set) {
-        sets <- lapply(out.id.to.pathway, function(ids) {
-            ids.str <- paste(sort(ids), collapse = "||")
+## parse ports
+## used by renderSbgn function
+xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
+    ports <- list()
+    ports.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//port")))
+    if (!is.null(ports.info)) {
+        ports <- apply(ports.info, 1, function(port) {
+            port.object <- new("port", x = as.numeric(port["x"]), y = as.numeric(port["y"]) + 
+                                   y.margin, id = port["id"])
+            return(port.object)
         })
-        sets <- unlist(sets)
-        pathways.same.set <- tapply(names(sets), as.factor(sets), function(pathways) {
-            pathways.joint <- paste(sort(pathways), collapse = "||")
-        })
-        out.id.to.pathway <- as.list(names(pathways.same.set))
-        names(out.id.to.pathway) <- pathways.same.set
-        out.id.to.pathway <- lapply(out.id.to.pathway, function(ids) {
-            strsplit(ids, "\\|\\|")[[1]]
-        })
+        names(ports) <- ports.info[, "id"]
     }
-    names(out.id.to.pathway) <- substr(names(out.id.to.pathway), 1, truncate.name.length)
-    
-    sorted.names <- sort(names(out.id.to.pathway), method = "radix", decreasing = FALSE)
-    out.id.to.pathway <- out.id.to.pathway[sorted.names]
-    return(out.id.to.pathway)
+    return(ports)
 }
 
 #########################################################################################################
-# copy of getMolList function. Does reverse mapping: KO -> geneid 
-# giving an error 
-getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID", 
-                       org = "hsa", cpd.or.gene = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
-                       truncate.name.length = 50, SBGNview.data.folder = "./SBGNview.tmp.data") {
-    if (tolower(database) == "metacrop") {
-        if (cpd.or.gene == "gene") {
-            id.in.pathway <- "ENZYME"
-        } else {
-            id.in.pathway <- "CompoundName"
-        }
-        output.pathways <- subset(pathways.info, database == "MetaCrop", select = "pathway.id")
-    } else if (tolower(database) %in% c("pathwaycommons", "metacyc")) {
-        if (cpd.or.gene == "gene") {
-            id.in.pathway <- "KO"
-        } else {
-            id.in.pathway <- "chebi"
-        }
-        output.pathways <- subset(pathways.info, database != "MetaCrop", select = "pathway.id")
-    } else { # if wrong value for database
-        stop("'database' argument value is incorrect. Acceptable values are: 'MetaCyc', 'pathwayCommons', 'MetaCrop'")
-    }
-    # metacrop initial list is using enzyme
-    mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
-                                     cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
-    ref.to.pathway <- mapping.list[[1]][[1]]
-    View(ref.to.pathway)
-    
-    if (mol.list.ID.type == id.in.pathway) {
-        out.id.to.pathway <- ref.to.pathway
-        # change KO to output id
+## used in SBGNview function
+get.arcs.info <- function(sbgn) {
+    # Retrieve edge information
+    edge.spline.info.node <- xml2::xml_find_all(sbgn, ".//edge.spline.info")
+    # in the original design, the routed edges are in the format of svg. In updated
+    # version, the edges are recorded by their information in element
+    # 'edge.spline.info'(location etc.)
+    if (length(edge.spline.info.node) > 0) {
+        arcs.info <- "parse splines"
     } else {
-        message(id.in.pathway, " ", mol.list.ID.type, "\n\n")
-        
-        out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = mol.list.ID.type, 
-                                               cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
-                                               species = org, SBGNview.data.folder = SBGNview.data.folder)
-        
-        out.id.type.to.ref <- out.id.type.to.ref[[1]][[1]]
-        # merge KO to pathway and KO to output id
-        out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
-        out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
-        out.id.to.pathway <- unique(out.id.to.pathway)
-        out.id.to.pathway <- out.id.to.pathway[!is.na(out.id.to.pathway[, 2]), ]
+        arcs.info <- "straight"
     }
-    out.id.to.pathway <- unique(out.id.to.pathway)
-    out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, "pathway.id"] %in% 
-                                               output.pathways$pathway.id, ]
-    out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, mol.list.ID.type] != 
-                                               "", ]
-    out.id.to.pathway <- split(as.character(out.id.to.pathway[, mol.list.ID.type]), 
-                               out.id.to.pathway[, "pathway.id"])
-    out.id.to.pathway <- out.id.to.pathway[!is.na(names(out.id.to.pathway))]
-    
-    if (output.pathway.name) {
-        # merge pathway names
-        pathway.id.to.name <- pathways.info[, c("pathway.id", "pathway.name")]
-        row.names(pathway.id.to.name) <- pathway.id.to.name[, "pathway.id"]
-        pathway.ids <- paste(pathway.id.to.name[, "pathway.id"], pathway.id.to.name[, 
-                                                                                    "pathway.name"], sep = "::")
-        names(pathway.ids) <- pathway.id.to.name[, "pathway.id"]
-        names(out.id.to.pathway) <- pathway.ids[names(out.id.to.pathway)]
-    }
-    
-    if (combine.duplicated.set) {
-        sets <- lapply(out.id.to.pathway, function(ids) {
-            ids.str <- paste(sort(ids), collapse = "||")
-        })
-        sets <- unlist(sets)
-        pathways.same.set <- tapply(names(sets), as.factor(sets), function(pathways) {
-            pathways.joint <- paste(sort(pathways), collapse = "||")
-        })
-        out.id.to.pathway <- as.list(names(pathways.same.set))
-        names(out.id.to.pathway) <- pathways.same.set
-        out.id.to.pathway <- lapply(out.id.to.pathway, function(ids) {
-            strsplit(ids, "\\|\\|")[[1]]
-        })
-    }
-    names(out.id.to.pathway) <- substr(names(out.id.to.pathway), 1, truncate.name.length)
-    
-    sorted.names <- sort(names(out.id.to.pathway), method = "radix", decreasing = FALSE)
-    out.id.to.pathway <- out.id.to.pathway[sorted.names]
-    return(out.id.to.pathway)
+    return(arcs.info)
 }
 
 #########################################################################################################
-find.arc.coordinates <- function(arc.line, glyphs) {
-    arc.source <- arc.line["source"]
-    arc.target <- arc.line["target"]
-    
-    node.source <- glyphs[[arc.source]]
-    source.points <- list()
-    
-    if (is(node.source, "port")) {
-        source.points[["port"]] <- c(x = node.source@x, y = node.source@y)
+## used in SBGNview function
+get.compartment.layer <- function(sbgn) {
+    compartment.layer.info <- xml2::xml_find_all(sbgn, ".//compartment.layer.info")
+    if (length(compartment.layer.info) > 0) {
+        compartment.layer.info <- strsplit(xml2::xml_text(compartment.layer.info[1]), 
+                                           "-compartment.layer.info-")[[1]]
     } else {
-        s.h <- node.source@h
-        s.w <- node.source@w
-        s.x <- node.source@x - s.w/2
-        s.y <- node.source@y - s.h/2
-        source.points[["n.s.1"]] <- c(x = s.x + s.w/2, y = s.y)
-        source.points[["n.s.2"]] <- c(x = s.x + s.w/2, y = s.y + s.h)
-        source.points[["n.s.3"]] <- c(x = s.x, y = s.y + s.h/2)
-        source.points[["n.s.4"]] <- c(x = s.x + s.w, y = s.y + s.h/2)
+        compartment.layer.info <- "original"
     }
-    
-    node.target <- glyphs[[arc.target]]
-    
-    target.points <- list()
-    if (is(node.target, "port")) {
-        target.points[["port"]] <- c(x = node.target@x, y = node.target@y)
-    } else {
-        t.h <- node.target@h
-        t.w <- node.target@w
-        t.x <- node.target@x - t.w/2
-        t.y <- node.target@y - t.h/2
-        target.points[["n.t.1"]] <- c(x = t.x + t.w/2, y = t.y)
-        target.points[["n.t.2"]] <- c(x = t.x + t.w/2, y = t.y + t.h)
-        target.points[["n.t.3"]] <- c(x = t.x, y = t.y + t.h/2)
-        target.points[["n.t.4"]] <- c(x = t.x + t.w, y = t.y + t.h/2)
-    }
-    min.dist <- Inf
-    min.node.pairs <- data.frame()
-    all.pairs <- expand.grid(source.points, target.points)
-    for (i in seq_len(nrow(all.pairs))) {
-        node.pairs <- all.pairs[i, ]
-        s.xy <- node.pairs[1][[1]]
-        t.xy <- node.pairs[2][[1]]
-        distance <- (s.xy["x"] - t.xy["x"])^2 + (s.xy["y"] - t.xy["y"])^2
-        if (distance < min.dist) {
-            min.dist <- distance
-            min.node.pairs <- node.pairs
-        }
-    }
-    
-    arc.line["start.x"] <- min.node.pairs[1][[1]]["x"]
-    arc.line["start.y"] <- min.node.pairs[1][[1]]["y"]
-    arc.line["end.x"] <- min.node.pairs[2][[1]]["x"]
-    arc.line["end.y"] <- min.node.pairs[2][[1]]["y"]
-    return(arc.line)
-    
+    return(compartment.layer.info)
 }
 
 #########################################################################################################
-plot.arc.ports <- function(glyph.port.info, node) {
-    port.x <- as.numeric(glyph.port.info["x"])
-    port.y <- as.numeric(glyph.port.info["y"])
-    node.x <- node@x
-    node.y <- node@y
-    node.h <- node@h
-    node.w <- node@w
-    if (abs(port.y - node.y) < node.h/2 & port.x < node.x) {
-        # sometimes there is small difference between the coordinates of port and it's
-        # glyph. So we need to use abs(port.y- node.y)<node.h/2.
-        x1 <- node.x - node.w/2
-        y1 <- node.y
-        x2 <- port.x
-        y2 <- port.y
-    } else if (abs(port.y - node.y) < node.h/2 & port.x > node.x) {
-        x1 <- node.x + node.w/2
-        y1 <- node.y
-        x2 <- port.x
-        y2 <- port.y
-    } else if (port.y < node.y & abs(port.x - node.x) < node.w/2) {
-        x1 <- node.x
-        y1 <- node.y - node.h/2
-        x2 <- port.x
-        y2 <- port.y
-    } else if (port.y > node.y & abs(port.x - node.x) < node.w/2) {
-        x1 <- node.x
-        y1 <- node.y + node.h/2
-        x2 <- port.x
-        y2 <- port.y
+## used in renderSbgn function
+find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale) {
+    box.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//bbox")))
+    x <- as.numeric(box.info[, "x"])
+    w <- as.numeric(box.info[, "w"])
+    max.xw <- max(x + w)
+    
+    y <- as.numeric(box.info[, "y"])
+    h <- as.numeric(box.info[, "h"])
+    max.yh <- max(y + h)
+    
+    min.y <- min(y)
+    min.x <- min(x)
+    
+    if (arcs.info == "straight") {
+        # if there is no spline edges, calculate margin to move both nodes and edges
+        # coordinates. This will give room for color legend
+        y.margin <- max(100, max(max.yh, max.xw)/10) * max(1, color.panel.scale)
     } else {
-        x1 <- port.x
-        y1 <- port.y
-        x2 <- node.x
-        y2 <- node.y
+        # if there is routed edges' svg in the SBGN-ML file, we can't move the nodes
+        y.margin <- max(100, max(max.xw, max.yh)/5 * color.panel.scale)
     }
-    LineCoordinates <- paste("x1=", x1, " y1=", y1, " x2=", x2, " y2=", y2, "", sep = "\"")
-    svg.port <- plot.line(LineCoordinates, glyph.port.info["id"], stroke.color = "black")
-    return(svg.port)
+    return(list(max.xw = max.xw, max.yh = max.yh, min.y = min.y, min.x = min.x, y.margin = y.margin))
 }
 
 #########################################################################################################
