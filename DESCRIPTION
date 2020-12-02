@@ -31,7 +31,8 @@ Imports:
     rmarkdown,
     knitr,
     SummarizedExperiment,
-    AnnotationDbi
+    AnnotationDbi,
+    httr
 RdMacros: Rdpack
 License: AGPL-3
 LazyData: FALSE
@@ -42,9 +43,10 @@ Collate:
     data.R
     SBGNview.R
     SBGNview.obj.fun.R
-    col.panel.R
+    color.panel.R
     highlight.utilities.R
     zzz.R
+    mapping.utilities.R
 RoxygenNote: 7.1.1
 Suggests:
     testthat,

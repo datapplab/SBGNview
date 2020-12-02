@@ -10,7 +10,8 @@ loadMappingTable(
   species = NULL,
   cpd.or.gene,
   limit.to.ids = NULL,
-  SBGNview.data.folder = "./SBGNview.tmp.data"
+  SBGNview.data.folder = "./SBGNview.tmp.data",
+  existing.data.folder = NULL
 )
 }
 \arguments{
