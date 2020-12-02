@@ -25,6 +25,242 @@ fill=\"%s\"
 %s</text>
 "
 
+plot.text <- function(x, y, h, w, label, id, label.location, color = "black", glyph.class = "", 
+                      stroke.opacity = 1, max.x = 0, if.generate.text.box = FALSE, global.parameters.list, 
+                      glyph) {
+    if (length(glyph@text$color) > 0) {
+        color <- glyph@text$color
+    }
+    if (length(glyph@text$x.shift) > 0) {
+        x <- x + glyph@text$x.shift
+    }
+    if (length(glyph@text$y.shift) > 0) {
+        y <- y + glyph@text$y.shift
+    }
+    label <- gsub("&", "-", label)
+    label <- gsub("<[^><]+>", "", label)  # when using paxtools::toSBGN to convert biopax files to SBGN files, some text in the SBGN files contain special characters :label text='<i>p</i>-chloromercuribenzoate' . the '<' and '>' will create problem in the svg file. So we need remove them.
+    if (length(nchar(label)) == 0) {
+        # when the label is empty, don't plot it
+        print("no label")
+        return("")
+    }
+    result.list <- break.text.into.segments(label, w, glyph.class, global.parameters.list = global.parameters.list, 
+                                            max.x = max.x, glyph = glyph)
+    label <- result.list$words.segments
+    font.size <- result.list$font.size
+    global.parameters.list$complex.compartment.label.margin.use <- global.parameters.list$complex.compartment.label.margin
+    if (glyph.class == "compartment") {
+        if (max.x > 0) {
+            # if the graph is large, make label larger
+            global.parameters.list$complex.compartment.label.margin.use <- global.parameters.list$complex.compartment.label.margin.use * 
+                max(1, max.x/2000)
+        }
+    }
+    
+    label.segments <- strsplit(label, "\n")  # the label text in some of the input sbgn files are labeled with '&#xA;' in order to be seperated to different lines
+    label.segments <- label.segments[[1]]
+    align.shift <- font.size/3
+    
+    text.anchor <- "middle"
+    alignment.baseline <- "middle"
+    x.label.box <- x
+    if (length(label.segments) > 1) {
+        # if the text is labeled to be seperated into different lines
+        svg <- ""
+        n.lines <- length(label.segments)
+        h.label.box <- n.lines * font.size
+        for (i in seq_len(length.out = n.lines)) {
+            label.segment <- label.segments[i]
+            w.label.box <- nchar(label.segment) * font.size
+            if (label.location == "center") {
+                alignment.baseline <- "baseline"
+                first.segment.shift <- (n.lines - 1)/2 * font.size
+                start.y <- y - first.segment.shift
+                y.segment <- start.y + (i - 1) * font.size
+                y.segment <- y.segment + align.shift
+                if (i == 1) {
+                    y.label.box <- y.segment + align.shift
+                }
+            } else if (label.location == "top") {
+                y.segment <- y - h/2 + 2 + (i - 1) * font.size
+                if (glyph.class %in% c("complex", "compartment")) {
+                    y.segment <- y - h/2 - n.lines * font.size + (i - 1) * font.size
+                }
+                text.anchor <- "middle"
+                alignment.baseline <- "baseline"
+                y.segment <- y.segment + align.shift * 2
+                if (i == 1) {
+                    y.label.box <- y.segment + align.shift
+                }
+            }
+            svg.segment <- sprintf(template.text, x, y.segment, id, font.size, text.anchor, 
+                                   alignment.baseline, stroke.opacity, alignment.baseline, color, label.segment)
+            svg <- paste(svg, svg.segment, sep = "\n")
+        }
+    } else {
+        w.label.box <- nchar(label) * font.size * 0.5
+        h.label.box <- font.size
+        if (glyph.class %in% c("compartment", "complex")) {
+            align.shift <- 0
+        }
+        svg <- template.text
+        if (label.location == "center") {
+            alignment.baseline <- "baseline"
+            svg <- sprintf(template.text, x, y + align.shift, id, font.size, text.anchor, 
+                           alignment.baseline, stroke.opacity, alignment.baseline, color, label)
+            y.label.box <- y + align.shift
+        } else if (label.location == "top") {
+            text.anchor <- "middle"
+            # alignment.baseline = 'hanging'
+            if (glyph.class %in% c("complex", "compartment")) {
+                alignment.baseline <- "baseline"
+                svg <- sprintf(template.text, x, y + align.shift - h/2 - global.parameters.list$complex.compartment.label.margin.use, 
+                               id, font.size, text.anchor, alignment.baseline, stroke.opacity, 
+                               alignment.baseline, color, label)
+            } else {
+                svg <- sprintf(template.text, x, y + align.shift - h/2 + 4, id, font.size, 
+                               text.anchor, alignment.baseline, stroke.opacity, alignment.baseline, 
+                               color, label)
+            }
+            y.label.box <- y - h/2 - global.parameters.list$complex.compartment.label.margin.use - 
+                h.label.box/3
+        }
+    }
+    return(svg)
+}
+
+#########################################################################################################
+break.text.into.segments <- function(label, w, glyph.class, global.parameters.list, 
+                                     max.x = 0, glyph) {
+    
+    if.long.word <- FALSE
+    text.length.factor <- global.parameters.list$text.length.factor.macromolecule
+    if (length(glyph@text$font.size) > 0) {
+        font.size <- glyph@text$font.size
+    } else {
+        font.size <- global.parameters.list$font.size
+        
+        font.size0 <- font.size
+        if (length(label) == 0) {
+            return(list(words.segments = "", label.margin = 2, font.size = font.size, 
+                        if.long.word = if.long.word, nline = 0))
+        } else if (nchar(label) == 0) 
+        {
+            return(list(words.segments = "", label.margin = 2, font.size = font.size, 
+                        if.long.word = if.long.word, nline = 0))
+        }  # when the label is empty, don't plot it
+        if (length(w) == 0) {
+            w <- 70 * 2/3  # some nodes has no coordinates,
+        } else if (is.na(w)) {
+            w <- 70 * 2/3  # some nodes has no coordinates,
+        }
+        if (glyph.class == "compartment") {
+            if (global.parameters.list$if.scale.compartment.font.size) {
+                font.size <- max(glyph@shape$stroke.width * 3.5, font.size * global.parameters.list$node.width.adjust.factor.compartment * 
+                                     w)
+            } else {
+                font.size <- font.size * global.parameters.list$node.width.adjust.factor
+                font.size <- font.size * global.parameters.list$font.size.scale.gene * 
+                    global.parameters.list$font.size.scale.compartment
+            }
+            if (max.x > 0) {
+                # font.size = font.size * max(1,max.x/2000)
+            }
+            text.length.factor <- global.parameters.list$text.length.factor.compartment
+        } else if (glyph.class == "complex") {
+            if (global.parameters.list$if.scale.complex.font.size) {
+                font.size <- font.size * global.parameters.list$node.width.adjust.factor.complex * 
+                    w
+            } else {
+                font.size <- font.size * global.parameters.list$node.width.adjust.factor
+                font.size <- font.size * global.parameters.list$font.size.scale.gene * 
+                    global.parameters.list$font.size.scale.complex
+            }
+            text.length.factor <- global.parameters.list$text.length.factor.complex
+        } else if (glyph.class %in% c("omitted process", "uncertain process", "cardinality")) {
+            # font.size = font.size * global.parameters.list$logic.node.font.scale
+            font.size <- glyph@h
+        } else if (glyph.class %in% c("tau", "or", "and", "not", "delay", "tag", "terminal")) {
+            # font.size = font.size * global.parameters.list$logic.node.font.scale
+            font.size <- glyph@h/2
+        } else if (label == "SBGNhub Pathway Collection") {
+            # font.size = font.size * global.parameters.list$logic.node.font.scale
+            font.size <- glyph@h * 0.6
+            return(list(words.segments = label, label.margin = font.size, font.size = font.size, 
+                        if.long.word = FALSE, nline = 1))
+        } else if (glyph.class %in% c("state variable", "unit of information")) {
+            font.size <- font.size * global.parameters.list$status.node.font.scale
+        } else {
+            font.size <- font.size * 2 * glyph@h * global.parameters.list$node.width.adjust.factor/70
+            font.size <- font.size * global.parameters.list$font.size.scale.gene
+        }
+    }
+    # sometimes the input label is already splited, then we just need to return it
+    if (grepl("\n", label)) {
+        label.words <- strsplit(label, "\n")[[1]]
+        words.segments <- label
+        nline <- length(label.words)
+    } else {
+        label.words <- strsplit(label, "")[[1]]
+        first.word <- strsplit(label, " ")[[1]][1]
+        words.segments <- ""
+        if (length(label.words) == 1) {
+            words.segments <- label
+            label.margin <- font.size
+            label.length <- (nchar(words.segments)) * font.size
+            return(list(words.segments = words.segments, label.margin = label.margin, 
+                        font.size = font.size, if.long.word = if.long.word, nline = 1))
+        }
+        current.line <- ""
+        nline <- 1
+        for (i in seq_len(length.out = length(label.words))) {
+            word.current <- label.words[i]
+            word.previous <- label.words[i - 1]
+            if (length(word.previous) == 0) {
+                word.previous <- "currently.first.word"
+            }
+            current.line.to.be <- paste(current.line, word.current, sep = "")
+            current.line.to.be.length <- (nchar(current.line.to.be)) * font.size
+            
+            if (current.line.to.be.length > text.length.factor * w & (length(label.words) - 
+                                                                      i) > 2 & (word.previous %in% global.parameters.list$label.spliting.string | 
+                                                                                identical(global.parameters.list$label.spliting.string, c("any")))) {
+                # if there are less than 2 letters left ,merge them to the current line instead
+                # of creating a new line with just 2 letters
+                if (glyph.class == "complex") {
+                    if (first.word == "Complex") {
+                        words.segments <- ""
+                        (break)()
+                    }
+                }
+                if (words.segments != "") {
+                    nline <- nline + 1
+                }
+                if (word.current %in% c(" ") | word.previous == "-" | length(grep("[a-zA-Z]", 
+                                                                                  word.previous)) == 0) {
+                    # if this is the beginning or end of the word, don't insert '-'
+                    words.segments <- paste(words.segments, word.current, sep = "\n")
+                } else {
+                    words.segments <- paste(paste(words.segments, "", sep = ""), word.current, 
+                                            sep = "\n")
+                }
+                current.line <- word.current
+            } else {
+                words.segments <- paste(words.segments, word.current, sep = "")
+                current.line <- current.line.to.be
+            }
+        }
+        words.segments <- gsub("^\n", "", words.segments)
+    }
+    label.margin <- (nline) * (font.size)
+    if (nline > 3) {
+        if.long.word <- TRUE
+        label.margin <- (font.size)
+    }
+    return(list(words.segments = words.segments, label.margin = label.margin, font.size = font.size, 
+                if.long.word = if.long.word, nline = nline))
+}
+
 ######################################################################################################### 
 template.path <- "
 <path
@@ -34,6 +270,7 @@ style=\"fill:%s;fill-opacity:%f;stroke-width:%f;stroke:%s;stroke-opacity:%f\"
 transform = \"rotate(%f %f %f)\"
 />
 "
+
 plot.path <- function(d, id, fill.color, stroke.width, stroke.color, angle = 0, rotate.x = 0, 
     rotate.y = 0, fill.opacity = 0.6, stroke.opacity = 1, object) {
     
@@ -382,6 +619,8 @@ setGeneric("plot.glyph", function(object) {
 setGeneric("plot.arc", function(object) {
     standardGeneric("plot.arc")
 })
+
+
 
 #########################################################################################################
 ###### Classes implementing the glyph class and defining plot.glyph generic function
@@ -2659,110 +2898,5 @@ setMethod("plot.arc", signature("logic_arc.sbgn.arc"), function(object) {
     svg <- svg.line
     return(svg)
 })
-
-#########################################################################################################
-plot.text <- function(x, y, h, w, label, id, label.location, color = "black", glyph.class = "", 
-    stroke.opacity = 1, max.x = 0, if.generate.text.box = FALSE, global.parameters.list, 
-    glyph) {
-    if (length(glyph@text$color) > 0) {
-        color <- glyph@text$color
-    }
-    if (length(glyph@text$x.shift) > 0) {
-        x <- x + glyph@text$x.shift
-    }
-    if (length(glyph@text$y.shift) > 0) {
-        y <- y + glyph@text$y.shift
-    }
-    label <- gsub("&", "-", label)
-    label <- gsub("<[^><]+>", "", label)  # when using paxtools::toSBGN to convert biopax files to SBGN files, some text in the SBGN files contain special characters :label text='<i>p</i>-chloromercuribenzoate' . the '<' and '>' will create problem in the svg file. So we need remove them.
-    if (length(nchar(label)) == 0) {
-        # when the label is empty, don't plot it
-        print("no label")
-        return("")
-    }
-    result.list <- break.text.into.segments(label, w, glyph.class, global.parameters.list = global.parameters.list, 
-        max.x = max.x, glyph = glyph)
-    label <- result.list$words.segments
-    font.size <- result.list$font.size
-    global.parameters.list$complex.compartment.label.margin.use <- global.parameters.list$complex.compartment.label.margin
-    if (glyph.class == "compartment") {
-        if (max.x > 0) {
-            # if the graph is large, make label larger
-            global.parameters.list$complex.compartment.label.margin.use <- global.parameters.list$complex.compartment.label.margin.use * 
-                max(1, max.x/2000)
-        }
-    }
-    
-    label.segments <- strsplit(label, "\n")  # the label text in some of the input sbgn files are labeled with '&#xA;' in order to be seperated to different lines
-    label.segments <- label.segments[[1]]
-    align.shift <- font.size/3
-    
-    text.anchor <- "middle"
-    alignment.baseline <- "middle"
-    x.label.box <- x
-    if (length(label.segments) > 1) {
-        # if the text is labeled to be seperated into different lines
-        svg <- ""
-        n.lines <- length(label.segments)
-        h.label.box <- n.lines * font.size
-        for (i in seq_len(length.out = n.lines)) {
-            label.segment <- label.segments[i]
-            w.label.box <- nchar(label.segment) * font.size
-            if (label.location == "center") {
-                alignment.baseline <- "baseline"
-                first.segment.shift <- (n.lines - 1)/2 * font.size
-                start.y <- y - first.segment.shift
-                y.segment <- start.y + (i - 1) * font.size
-                y.segment <- y.segment + align.shift
-                if (i == 1) {
-                  y.label.box <- y.segment + align.shift
-                }
-            } else if (label.location == "top") {
-                y.segment <- y - h/2 + 2 + (i - 1) * font.size
-                if (glyph.class %in% c("complex", "compartment")) {
-                  y.segment <- y - h/2 - n.lines * font.size + (i - 1) * font.size
-                }
-                text.anchor <- "middle"
-                alignment.baseline <- "baseline"
-                y.segment <- y.segment + align.shift * 2
-                if (i == 1) {
-                  y.label.box <- y.segment + align.shift
-                }
-            }
-            svg.segment <- sprintf(template.text, x, y.segment, id, font.size, text.anchor, 
-                alignment.baseline, stroke.opacity, alignment.baseline, color, label.segment)
-            svg <- paste(svg, svg.segment, sep = "\n")
-        }
-    } else {
-        w.label.box <- nchar(label) * font.size * 0.5
-        h.label.box <- font.size
-        if (glyph.class %in% c("compartment", "complex")) {
-            align.shift <- 0
-        }
-        svg <- template.text
-        if (label.location == "center") {
-            alignment.baseline <- "baseline"
-            svg <- sprintf(template.text, x, y + align.shift, id, font.size, text.anchor, 
-                alignment.baseline, stroke.opacity, alignment.baseline, color, label)
-            y.label.box <- y + align.shift
-        } else if (label.location == "top") {
-            text.anchor <- "middle"
-            # alignment.baseline = 'hanging'
-            if (glyph.class %in% c("complex", "compartment")) {
-                alignment.baseline <- "baseline"
-                svg <- sprintf(template.text, x, y + align.shift - h/2 - global.parameters.list$complex.compartment.label.margin.use, 
-                  id, font.size, text.anchor, alignment.baseline, stroke.opacity, 
-                  alignment.baseline, color, label)
-            } else {
-                svg <- sprintf(template.text, x, y + align.shift - h/2 + 4, id, font.size, 
-                  text.anchor, alignment.baseline, stroke.opacity, alignment.baseline, 
-                  color, label)
-            }
-            y.label.box <- y - h/2 - global.parameters.list$complex.compartment.label.margin.use - 
-                h.label.box/3
-        }
-    }
-    return(svg)
-}
 
 #########################################################################################################
