@@ -1,6 +1,7 @@
 
 #########################################################################################################
-color.from.01.value <- function(value, gene.or.cpd, global.parameters.list) {
+# changed function name from 'color.from.01.value' to 'color.from.value'. Function used in plot.utilities.R
+color.from.value <- function(value, gene.or.cpd, global.parameters.list) {
     if (gene.or.cpd == "gene") {
         min.value <- global.parameters.list$min.gene.value
         max.value <- global.parameters.list$max.gene.value
@@ -84,7 +85,7 @@ color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, 
     
     svg <- ""
     for (i in seq_len(length.out = length(col.values))) {
-        col <- color.from.01.value(col.values[i], global.parameters.list = global.parameters.list, 
+        col <- color.from.value(col.values[i], global.parameters.list = global.parameters.list, 
             gene.or.cpd = gene.or.cpd)
         x.loc.text <- x - (i - 0.5) * panel.grid.w
         svg.rect <- plot.rectangle(x = x - i * panel.grid.w, y = y, h = col.panel.h, 
