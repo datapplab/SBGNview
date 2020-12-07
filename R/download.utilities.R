@@ -367,7 +367,7 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
 #########################################################################################################
 ### copy of loadMappingTable 
 ### load from local file, SBGNview.data, or SBGNhub downloaded file
-loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
+loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene, 
                              limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data",
                              existing.data.folder = NULL){ 
   # existing.data.folder passed into download.mapping.file to check mapping data in current working directory
@@ -420,7 +420,7 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
     # otherwise mapping.list is will be the name of object loaded, will not contain data 
     mapping.list <- get(mapping.list) 
     message("\n", mapping.file.info$mapping.file.name, " loaded from SBGNview.data")
-    View(mapping.list)
+
   } else {  ##### Use pathview
     # mapping.file.info$location == "pathview". mapping.file.info$mapping.file.name == ""
     
@@ -453,9 +453,9 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
         id.map = input.to.glyph.id[,c(input.type,output.type)]
       } else {
         message("\nID mapping not pre-generated. Using Pathview!")
-        if(is.null(limit.to.ids)){
-          stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
-        }
+        # if(is.null(limit.to.ids)){
+        #   stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
+        # }
         id.map = geneannot.map.ko(in.ids = limit.to.ids,
                                   in.type = input.type,
                                   out.type = output.type,
@@ -482,30 +482,31 @@ loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gen
       stop("ID mapping table not provided")
     }
     
-    id.map = id.map[!is.na(id.map[,2]),]
-    if(is.vector(id.map)){
-      id.map = as.matrix(t(id.map))
-    }
-    id.map = id.map[!is.na(id.map[,1]),]
-    if(is.vector(id.map)){
-      id.map = as.matrix(t(id.map))
-    }
-    id.map = unique(id.map)
-
-    # add additional mapping using KO to glyph.id (code below was outside this else condition in original function)
-    mapping.list = list()
-    if(is.vector(id.map)){
-      id.map = as.matrix(t(id.map))
-    }
-    id.map[,1] = as.character(id.map[,1])
-    id.map[,2] = as.character(id.map[,2])
-    id.map = as.matrix(id.map)
-    mapping.list[[cpd.or.gene]]= list()
-    mapping.list[[cpd.or.gene]][[type.pair.name]] = id.map
+    mapping.list <- id.map
     
   }
   
-  #message("Generated ID mapping list")
+  # if mapping.list contains a species column, filter by value of 'species' argument
+  if("species" %in% colnames(mapping.list) & !is.null(mapping.list)){
+    message("Filtering mapping list by species: ", species)
+    if(any(mapping.list[,"species"] %in% species) ){
+      mapping.list <- mapping.list[mapping.list[,"species"] %in% species,c(input.type,output.type)]
+    }
+  }
+  
+  # convert to mapping.list: many functions which call loadMappingTable expect a list 
+  #                          and extract the mapping table from the returned list
+  type.pair.name <- paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+  id.map <- mapping.list
+  mapping.list <- list()
+  if(is.vector(id.map)){
+    id.map <- as.matrix(t(id.map))
+  }
+  id.map[,1] <- as.character(id.map[,1])
+  id.map[,2] <- as.character(id.map[,2])
+  id.map <- as.matrix(id.map)
+  mapping.list[[cpd.or.gene]] <- list()
+  mapping.list[[cpd.or.gene]][[type.pair.name]] <- id.map
   
   return(mapping.list)
 }

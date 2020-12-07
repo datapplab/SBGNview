@@ -369,11 +369,26 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
   output.type <- gsub("entrez", "ENTREZID", output.type)
   if (is.null(id.mapping.table)) {
     # if user didn't provide mapping table, we try to download one.
+    ### original mapping list
+    # mapping.list <- loadMappingTable(output.type = output.type, input.type = input.type, 
+    #                                  species = org, cpd.or.gene = cpd.or.gene, limit.to.ids = row.names(data.input.id), 
+    #                                  SBGNview.data.folder = SBGNview.data.folder)
+    
+    # row.names or names
+    # dim(obj) = NULL then vector, dim(obj) = 2, the matrix or data.frame
+    input.ids <- row.names(data.input.id)
+    if(length(input.ids) == 0){
+      input.ids <- names(data.input.id)
+    }
     mapping.list <- loadMappingTable(output.type = output.type, input.type = input.type, 
-                                     species = org, cpd.or.gene = cpd.or.gene, limit.to.ids = row.names(data.input.id), 
+                                     species = org, cpd.or.gene = cpd.or.gene, 
+                                     limit.to.ids = input.ids, 
                                      SBGNview.data.folder = SBGNview.data.folder)
+    
+    # 
+    
     id.map <- mapping.list[[1]][[1]]
-    id.map <- as.matrix(id.map[, c(input.type, output.type)])
+    #id.map <- as.matrix(id.map[, c(input.type, output.type)])
   } else {
     if (!all(c(input.type) %in% colnames(id.mapping.table))) {
       message(input.type, " must be in column names of id.mapping.table!\n")
