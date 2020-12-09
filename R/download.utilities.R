@@ -62,6 +62,17 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
   try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org, type.pair.name.1, 
                       type.pair.name.2)
   
+  # KO_ENTREZID.RData in hub may not contain the all the information for the speices in it. 
+  # For case when input/output is KO/ENTREZID, try.file.names contains KO_ENTREZID,
+  # so if species specific file not found, KO_ENTREZID will be downloaded and used instead 
+  # of generating the species specific mapping between KO and ENTREZID. Modify 'try.files.names'
+  # to search only for species specific mapping b/w KO and ENTREZID so if file not found, 
+  # mapping is generated from scratch using KEGGREST.
+  if(!is.null(species) & any(c(input.type, output.type) %in% c("KO", "ko")) &
+     any(c(input.type, output.type) %in% c("ENTREZID"))) {
+    try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org)
+  }
+  
   location <- "local"
   
   # check if mapping file exits in existing.data.folder
@@ -486,13 +497,32 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     
   }
   
-  # if mapping.list contains a species column, filter by value of 'species' argument
-  if("species" %in% colnames(mapping.list) & !is.null(mapping.list)){
-    message("Filtering mapping list by species: ", species)
-    if(any(mapping.list[,"species"] %in% species) ){
-      mapping.list <- mapping.list[mapping.list[,"species"] %in% species,c(input.type,output.type)]
+  #### if mapping.list contains a species column, filter by value of 'species' argument
+  if("species" %in% colnames(mapping.list) & !is.null(mapping.list)) { 
+    
+    message("Filtering mapping list by species: '", species, "'")
+    if(!exists("korg")) data(korg, package="pathview")
+    
+    # species value is KEGG code based on 'species' argument documentation
+    if(tolower(species) %in% korg[,3]) { 
+      message("Species kegg code in 'korg' dataset")
+      ridx <- match(species, korg[, 3]) %% nrow(korg)
+      species.sci.name <- tolower(korg[ridx, 4])   # get scientific.name for input species
+      
+      if(any(mapping.list[,"species"] %in% species) ) { # check kegg code in species column
+        mapping.list <- mapping.list[mapping.list[,"species"] %in% species, c(input.type,output.type)]
+      } else if (any(tolower(mapping.list[,"species"]) %in% species.sci.name) ) {
+        mapping.list <- mapping.list[tolower(mapping.list[,"species"]) %in% species.sci.name, c(input.type,output.type)]
+        message("Filtered mapping list by '", species.sci.name, "'")
+      } else {
+        message("Was not able to filter mapping.list by ", species,  " or ", species.sci.name, ".")
+      }
+      
+    } else {
+      stop(species, " kegg code not in 'korg' dataset or incorrect kegg code.")
     }
-  }
+    
+  } # end if: filter 'species' column
   
   # convert to mapping.list: many functions which call loadMappingTable expect a list 
   #                          and extract the mapping table from the returned list
@@ -579,12 +609,15 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
 #           else use 2nd mapping table
 #               map from entrez id to keggid merge with id2eg map list
 #               map from kegg id to ko and merge with first mereged list
-generate.ko.mapping.list <- function(in.type = "entrez", out.type = "ko", 
-                                     species = "hsa", in.ids = NULL){
+generate.ko.mapping.list <- function(in.type, out.type, species, in.ids = NULL){
+  
   in.type <- tolower(in.type)
   out.type <- tolower(out.type)
   species <- tolower(species)
-  data("korg", "bods") # korg cols:: 3 = kegg.code; 6 = entrez.gnodes; 7 = kegg.geneid; 8 = ncbi.geneid
+  
+  # korg cols:: 3 = kegg.code; 6 = entrez.gnodes; 7 = kegg.geneid; 8 = ncbi.geneid
+  if(!exists("korg")) data(korg, package="pathview")
+  if(!exists("bods")) data(bods, package="pathview")
   
   if(!species %in% korg[, 3] & !species %in% bods[, 3]){ # stop if species is NOT in korg or bods
     stop("Incorrect KEGG species code!")
@@ -592,8 +625,7 @@ generate.ko.mapping.list <- function(in.type = "entrez", out.type = "ko",
   
   if(!species %in% bods[, 3]){ # species not in bods
     # get species row index from korg
-    ridx <- grep(paste("^", species, "$", sep = ""), korg[, 3]) %% nrow(korg)
-    
+    ridx <- match(species, korg[, 3]) %% nrow(korg)
     message("'", species, "'", " species in korg dataset from Pathview")
     
     if(any(in.type %in% c("entrez", "eg", "entrezid"))){ # in.type == entrez
@@ -643,7 +675,7 @@ generate.ko.mapping.list <- function(in.type = "entrez", out.type = "ko",
     
     message("'", species, "'", " species in bods dataset from Pathview")
     # get species info from korg
-    ridx <- grep(paste("^", species, "$", sep = ""), korg[,3]) %% nrow(korg)
+    ridx <- match(species, korg[, 3]) %% nrow(korg)
     
     if(any(in.type %in% c("entrez", "eg", "entrezid"))){ # input type is entrez for bods species
       
@@ -942,7 +974,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
   # metacrop initial list is using enzyme
   mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
                                    cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
-  ref.to.pathway <- mapping.list[[1]][[1]]
+  ref.to.pathway <- mapping.list[[1]][[1]] # KO_pathway.id mapping table from SBGNview.data pkg
   View(ref.to.pathway)
   
   if (mol.list.ID.type == id.in.pathway) {
@@ -958,7 +990,15 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
     out.id.type.to.ref <- out.id.type.to.ref[[1]][[1]]
     # merge KO to pathway and KO to output id
     out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
-    out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
+    
+    View(out.id.to.pathway)
+    #stop("here")
+    
+    out.id.to.pathway <- out.id.to.pathway[, c(toupper(mol.list.ID.type), "pathway.id")]
+    
+    View(out.id.to.pathway)
+    stop("here 2")
+    
     out.id.to.pathway <- unique(out.id.to.pathway)
     out.id.to.pathway <- out.id.to.pathway[!is.na(out.id.to.pathway[, 2]), ]
   }
