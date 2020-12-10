@@ -290,7 +290,7 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
     id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type = output.type, 
                                                     output.cpd.id.type = input.type, species = org, SBGNview.data.folder = SBGNview.data.folder)
   } else {
-    stop("cpd or gene much be one of 'gene' or 'compound'!!")
+    stop("cpd.or.gene must be one of 'gene' or 'compound'!!")
   }
   new.ids <- sapply(input.ids, function(x) {
     mapped.ids <- change.id(input.id = x, cpd.or.gene = cpd.or.gene, input.type = input.type, 
@@ -306,6 +306,26 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
     new.ids <- as.list(as.data.frame(new.ids, stringsAsFactors = FALSE))
     new.ids
   }
+  
+  message("\nChanged IDs from ", input.type, " to ", output.type)
+  
+  ###### checking how many IDs were mapped
+  not.mapped.count <- 0
+  mapped.count <- 0
+  for(idx in seq_along(new.ids)){
+    if(length(new.ids[[idx]]) == 0) { not.mapped.count <- not.mapped.count + 1 
+    } else { mapped.count <- mapped.count + 1 }
+  }
+  if(not.mapped.count == length(new.ids)){
+    message("None of the input IDs were mapped to specified ouput type")
+  } else if (mapped.count == length(new.ids)) {
+    message("All input IDs were mapped")
+  } else {
+    message("**NOTE**: ", mapped.count, " of ", length(new.ids), " in 'input.ids' were mapped to the output type ")
+    message("Please check the ouput list for more information")
+  }
+  ######
+  
   return(new.ids)
 }
 

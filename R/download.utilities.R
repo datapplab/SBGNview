@@ -417,7 +417,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                 mapping.file.info$mapping.file.name, sep = "/")
     var.name <- load(file = path.to.local.file)
     mapping.list <- get(var.name) # mapping.list returned
-    message("\n", mapping.file.info$mapping.file.name, " loaded from local")
+    message(mapping.file.info$mapping.file.name, " loaded from local")
     
   } else if (mapping.file.info$location == "SBGNview.data"){
     
@@ -430,7 +430,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     # to return data, we need get(mapping.list)
     # otherwise mapping.list is will be the name of object loaded, will not contain data 
     mapping.list <- get(mapping.list) 
-    message("\n", mapping.file.info$mapping.file.name, " loaded from SBGNview.data")
+    message(mapping.file.info$mapping.file.name, " loaded from SBGNview.data")
 
   } else {  ##### Use pathview
     # mapping.file.info$location == "pathview". mapping.file.info$mapping.file.name == ""
@@ -975,13 +975,14 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
   mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
                                    cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
   ref.to.pathway <- mapping.list[[1]][[1]] # KO_pathway.id mapping table from SBGNview.data pkg
-  View(ref.to.pathway)
+  
+  print(head(ref.to.pathway))
   
   if (mol.list.ID.type == id.in.pathway) {
     out.id.to.pathway <- ref.to.pathway
     # change KO to output id
   } else {
-    message(id.in.pathway, " ", mol.list.ID.type, "\n\n")
+    message("\nGetting mapping table between ", id.in.pathway, " and ", mol.list.ID.type)
     
     out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = mol.list.ID.type, 
                                            cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
@@ -991,13 +992,13 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
     # merge KO to pathway and KO to output id
     out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
     
-    View(out.id.to.pathway)
+    #View(out.id.to.pathway)
     #stop("here")
+    mol.list.ID.type <- toupper(mol.list.ID.type)
+    out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
     
-    out.id.to.pathway <- out.id.to.pathway[, c(toupper(mol.list.ID.type), "pathway.id")]
-    
-    View(out.id.to.pathway)
-    stop("here 2")
+    #View(out.id.to.pathway)
+    #stop("here 2")
     
     out.id.to.pathway <- unique(out.id.to.pathway)
     out.id.to.pathway <- out.id.to.pathway[!is.na(out.id.to.pathway[, 2]), ]
@@ -1007,6 +1008,10 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
                                            output.pathways$pathway.id, ]
   out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, mol.list.ID.type] != 
                                            "", ]
+  ###
+  View(out.id.to.pathway)
+  View(as.character(out.id.to.pathway[, mol.list.ID.type]))
+  
   out.id.to.pathway <- split(as.character(out.id.to.pathway[, mol.list.ID.type]), 
                              out.id.to.pathway[, "pathway.id"])
   out.id.to.pathway <- out.id.to.pathway[!is.na(names(out.id.to.pathway))]
