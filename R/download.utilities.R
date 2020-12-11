@@ -972,9 +972,6 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
     out.id.type.to.ref <- out.id.type.to.ref[[1]][[1]]
     # merge KO to pathway and KO to output id
     out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
-    
-    mol.list.ID.type <- toupper(mol.list.ID.type)
-    
     out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
     out.id.to.pathway <- unique(out.id.to.pathway)
     out.id.to.pathway <- out.id.to.pathway[!is.na(out.id.to.pathway[, 2]), ]
