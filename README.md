@@ -24,6 +24,8 @@ Key features:
 * xml2: parse SBGN-ML files
 * rsvg: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
 * igraph: find shortest paths
+* httr: search [SBGNhub](https://github.com/datapplab/SBGNhub/tree/master/data/id.mapping.unique.pair.name) for mapping files
+* KEGGREST: generate mapping tables from scratch when needed
 * [pathview](https://bioconductor.org/packages/release/bioc/html/pathview.html): map between different ID types for gene and chemical compound
 * [gage](https://bioconductor.org/packages/release/bioc/html/gage.html): R package for pathway enrichment analysis.
 * [SBGNview.data](https://bioconductor.org/packages/release/data/experiment/html/SBGNview.data.html): demo gene expression datasets for SBGNview package
@@ -34,7 +36,7 @@ Key features:
 if (!requireNamespace("BiocManager", quietly = TRUE)){
      install.packages("BiocManager")
 }
-BiocManager::install(c("xml2", "rsvg", "igraph", "pathview", "gage", "SBGNview.data", "SummarizedExperiment", "AnnotationDbi"))
+BiocManager::install(c("xml2", "rsvg", "igraph", "httr", "KEGGREST", "pathview", "gage", "SBGNview.data", "SummarizedExperiment", "AnnotationDbi"))
 ```
 
 Dependencies for Operating Systems:  

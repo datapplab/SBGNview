@@ -32,7 +32,8 @@ Imports:
     knitr,
     SummarizedExperiment,
     AnnotationDbi,
-    httr
+    httr,
+    KEGGREST
 RdMacros: Rdpack
 License: AGPL-3
 LazyData: FALSE

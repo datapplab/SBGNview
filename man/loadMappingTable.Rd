@@ -5,18 +5,19 @@
 \title{Generate ID mapping table from input and output ID types}
 \usage{
 loadMappingTable(
-  output.type,
   input.type,
+  output.type,
   species = NULL,
   cpd.or.gene,
   limit.to.ids = NULL,
-  SBGNview.data.folder = "./SBGNview.tmp.data"
+  SBGNview.data.folder = "./SBGNview.tmp.data",
+  existing.data.folder = NULL
 )
 }
 \arguments{
-\item{output.type}{A character string. Gene or compound ID type}
-
 \item{input.type}{A character string. Gene or compound ID type}
+
+\item{output.type}{A character string. Gene or compound ID type}
 
 \item{species}{A character string. Three letter KEGG species code.}
 

@@ -1526,7 +1526,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">SBGNview: Pathway based omics data integration, visualization and analysis</h1>
 <h4 class="author">Xiaoxi Dong, Weijun Luo</h4>
-<h4 class="date">03 November, 2020</h4>
+<h4 class="date">11 December, 2020</h4>
 
 </div>
 
@@ -1568,6 +1568,8 @@ div.tocify {
 <li>xml2: parse SBGN-ML files</li>
 <li>rsvg: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: <a href="https://github.com/jeroen/rsvg" class="uri">https://github.com/jeroen/rsvg</a></li>
 <li>igraph: find shortest paths</li>
+<li>httr: search <a href="https://github.com/datapplab/SBGNhub/tree/master/data/id.mapping.unique.pair.name">SBGNhub</a> for mapping files</li>
+<li>KEGGREST: generate mapping tables from scratch when needed</li>
 <li><a href="https://bioconductor.org/packages/release/bioc/html/pathview.html">pathview</a>: map between different ID types for gene and chemical compound</li>
 <li><a href="https://bioconductor.org/packages/release/bioc/html/gage.html">gage</a>: R package for pathway enrichment analysis.</li>
 <li><a href="https://bioconductor.org/packages/release/data/experiment/html/SBGNview.data.html">SBGNview.data</a>: demo gene expression datasets for SBGNview package</li>
@@ -1577,7 +1579,7 @@ div.tocify {
 <pre class="r"><code>if (!requireNamespace(&quot;BiocManager&quot;, quietly = TRUE)){
      install.packages(&quot;BiocManager&quot;)
 }
-BiocManager::install(c(&quot;xml2&quot;, &quot;rsvg&quot;, &quot;igraph&quot;, &quot;pathview&quot;, &quot;gage&quot;, &quot;SBGNview.data&quot;, &quot;SummarizedExperiment&quot;, &quot;AnnotationDbi&quot;))</code></pre>
+BiocManager::install(c(&quot;xml2&quot;, &quot;rsvg&quot;, &quot;igraph&quot;, &quot;httr&quot;, &quot;KEGGREST&quot;, &quot;pathview&quot;, &quot;gage&quot;, &quot;SBGNview.data&quot;, &quot;SummarizedExperiment&quot;, &quot;AnnotationDbi&quot;))</code></pre>
 <p>Prerequisites for Operating Systems:<br />
 <strong>Windows 10</strong>: none</p>
 <p><strong>Linux (Ubuntu)</strong>: needs additional packages (libxml2-dev, libssl-dev, libcurl4-openssl-dev, librsvg2-dev) to be installed. Run the command below in a terminal to install the necessary packages. The same or similar packages can be found for other distributes of linux.</p>
@@ -1590,6 +1592,9 @@ BiocManager::install(c(&quot;xml2&quot;, &quot;rsvg&quot;, &quot;igraph&quot;, &
      install.packages(&quot;BiocManager&quot;)
 }
 BiocManager::install(&quot;SBGNview&quot;)</code></pre>
+<p>Alternatively, install <strong>SBGNview</strong> through <a href="https://github.com/datapplab/SBGNview">GitHub</a>. Requires R (version &gt;= 3.6).</p>
+<pre class="r"><code>install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;datapplab/SBGNview&quot;)</code></pre>
 </div>
 </div>
 <div id="overview" class="section level1">
@@ -1777,7 +1782,7 @@ head(cpd.data)</code></pre>
 <p>Most of the SBGN-ML files from online resources have their unique ID types and it is different from the ID type in the omics data.
 If the ID types are different, we need to map the omics IDs to the node IDs in the SBGN-ML file.
 In the <a href="#quickStart">quick start example</a> (“Adrenaline and noradrenaline biosynthesis” pathway), the SBGN-ML file uses pathwayCommons IDs for gene/protein nodes, whereas the omics dataset uses Entrez gene IDs.
-The function <em>SBGNview</em> can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our <a href="https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN">pre-generated SBGN-ML files</a> as shown in the <a href="#quickStart">quick start example</a>. We can also do it manually using function <em>changeDataId</em>, which is called by <em>SBGNview</em> internally to do ID mapping. Supprted ID type pairs can be found in <em>data(mapped.ids)</em>. <em>changeDataId</em> uses <a href="https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping">pre-generated mapping tables</a> or <strong>pathview</strong> to do the mapping.
+The function <em>SBGNview</em> can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our <a href="https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN">pre-generated SBGN-ML files</a> as shown in the <a href="#quickStart">quick start example</a>. We can also do it manually using function <em>changeDataId</em>, which is called by <em>SBGNview</em> internally to do ID mapping. Supported ID type pairs can be found in <em>data(mapped.ids)</em>. <em>changeDataId</em> uses <a href="https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping">pre-generated mapping tables</a> or <strong>pathview</strong> to do the mapping.
 If the input-output ID type pair is not in <em>data(mapped.ids)</em> or can’t be mapped by <strong>pathview</strong>, user needs to provide the mapping table explicitly using the “id.mapping.table” argument.</p>
 <p>Let’s change the IDs in the gene expression omics data.</p>
 <pre class="r"><code># select a subset of data for later use
@@ -2216,7 +2221,7 @@ SBGNview.obj</code></pre>
 ## [4] knitr_1.30          BiocManager_1.30.10
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] KEGGREST_1.30.0             SummarizedExperiment_1.20.0
+##  [1] KEGGREST_1.30.1             SummarizedExperiment_1.20.0
 ##  [3] xfun_0.18                   lattice_0.20-41            
 ##  [5] vctrs_0.3.4                 htmltools_0.5.0            
 ##  [7] stats4_4.0.3                yaml_2.2.1                 

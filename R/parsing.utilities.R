@@ -21,6 +21,7 @@ utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls",
 #' @import utils
 
 #' @import httr
+#' @import KEGGREST
 
 #########################################################################################################
 parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.dir, 
