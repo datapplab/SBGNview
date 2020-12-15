@@ -46,8 +46,7 @@
 ### working copy of download.mapping.file
 ### check local directory for any mapping files, if not found then check SBGNView.data, then SBGNhub
 download.mapping.file <- function(input.type, output.type, species = NULL, 
-                                  SBGNview.data.folder = "./SBGNview.tmp.data",
-                                  existing.data.folder) { # passed in from loadMappingTable to see if a mapping table exits in given path
+                                  SBGNview.data.folder = "./SBGNview.tmp.data") { 
   options(warn = -1)
   # R CMD check will give different sort result if you didn't specify 'method': the
   # default sort method depends on the locale of your system. And R CMD check uses
@@ -76,13 +75,13 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
   
   location <- "local"
   
-  # check if mapping file exits in existing.data.folder
+  # check if mapping file exits in SBGNview.data.folder
   if(location == "local"){ 
     # find.mapping.files.in.folder defined below
     # if local files found. IF true, no need to check SBGNview.data, and SBGNhub
-    message("Checking local folder: ", existing.data.folder)
+    message("Checking local folder: ", SBGNview.data.folder)
     # mapping.file.name has .RData extension
-    mapping.file.name <- find.mapping.files.in.folder(try.file.names, existing.data.folder) 
+    mapping.file.name <- find.mapping.files.in.folder(try.file.names, SBGNview.data.folder) 
     
     if(!is.null(mapping.file.name)){
       print(paste("Local mapping file found: ", mapping.file.name, sep = ""))
@@ -121,7 +120,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
     message("\nChecking SBGNhub for mapping file")
     # mapping.file.name with .RData extension
     mapping.file.name <- search.sbgnhub.id.mapping(try.file.names = try.file.names,
-                                                   file.destination = existing.data.folder)
+                                                   file.destination = SBGNview.data.folder)
     
     if(!is.null(mapping.file.name)){
       message(mapping.file.name, " download complete")
@@ -140,9 +139,9 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
 
 #########################################################################################################
 # used by download.mapping.file function to find mapping files .RData in given directory
-find.mapping.files.in.folder <- function(try.file.names, existing.data.folder){
+find.mapping.files.in.folder <- function(try.file.names, SBGNview.data.folder){
   # read .RData files in given direcotry
-  files.in.exist.data.folder <-  list.files(path = existing.data.folder, pattern = "*.RData")
+  files.in.exist.data.folder <-  list.files(path = SBGNview.data.folder, pattern = "*.RData")
   mapping.file.name <- NULL
   
   if(length(files.in.exist.data.folder) == 0){ # no matching files found
@@ -218,23 +217,23 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
 #########################################################################################################
 #' Generate ID mapping table from input and output ID types 
 #' 
-#' This function generates the ID mapping table from input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
+#' This function generates the ID mapping table between input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
+#' This function will check if a mapping table exists in local folder ('SBGNview.data.folder' argument), SBGNview.data package, and SBGNhub. If no mapping table is found in these locations, a mapping table is generated from scratch and saved to path specified by 'SBGNview.data.folder' argument.
 #' 
 #' @param input.type A character string. Gene or compound ID type
 #' @param output.type A character string. Gene or compound ID type
 #' @param species A character string. Three letter KEGG species code.
 #' @param cpd.or.gene A character string. Either 'gene' or 'compound'
 #' @param limit.to.ids Vector. Molecule IDs of 'input.type'.
-#' @param SBGNview.data.folder A character string. 
+#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @return A list containing the mapping table. 
 #' @examples 
 #'  data(mapped.ids)
-#'  entrez.to.pathwayCommons = loadMappingTable(
-#'                                 input.type = 'ENTREZID'
-#'                                 ,output.type = 'pathwayCommons'
-#'                                 ,species = 'hsa'
-#'                                 ,cpd.or.gene = 'gene'
-#'                              )
+#'  entrez.to.pathwayCommons <- loadMappingTable(
+#'                                 input.type = 'ENTREZID',
+#'                                 output.type = 'pathwayCommons',
+#'                                 species = 'hsa',
+#'                                 cpd.or.gene = 'gene')
 #'                              
 #' @export
 
@@ -380,13 +379,7 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
 ### working copy of loadMappingTable 
 ### load from local file, SBGNview.data, or SBGNhub downloaded file. otherwise use pathview
 loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene, 
-                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data",
-                             existing.data.folder = NULL){ 
-  # existing.data.folder passed into download.mapping.file to check mapping data in current working directory
-  
-  if(is.null(existing.data.folder)){ # if existing.data.folder is NULL, set to working directory
-    existing.data.folder <- getwd()
-  }
+                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){ 
   
   input.type = gsub("entrez","ENTREZID",input.type)
   output.type = gsub("entrez","ENTREZID",output.type)
@@ -405,16 +398,15 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   mapping.file.info <- download.mapping.file(input.type = input.type,
                                              output.type = output.type,
                                              species = species,
-                                             SBGNview.data.folder = SBGNview.data.folder,
-                                             existing.data.folder = existing.data.folder)
+                                             SBGNview.data.folder = SBGNview.data.folder)
   message(paste("\nMapping file: ", mapping.file.info$mapping.file.name, sep = ""))
   
   if(mapping.file.info$location == "local" || mapping.file.info$location == "SBGNhub"){
     
-    ##### file already in local (existing.data.folder) or
-    ##### file downloaded from SBGNhub to local (existing.data.folder)
+    ##### file already in local (SBGNview.data.folder) or
+    ##### file downloaded from SBGNhub to local (SBGNview.data.folder)
     # need absolute file path
-    path.to.local.file <- paste(existing.data.folder, 
+    path.to.local.file <- paste(SBGNview.data.folder, 
                                 mapping.file.info$mapping.file.name, sep = "/")
     var.name <- load(file = path.to.local.file)
     mapping.list <- get(var.name) # mapping.list returned
@@ -473,8 +465,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                   out.type = output.type,
                                   species = species,
                                   unique.map= FALSE,
-                                  SBGNview.data.folder = SBGNview.data.folder,
-                                  existing.data.folder = existing.data.folder)
+                                  SBGNview.data.folder = SBGNview.data.folder)
         if(is.vector(id.map)){
           id.map = as.matrix(t(id.map))
         }
@@ -545,9 +536,9 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
 #########################################################################################################
 # working copy of geneannot.map.ko 
 # break loop caused by loadMappingTable
-# replace loadMappingTable with generate.ko.mapping.list
+# uses generate.ko.mapping.list
 geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", unique.map, 
-                             SBGNview.data.folder = "./SBGNview.tmp.data", existing.data.folder) {
+                             SBGNview.data.folder = "./SBGNview.tmp.data") {
   # pathview's geneannot.map can't map KO, so here included KO mapping
   if (!is.null(in.ids)) {
     in.ids <- gsub("\"", "", in.ids)
@@ -557,6 +548,7 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
   
   if (any(c(in.type, out.type) %in% c("KO", "ko"))) {
     # if input/output KO/ENTREZID combo, set out.type to KO and in.type to ENTREZ
+    # otherwise in.type and out.type order matter. if in.type = KO, generate.ko.mapping.list calls mapping.ko.to.arbitrary.id.type
     if(any(c(in.type, out.type) %in% c("entrez", "eg", "entrezid", "ENTREZID"))) {
       in.type <- "ENTREZID"
       out.type <- "KO" 
@@ -569,7 +561,7 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
     message("Saving mapping list to current working directory")
     file.name <- paste(paste(species, toupper(in.type), toupper(out.type), sep = "_"), 
                        ".RData", sep = "")
-    file.name <- paste(existing.data.folder, file.name, sep = "/")
+    file.name <- paste(SBGNview.data.folder, file.name, sep = "/")
     save(id.map, file = file.name)
     message("\nSaved generated mapping list at: ", file.name)
     
@@ -587,7 +579,7 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
 }
 
 #########################################################################################################
-# generate mapping list on the fly for mapping to KO from other types in geneannot.map.ko
+### generate mapping list on the fly for mapping between KO and other IDs in gene.idtype.list
 # Pseudocode:
 # input = in.type, out.type ("ko"), species, in.ids
 #   if species not in bods 
@@ -715,6 +707,7 @@ generate.ko.mapping.list <- function(in.type, out.type, species, in.ids = NULL) 
       
     } else if (in.type == "ko") { ### if input is ko, and species in bods
       # map from KO to output type in gene.idtype.list for bods species
+      # input.ko.ids required
       message("KO to ", toupper(out.type))
       mapping.list <- mapping.ko.to.arbitrary.id.type(input.ko.ids = in.ids, 
                                                       output.type = toupper(out.type),
@@ -922,15 +915,14 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #' @param output.pathway.name Logical. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'
 #' @param combine.duplicated.set Logical.  Some pathways have the same geneset. If this parameter is set to 'TRUE', the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with '||'
 #' @param truncate.name.length Integer. The pathway names will be truncated to at most that length. 
-#' @param SBGNview.data.folder A character string.
+#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @return A list. Each element is a genelist of a pathway.
 #' @examples 
 #' data(pathways.info)
 #' mol.list <- getMolList(
 #'                  database = 'pathwayCommons',
 #'                  mol.list.ID.type = 'ENTREZID',
-#'                  org = 'hsa'
-#' )
+#'                  org = 'hsa')
 #'   
 #' @export
 
@@ -1019,7 +1011,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
 #########################################################################################################
 #' Download pre-generated SBGN-ML file from GitHub
 #' 
-#' This function can generate a SBGN-ML file of our pre-collected SBGN-ML files 
+#' This function will download a SBGN-ML file from our pre-collected SBGN-ML files given the 'pathway.id' argument.
 #' 
 #' @param pathway.id The ID of pathway. For accepted pathway IDs, please check \code{data('pathways.info')}. IDs are in column 'pathway.id' (pathways.info[,'pathway.id'])
 #' @param download.folder The output folder to store created SBGN-ML files.
@@ -1232,7 +1224,7 @@ filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways
 #' @param keywords.logic A character string. Options are 'and' or 'or'. This will tell the function if the search require 'all' or 'any' of the keywords to be present. It only makes difference when keyword.type is 'pathway.name'.
 #' @param keyword.type A character string. Either 'pathway.name' or one of the ID types in \code{data('mapped.ids')}
 #' @param org  A character string. The KEGG species code.
-#' @param SBGNview.data.folder A character string. 
+#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @details If 'keyword.type' is 'pathway.name' (default), this function will search for the presence of any keyword in the pathway.name column of data(pathways.info). The search is case in-sensitive. If 'keyword.type' is one of the identifier types and 'keywords' are corresponding identifiers, this function will return pathways that include nodes mapped to input identifiers. 
 #' @return A dataframe. Contains information of pathways found.
 #' @examples 

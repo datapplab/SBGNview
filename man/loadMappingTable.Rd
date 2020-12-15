@@ -10,8 +10,7 @@ loadMappingTable(
   species = NULL,
   cpd.or.gene,
   limit.to.ids = NULL,
-  SBGNview.data.folder = "./SBGNview.tmp.data",
-  existing.data.folder = NULL
+  SBGNview.data.folder = "./SBGNview.tmp.data"
 )
 }
 \arguments{
@@ -25,21 +24,21 @@ loadMappingTable(
 
 \item{limit.to.ids}{Vector. Molecule IDs of 'input.type'.}
 
-\item{SBGNview.data.folder}{A character string.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A list containing the mapping table.
 }
 \description{
-This function generates the ID mapping table from input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
+This function generates the ID mapping table between input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
+This function will check if a mapping table exists in local folder ('SBGNview.data.folder' argument), SBGNview.data package, and SBGNhub. If no mapping table is found in these locations, a mapping table is generated from scratch and saved to path specified by 'SBGNview.data.folder' argument.
 }
 \examples{
  data(mapped.ids)
- entrez.to.pathwayCommons = loadMappingTable(
-                                input.type = 'ENTREZID'
-                                ,output.type = 'pathwayCommons'
-                                ,species = 'hsa'
-                                ,cpd.or.gene = 'gene'
-                             )
+ entrez.to.pathwayCommons <- loadMappingTable(
+                                input.type = 'ENTREZID',
+                                output.type = 'pathwayCommons',
+                                species = 'hsa',
+                                cpd.or.gene = 'gene')
                              
 }

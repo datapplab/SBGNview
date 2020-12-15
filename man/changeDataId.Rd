@@ -30,7 +30,7 @@ changeDataId(
 
 \item{id.mapping.table}{A matrix.  Mapping table between input.type and output.type. This matrix should have two columns for input.type and output.type, respectively.  Column names should be the values of parameters 'input.type' and 'output.type'. See example section for an example.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A matrix, row names are changed to IDs of 'output.type'. Note the number of rows may be different from input matrix, because multiple input IDs could be collapsed to a single output ID. Also a single input ID could map to multiple output IDs.

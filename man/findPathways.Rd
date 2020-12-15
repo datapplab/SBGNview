@@ -21,7 +21,7 @@ findPathways(
 
 \item{org}{A character string. The KEGG species code.}
 
-\item{SBGNview.data.folder}{A character string.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A dataframe. Contains information of pathways found.

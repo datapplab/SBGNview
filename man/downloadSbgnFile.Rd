@@ -15,7 +15,7 @@ downloadSbgnFile(pathway.id, download.folder = ".")
 A vector of character strings. The path to the created SBGN-ML files.
 }
 \description{
-This function can generate a SBGN-ML file of our pre-collected SBGN-ML files
+This function will download a SBGN-ML file from our pre-collected SBGN-ML files given the 'pathway.id' argument.
 }
 \examples{
 data('pathways.info')

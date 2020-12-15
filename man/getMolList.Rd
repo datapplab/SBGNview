@@ -30,7 +30,7 @@ getMolList(
 
 \item{truncate.name.length}{Integer. The pathway names will be truncated to at most that length.}
 
-\item{SBGNview.data.folder}{A character string.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A list. Each element is a genelist of a pathway.
@@ -43,7 +43,6 @@ data(pathways.info)
 mol.list <- getMolList(
                  database = 'pathwayCommons',
                  mol.list.ID.type = 'ENTREZID',
-                 org = 'hsa'
-)
+                 org = 'hsa')
   
 }

@@ -28,7 +28,7 @@ sbgnNodes(
 
 \item{show.ids.for.multiHit}{Vector. When there are multiple output IDs mapped to a glyph, we only show the ones in this vector.}
 
-\item{SBGNview.data.folder}{A character string.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 
 \item{sbgn.dir}{A character string. The path to a folder that will hold created SBGN-ML files, if the input.sbgn are IDs of pre-collected pathways.}
 }

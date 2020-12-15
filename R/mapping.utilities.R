@@ -257,7 +257,7 @@ merge.molecule.data <- function(in.data.source.id, id.map.in.target.and.source, 
 #' @param cpd.or.gene A character string. One of 'gene' or 'compound'. 
 #' @param limit.to.pathways A vector of character strings. A vector of pathways IDs. When 'output.type' is one of 'pathwayCommons' or 'metacyc.SBGN', one input ID (e.g. gene symbol) can map to multiple nodes in different pathways (SBGN-ML files). In this case, we can limit output to the specified pathways. When 'output.type' is NOT one of 'pathwayCommons' or 'metacyc.SBGN', this argument is ignored.
 #' @param org Character string. Three letter KEGG species code.
-#' @param SBGNview.data.folder A character string. The path to a folder that will hold download ID mapping files and pathway information data files. 
+#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files. 
 #' @return A list. Each element is the IDs in output.type that are mapped to one input ID.
 #' 
 #' @examples 
@@ -330,6 +330,92 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
 }
 
 #########################################################################################################
+### copy of changeIds. Error when change ids from type in gene.idtype.bods to KO
+# Error message: Error in mapping.ko.to.arbitrary.id.type(input.ko.ids = in.ids, output.type = toupper(out.type), : Need vector of input KO IDs 
+changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.pathways = NULL, 
+                      org = "hsa", SBGNview.data.folder = "./SBGNview.tmp.data") {
+  
+  if (!is.null(limit.to.pathways) & output.type %in% c("pathwayCommons", "metacyc.SBGN")) {
+    ids.in.pathways <- sbgnNodes(limit.to.pathways, SBGNview.data.folder = SBGNview.data.folder)
+    limit.to.output.ids <- unlist(lapply(ids.in.pathways, function(all.nodes) {
+      # pathway.nodes$all.nodes[,'glyph.id']
+      all.nodes[, "glyph.id"]
+    }))
+    limit.to.output.ids
+  } else {
+    limit.to.output.ids <- NULL
+  }
+  
+  if (cpd.or.gene == "gene") {
+    #### original code
+    # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.gene.id.type = output.type, 
+    #                                                 output.gene.id.type = input.type, 
+    #                                                 species = org, 
+    #                                                 SBGNview.data.folder = SBGNview.data.folder)
+    #### flip input and ouput 
+    # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.gene.id.type = input.type, 
+    #                                                 output.gene.id.type = output.type, 
+    #                                                 species = org, 
+    #                                                 SBGNview.data.folder = SBGNview.data.folder)
+    #### use loadMappingTable directly
+    id.mapping.all.list <- loadMappingTable(input.type = input.type, 
+                                            output.type = output.type,
+                                            species = org,
+                                            cpd.or.gene = "gene",
+                                            limit.to.ids = input.ids,
+                                            SBGNview.data.folder = SBGNview.data.folder)
+    
+  } else if (cpd.or.gene == "compound") {
+    # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type = output.type, 
+    #                                                 output.cpd.id.type = input.type, 
+    #                                                 species = org, 
+    #                                                 SBGNview.data.folder = SBGNview.data.folder)
+    id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type = input.type, 
+                                                    output.cpd.id.type = output.type, 
+                                                    species = org, 
+                                                    SBGNview.data.folder = SBGNview.data.folder)
+  } else {
+    stop("cpd.or.gene must be one of 'gene' or 'compound'!!")
+  }
+  
+  new.ids <- sapply(input.ids, function(x) {
+    mapped.ids <- change.id(input.id = x, cpd.or.gene = cpd.or.gene, input.type = input.type, 
+                            output.type = output.type, id.mapping.all.list = id.mapping.all.list)
+    mapped.ids
+    mapped.ids <- strsplit(mapped.ids, "; ")[[1]]  # one input id can map to multiple glyph ids(from the same pathway or different pathways), we select the ones that are in the glyphs (same pathway).
+    if (!is.null(limit.to.output.ids)) {
+      mapped.ids <- intersect(mapped.ids, limit.to.output.ids)
+    }
+    return(mapped.ids)
+  })
+  if (is.matrix(new.ids)) {
+    new.ids <- as.list(as.data.frame(new.ids, stringsAsFactors = FALSE))
+    new.ids
+  }
+  
+  message("\nChanged IDs from ", input.type, " to ", output.type)
+  
+  ###### checking how many IDs were mapped
+  not.mapped.count <- 0
+  mapped.count <- 0
+  for(idx in seq_along(new.ids)){
+    if(length(new.ids[[idx]]) == 0) { not.mapped.count <- not.mapped.count + 1 
+    } else { mapped.count <- mapped.count + 1 }
+  }
+  if(not.mapped.count == length(new.ids)){
+    message("None of the input IDs were mapped to specified ouput type")
+  } else if (mapped.count == length(new.ids)) {
+    message("All input IDs were mapped")
+  } else {
+    message("**NOTE**: ", mapped.count, " of ", length(new.ids), " in 'input.ids' were mapped to the output type ")
+    message("Please check the ouput list for more information")
+  }
+  ######
+  
+  return(new.ids)
+}
+
+#########################################################################################################
 #' Change the data IDs of input omics data
 #' 
 #' This function changes the IDs of input omics data from one type to another. 
@@ -341,7 +427,7 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
 #' @param org  A character string. The species source of omics data. 'changeDataId' uses pathview to map between some gene ID types. Please use '?geneannot.map' to check the detail. Pathview needs species information to do the job. This parameter is a two-letter abbreviation of organism name, or KEGG species code, or the common species name, used to determine the gene annotation package. For all potential values check: data(bods); bods. Default org='Hs', and can also be 'hsa' or 'human' (case insensitive). 
 #' @param cpd.or.gene  A character string. Either 'compound' or 'gene' -- the type of input omics data. 
 #' @param id.mapping.table A matrix.  Mapping table between input.type and output.type. This matrix should have two columns for input.type and output.type, respectively.  Column names should be the values of parameters 'input.type' and 'output.type'. See example section for an example. 
-#' @param SBGNview.data.folder A character string. The path to a folder that will hold download ID mapping files and pathway information data files. 
+#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files. 
 #' @return A matrix, row names are changed to IDs of 'output.type'. Note the number of rows may be different from input matrix, because multiple input IDs could be collapsed to a single output ID. Also a single input ID could map to multiple output IDs.
 #' @details  This function maps between various gene/compound ID types.
 #' 

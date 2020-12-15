@@ -27,7 +27,7 @@ changeIds(
 
 \item{org}{Character string. Three letter KEGG species code.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold download ID mapping files and pathway information data files.}
+\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A list. Each element is the IDs in output.type that are mapped to one input ID.
