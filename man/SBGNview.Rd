@@ -9,7 +9,7 @@ SBGNview(
   cpd.data = NULL,
   simulate.data = FALSE,
   input.sbgn = NULL,
-  sbgn.dir = ".",
+  sbgn.dir = "./",
   output.file = "./output.svg",
   node.sum = "sum",
   gene.id.type = NA,
@@ -35,11 +35,11 @@ SBGNview(
 
 \item{input.sbgn}{A vector. Can be either names of local SBGN files or pathway IDs of our pre-collected pathways. For pre-collected pathway IDs, run 'data(pathways.info)'}
 
-\item{sbgn.dir}{A character string. The path to the folder that holds SBGN-ML files. If 'input.sbgn' is a vector of pathway IDs in data 'pathways.info', the SBGN-ML files will be downloaded into this folder.}
+\item{sbgn.dir}{A character string. Default: ".". The path to the folder that holds SBGN-ML files. If 'input.sbgn' is a vector of pathway IDs in data 'pathways.info', the SBGN-ML files will be downloaded into this folder.}
 
-\item{output.file}{A character string. Path to the output image files. Because we often work with multiple pathways, each pathway will have its own image files. Each string in 'input.sbgn' will be added to the end of 'output.file'. Depending on the image format specified by the 'output.formats' parameter, extentions will be added to the end (e.g. .pdf, .png etc.).}
+\item{output.file}{A character string. Default: "./output.svg". Path to the output image files. Because we often work with multiple pathways, each pathway will have its own image files. Each string in 'input.sbgn' will be added to the end of 'output.file'. Depending on the image format specified by the 'output.formats' parameter, extentions will be added to the end (e.g. .pdf, .png etc.).}
 
-\item{node.sum}{A character string. Sometimes multiple omics genes/compounds are mapped to one SBGN glyph. Therefore multiple values will be mapped to one measurement/slice on the glyph. In this situation ,we may need to derive a single value for the slice on the glyph. This function can be any R function that takes a numeric vector as input and output a single numeric value (e.g. 'sum','max','min','mean'). It can also be a User Defined Function (UDF).}
+\item{node.sum}{A character string. Default: "sum". Sometimes multiple omics genes/compounds are mapped to one SBGN glyph. Therefore multiple values will be mapped to one measurement/slice on the glyph. In this situation, we may need to derive a single value for the slice on the glyph. This function can be any R function that takes a numeric vector as input and output a single numeric value (e.g. 'sum','max','min','mean'). It can also be a User Defined Function (UDF).}
 
 \item{gene.id.type}{A character string. The type of gene ID in 'gene.data'. This parameter is used for ID mapping. It should be one of the IDs in data 'mapped.ids'. For details, run: \code{data('mapped.ids')}}
 
@@ -58,18 +58,18 @@ Accepted values:
 
 \item{id.mapping.cpd}{A matrix. See id.mapping.gene.}
 
-\item{org}{A character string. The species of the gene omics data. It is used for species specific gene ID mapping. Currently only supports three letters KEGG code (e.g. hsa, mmu, ath).  For a complete list of KEGG codes, see this page:\cr https://www.genome.jp/kegg/catalog/org_list.html}
+\item{org}{A character string. Default: "hsa". The species of the gene omics data. It is used for species specific gene ID mapping. Currently only supports three letters KEGG code (e.g. hsa, mmu, ath).  For a complete list of KEGG codes, see this page:\cr https://www.genome.jp/kegg/catalog/org_list.html}
 
 \item{output.formats}{A vector. It specifies the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file. SBGNview uses rsvg to convert svg file to other formats. If other 'output.formats' is set but 'rsvg' package is not installed, an error will occur. See this page for how to install 'rsvg': \cr https://github.com/jeroen/rsvg}
 
-\item{show.pathway.name}{Logical. If set to TRUE and 'input.sbgn' are pre-collected pathway IDs, the pathway name will be added to the output file name.}
+\item{show.pathway.name}{Logical. Default: F. If set to TRUE and 'input.sbgn' are pre-collected pathway IDs, the pathway name will be added to the output file name.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold temp data files.}
+\item{SBGNview.data.folder}{A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold temp data files.}
 
 \item{...}{Other parameters passed to function \code{\link{renderSbgn}}}
 }
 \value{
-A SBGNview object.
+SBGNview object (S3 class object).
 }
 \description{
 This is the main function to map, integrate and render omics data on pathway graphs. 

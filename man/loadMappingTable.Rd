@@ -24,7 +24,7 @@ loadMappingTable(
 
 \item{limit.to.ids}{Vector. Molecule IDs of 'input.type'.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
+\item{SBGNview.data.folder}{A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A list containing the mapping table.

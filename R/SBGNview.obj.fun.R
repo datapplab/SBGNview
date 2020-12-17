@@ -20,11 +20,11 @@
 
 #########################################################################################################
 #' A wrapper to run function \code{\link{renderSbgn}} for all pathways in a SBGNview object and generate image files.
-#' @param x An object of class SBGNview
+#' @param x A SBGNview class object. 
 #' @param ... Other parameters passed to print.
 #' @return None
 #' @examples 
-#' ### use simulated data. Please see vignettes for more examples
+#' ### use simulated data. Please see vignettes for more examples.
 #' data('pathways.info','sbgn.xmls')
 #' SBGNview.obj = SBGNview(
 #'               simulate.data = TRUE
@@ -66,7 +66,7 @@
 
 #########################################################################################################
 #' Retrieve output file information from a SBGNview object
-#' @param obj A SBGNview object.
+#' @param obj An SBGNview class object.
 #' @details This function prints the output file path recorded in a SBGNview object. 
 #' @return A string. The output file information. 
 #' @examples 
@@ -88,7 +88,7 @@ fileOutput <- function(obj) {
 #' @param obj No need to provide
 #' @param value No need to provide 
 #' @details This function sets the output file path recorded in a SBGNview object.
-#' @return A SBGNview object
+#' @return A SBGNview class object
 #' @examples 
 #' data('SBGNview.obj' )
 #' outputFile(SBGNview.obj) = './test.output'

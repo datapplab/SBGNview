@@ -11,54 +11,54 @@
 #' @param arcs.info A character string. It should be one of the following: 'parse splines', 'straight' or a string of svg code of arcs. If it is 'parse splines', this function will look for XML element 'arc.spline' in the SBGN-ML file and plot spline arcs. If it is 'straight', the function will look for element 'arc' and plot straight line arcs. If it is a string of svg code, it will write this code directly to the output svg file.
 #' @param compartment.layer.info A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. This layer information ensures that a glyph laying in the overlapped region belongs to the compartment on the top layer.
 #' @param user.data A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule. 
-#' @param if.plot.svg Logical. If generate svg codes or only parse SBGN-ML file.
-#' @param key.pos  A character string. The position of color panel. -Default: 'topright'  One of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.
-#' @param color.panel.scale Numeric.  -Default:  1.5  It controls the relative size of color scheme panel. 
-#' @param if.write.files Logical. If generate image files.
-#' @param if.plot.cardinality Logical. If plot cardinality glyphs.
-#' @param status.node.font.scale Numeric. Scale the font size for status variable and unit of information nodes.
-#' @param font.size.scale.complex Numeric
-#' @param font.size.scale.compartment Numeric
-#' @param text.length.factor Numeric.  -Default:  2 How wide the wrapped text should be. If text is longer than the width controled by this parameter, the text is split into a new line, but only at characters in 'label.spliting.string'. Controls all glyphs.
-#' @param text.length.factor.macromolecule  Numeric. Controls macromolecules glyphs.
-#' @param text.length.factor.compartment Numeric
-#' @param text.length.factor.complex  Numeric
+#' @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file.
+#' @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.
+#' @param color.panel.scale Numeric. Default: 1.5. It controls the relative size of color scheme panel. 
+#' @param if.write.files Logical. Default: T. If generate image files.
+#' @param if.plot.cardinality Logical. Default: F. If plot cardinality glyphs.
+#' @param status.node.font.scale Numeric. Default: 3. Scale the font size for status variable and unit of information nodes.
+#' @param font.size.scale.complex Numeric. Default: 1.1. Scale the font size of a complex. A complex represents a pool of biochemical entities which can be composed of macromolecules, simple chemicals, multimers, or other complexes.
+#' @param font.size.scale.compartment Numeric. Default: 1.6. Scale the font size of a compartment. A compartment is an enclosed shape that contains entity pool nodes. 
+#' @param text.length.factor Numeric. Default: 2. How wide the wrapped text should be. If text is longer than the width controled by this parameter, the text is split into a new line, but only at characters in 'label.spliting.string'. Controls all glyphs.
+#' @param text.length.factor.macromolecule  Numeric. Default: 2. Used to determine label text wrapping based on number of characters, font size, and node width for macromolecule glyphs. 
+#' @param text.length.factor.compartment Numeric. Default: 2. Used to determine label text wrapping based on number of characters, font size, and node width for compartment glyphs.
+#' @param text.length.factor.complex  Numeric. Default: 2. Used to determine label text wrapping based on number of characters, font size, and node width for complex glyphs. 
 #' @param global.parameters.list List. A record of parameters fed to 'renderSbgn' for reuse. It will over-write other parameters. It is not designed to be used directly.
-#' @param color.panel.n.grid Numeric.  -Default:  101  How many colors does the color scheme show.
-#' @param col.gene.low  A character string. -Default:  'green'
-#' @param col.gene.high A character string.  -Default:  'red'
-#' @param col.gene.mid A character string.  -Default:  'gray'
-#' @param col.cpd.low  A character string. -Default:  'blue'
-#' @param col.cpd.high A character string.  -Default:  'yellow'
-#' @param col.cpd.mid A character string.  -Default:  'gray'
-#' @param min.gene.value Numeric.  -Default:  -1  Color panel's min value for gene. Values smaller than this will have the same color as min.value.
-#' @param max.gene.value Numeric.  -Default:  1
-#' @param mid.gene.value Numeric.  -  Default:  0
-#' @param min.cpd.value  Numeric. -Default:  -1  Color panel's min value for compound. Values smaller than this will have the same color as min.value.
-#' @param max.cpd.value Numeric.  -Default:  1
-#' @param mid.cpd.value Numeric.  -Default:  0
-#' @param multimer.margin  Numeric. -Default:  5  For multimers, they are represented by two partly overlapped shapes (rectangle, ellipse etc.). This parameter controls how much the two shapes overlap. 
-#' @param compartment.opacity Numeric.  -Default:  0.9  How transparent the compartments are.
-#' @param auxiliary.opacity Numeric.  -Default:  1  Opacity of auxiliary glyphs.
-#' @param if.plot.annotation.nodes Logical.  -Default:  F   Some SBGN-ML files have 'annotation' glyphs. By default we don't plot them.
-#' @param inhibition.edge.end.shift Numeric.  -Default:  4  The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target glyph's border. We can shift it along the arc to prevent the overlap.
-#' @param edge.tip.size Numeric.  -Default: 4
-#' @param if.use.number.for.long.label  Logical. -Default:  T  If the label is too long, we can create a shorter name for it. e.g. 'macromolecule_1'.
-#' @param if.write.shorter.label.mapping Logical.  -Default: T   If if.use.number.for.long.label is 'T', we can write the mapping between shorter name and the original label to a text file.
-#' @param label.spliting.string  A character vector. -Default:  c(' ','-',';','/','_')  When we split text into multiple lines, these characters will be used to split label (where a new line can be created). 
-#' @param complex.compartment.label.margin   -Default:  8  Move the label text vertically for compartment and complex.
-#' @param font.size Numeric.  -Default:  6  Affects font size of all types of glyphs.
-#' @param font.size.scale.gene Numeric.  -Default:  3 Only affect font size of 'macromolecule' glyphs.
-#' @param font.size.scale.cpd Numeric.  -Default:  3  Only affects font size of 'simple chemical' glyphs.
-#' @param logic.node.font.scale Numeric.  -Default:  6  Controls the size of logical glyphs ('and', 'or', 'not' etc.).
-#' @param node.width.adjust.factor Numeric.  -Default:  3  Change font size according to the width of its glyph. If the glyph is too large (e.g. a compartment), its label may look too small. Then we can enlarge the label in proportion to the width of the glyph. It affects all types of glyphs. 
+#' @param color.panel.n.grid Numeric. Default: 21. How many colors does the color scheme show.
+#' @param col.gene.low  A character string. Default: 'green'. Color panel's color representing low gene data values. 
+#' @param col.gene.high A character string. Default: 'red'. Color panel's color representing high gene data values. 
+#' @param col.gene.mid A character string. Default: 'gray'. Color panel's color representing mid range gene data values.
+#' @param col.cpd.low  A character string. Default: 'blue'. Color panel's color representing low compound data values. 
+#' @param col.cpd.high A character string. Default: 'yellow'. Color panel's color representing high compound data values. 
+#' @param col.cpd.mid A character string. Default: 'gray'. Color panel's color representing mid range compound data values. 
+#' @param min.gene.value Numeric. Default: -1. Color panel's min value for gene data. Values smaller than this will have the same color as min value.
+#' @param max.gene.value Numeric. Default: 1. Color panel's max value for gene data. Values greater than this will have the same color as the max value.
+#' @param mid.gene.value Numeric. Default: 0. Color panel's mid value for gene data. 
+#' @param min.cpd.value  Numeric. Default: -1. Color panel's min value for compound data. Values smaller than this will have the same color as min value.
+#' @param max.cpd.value Numeric. Default: 1. Color panel's max value for compound data. Values greater than this will have the same color as max value.
+#' @param mid.cpd.value Numeric. Default: 0. Color panel's mid value for compound data.
+#' @param multimer.margin  Numeric. Default: 5. For multimers, they are represented by two partly overlapped shapes (rectangle, ellipse etc.). This parameter controls how much the two shapes overlap. 
+#' @param compartment.opacity Numeric. Default: 1. Controls how transparent the compartments are.
+#' @param auxiliary.opacity Numeric. Default: 1.  Controls opacity of auxiliary glyphs.
+#' @param if.plot.annotation.nodes Logical. Default: F. Some SBGN-ML files have 'annotation' glyphs. By default we don't plot them.
+#' @param inhibition.edge.end.shift Numeric. Default: 5. The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target glyph's border. We can shift it along the arc to prevent the overlap.
+#' @param edge.tip.size Numeric. Default: 6. Control size of edge tips. 
+#' @param if.use.number.for.long.label  Logical. Default: F. If the label is too long, we can create a shorter name for it. e.g. 'macromolecule_1'.
+#' @param if.write.shorter.label.mapping Logical. Default: T. If if.use.number.for.long.label is 'T', we can write the mapping between shorter name and the original label to a text file.
+#' @param label.spliting.string  A character vector. Default: c(' ','-',';','/','_'). When we split text into multiple lines, these characters will be used to split label (where a new line can be created). 
+#' @param complex.compartment.label.margin Numeric. Default: 8. Move the label text vertically for compartment and complex.
+#' @param font.size Numeric. Default: 3. Affects font size of all types of glyphs.
+#' @param font.size.scale.gene Numeric. Default: 3. Scales font size according to the node's width for large compartments. Only affect font size of 'macromolecule' glyphs.
+#' @param font.size.scale.cpd Numeric. Default: 3. Scales font size according to the node's width for large compartments. Only affects font size of 'simple chemical' glyphs.
+#' @param logic.node.font.scale Numeric. Default: 3. Controls the size of logical glyphs ('and', 'or', 'not' etc.).
+#' @param node.width.adjust.factor Numeric. Default: 2. Change font size according to the width of its glyph. If the glyph is too large (e.g. compartment), its label may look too small. Then we can enlarge the label in proportion to the width of the glyph. It affects all types of glyphs. 
 #' @param pathway.name List containing two elements: 1. pathway name 2. stamp information
-#' @param pathway.name.font.size Numeric. When pathway names are plotted on graph, this parameter controls their font size.
-#' @param if.scale.complex.font.size Logical.  -Default:  T  Whether we want to scale complex font size according to its width.
-#' @param if.scale.compartment.font.size  Logical. -Default:  T   Whether scale compartment font size according to its width.
-#' @param node.width.adjust.factor.compartment Numeric.  -Default:  1  How much the font size should change in proportion to the width of compartment.
-#' @param node.width.adjust.factor.complex Numeric.  -Default:  4 How much the font size should change in proportion to the width of complex.
-#' @param space.between.color.panel.and.entity Numeric.  -Default:  10 The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph. This parameter controls how close it can reach a glyph.
+#' @param pathway.name.font.size Numeric. Default: 1. When pathway names are plotted on graph, this parameter controls their font size.
+#' @param if.scale.complex.font.size Logical. Default: F.  Whether to scale complex font size according to its width.
+#' @param if.scale.compartment.font.size  Logical. Default: F. Whether to scale compartment font size according to its width.
+#' @param node.width.adjust.factor.compartment Numeric. Default: 1. How much the font size should change in proportion to the width of compartment.
+#' @param node.width.adjust.factor.complex Numeric. Default: 3. How much the font size should change in proportion to the width of complex.
+#' @param space.between.color.panel.and.entity Numeric. Default: 100. The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph. This parameter controls how close it can reach a glyph.
 #' @return A list of three elements: glyphs.list, arcs.list, global.parameters.list
 #' @examples
 #'  data(pathways.info)

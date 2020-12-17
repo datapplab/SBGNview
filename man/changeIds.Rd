@@ -25,9 +25,9 @@ changeIds(
 
 \item{limit.to.pathways}{A vector of character strings. A vector of pathways IDs. When 'output.type' is one of 'pathwayCommons' or 'metacyc.SBGN', one input ID (e.g. gene symbol) can map to multiple nodes in different pathways (SBGN-ML files). In this case, we can limit output to the specified pathways. When 'output.type' is NOT one of 'pathwayCommons' or 'metacyc.SBGN', this argument is ignored.}
 
-\item{org}{Character string. Three letter KEGG species code.}
+\item{org}{A character string. Default: "hsa". Three letter KEGG species code.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
+\item{SBGNview.data.folder}{A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A list. Each element is the IDs in output.type that are mapped to one input ID.

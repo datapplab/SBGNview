@@ -754,9 +754,9 @@ plot.arc.ports <- function(glyph.port.info, node) {
 #' @param show.ids.for.multiHit Vector. When there are multiple output IDs mapped to a glyph, we only show the ones in this vector.
 #' @param output.cpd.id.type A character string.  The desired output compound ID type. It only works when the SBGN-ML file is from one of these databases: 'MetaCyc' and 'pathwayCommons'. Currently, only 'simple chemical' glyphs are supported. Please check \code{data('mapped.ids')} for the types accepted. If omitted, the output IDs are the oritinal IDs in the SBGN-ML file.
 #' @param species A character string. Only output IDs from this particular species. It only works when the SBGN-ML file is from one of these databases: 'MetaCyc' and 'pathwayCommons'. Please check data('supported.species') for supported species. If omitted, the function will output IDs from all species.
-#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.
-#' @param sbgn.dir A character string. The path to a folder that will hold created SBGN-ML files, if the input.sbgn are IDs of pre-collected pathways.
-#' @return A list, containing extracted glyph information.
+#' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.
+#' @param sbgn.dir A character string. Default: "./". The path to a folder that will hold created SBGN-ML files, if the input.sbgn are IDs of pre-collected pathways.
+#' @return A list containing extracted glyph information.
 #' @details  The following glyph information is extracted: complex members, compartment members,submap members, node class, nodes with state variables, class of state variables, edges with cardinality, nodes with ports, 'source and sink' nodes, process nodes.\cr When trying to output other ID types, sometimes multiple output IDs are mapped to one glyph. In this situation, the IDs are concatenated by '; ' to represent the glyph.
 #' @examples 
 #'  data(mapped.ids)
@@ -773,7 +773,7 @@ plot.arc.ports <- function(glyph.port.info, node) {
 sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type = NA,
                       database = NA, species = NA, show.ids.for.multiHit = NULL,
                       SBGNview.data.folder = "./SBGNview.tmp.data",
-                      sbgn.dir = "./SBGNview.tmp.data") {
+                      sbgn.dir = "./") {
     if (!file.exists(SBGNview.data.folder)) {
         dir.create(SBGNview.data.folder)
     }

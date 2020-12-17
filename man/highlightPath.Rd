@@ -29,32 +29,32 @@ highlightPath(
 
 \item{directed.graph}{Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from 'source' node to 'target' node.}
 
-\item{node.set.id.type}{A character string. ID type of input nodes.}
+\item{node.set.id.type}{A character string. Default: "CompoundName". ID type of input nodes.}
 
-\item{glyphs.id.type}{A character string. ID type of nodes in SBGN-ML file.}
+\item{glyphs.id.type}{A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.}
 
-\item{cpd.or.gene}{A character string. One of 'gene' or 'compound'.}
+\item{cpd.or.gene}{A character string. One of 'gene' or 'compound' (default).}
 
-\item{input.node.stroke.width}{A character string. Border stroke width of input nodes (affects both from.node and to.node)}
+\item{input.node.stroke.width}{Integer. Default: 10. Border stroke width of input nodes (affects both from.node and to.node)}
 
-\item{from.node.color}{A character string. Border color of 'source'/from.node}
+\item{from.node.color}{A character string. Default: "red". Border color of 'source'/from.node}
 
-\item{to.node.color}{A character string. Border color of 'target'/to.node}
+\item{to.node.color}{A character string. Default: "blue". Border color of 'target'/to.node}
 
-\item{path.node.color}{String. Border color of nodes in the path.}
+\item{path.node.color}{A character string. Default: "black". Border color of nodes in the path.}
 
-\item{path.node.stroke.width}{Numeric}
+\item{path.node.stroke.width}{Integer. Default: 10. Adjust stroke width of path between nodes.}
 
-\item{n.shortest.paths.plot}{Integer. There could be more than one shortest paths between two nodes. User can choose how many of them to plot.}
+\item{n.shortest.paths.plot}{Integer. Default: 1. There could be more than one shortest paths between two nodes. User can choose how many of them to plot.}
 
-\item{shortest.paths.cols}{A character string. The colors of arcs in different shortest paths. The length of this vector (number of colors) should be the value of n.shortest.paths.plot. If one arc is in multiple shortest paths, its color will be set to the color that appears later in this vector.}
+\item{shortest.paths.cols}{A vector of character string. Default: c("purple"). The colors of arcs in different shortest paths. The length of this vector (number of colors) should be the value of n.shortest.paths.plot. If one arc is in multiple shortest paths, its color will be set to the color that appears later in this vector.}
 
-\item{path.stroke.width}{Numeric. The width of line in edges in the shortest paths.}
+\item{path.stroke.width}{Integer. Default: 2. The width of line in edges in the shortest paths.}
 
-\item{tip.size}{Numeric. The size of arc tip in edges of the shortest paths.}
+\item{tip.size}{Integer. Default: 4. The size of arc tip in edges of the shortest paths.}
 }
 \value{
-A SBGNview obj.
+A SBGNview obj
 }
 \description{
 Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.

@@ -7,7 +7,7 @@
 fileOutput(obj)
 }
 \arguments{
-\item{obj}{A SBGNview object.}
+\item{obj}{An SBGNview class object.}
 }
 \value{
 A string. The output file information.

@@ -61,6 +61,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
   type.pair.name.2.org <- paste(species, type.pair.name.2, sep = "_")
   try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org, type.pair.name.1, 
                       type.pair.name.2)
+  try.file.names <- gsub("[[:space:]]", "", try.file.names) # remove any spaces
   
   # KO_ENTREZID.RData in hub may not contain the all the information for the speices in it. 
   # For case when input/output is KO/ENTREZID, try.file.names contains KO_ENTREZID,
@@ -225,7 +226,7 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
 #' @param species A character string. Three letter KEGG species code.
 #' @param cpd.or.gene A character string. Either 'gene' or 'compound'
 #' @param limit.to.ids Vector. Molecule IDs of 'input.type'.
-#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.
+#' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @return A list containing the mapping table. 
 #' @examples 
 #'  data(mapped.ids)
@@ -387,7 +388,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     stop("Input type and output types are the same!")
   }
   species = gsub("Hs","hsa",species)
-  type.pair.name = paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+
   if(!file.exists(SBGNview.data.folder)){
     dir.create(SBGNview.data.folder)
   }
@@ -415,14 +416,10 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   } else if (mapping.file.info$location == "SBGNview.data"){
     
     ##### file in SBGNview.data
-    # mapping.file.info$mapping.file.name is just name of data
+    # mapping.file.info$mapping.file.name is name of data
     mapping.list <- data(list = c(mapping.file.info$mapping.file.name))
-    # value of mapping.list is mapping.file.name since data files in SBGNview.data load
-    # object with same name as file name
-    #
-    # to return data, we need get(mapping.list)
-    # otherwise mapping.list is will be the name of object loaded, will not contain data 
-    mapping.list <- get(mapping.list) 
+    # get data from loaded mapping table object
+    mapping.list <- get(mapping.list)
     message(mapping.file.info$mapping.file.name, " loaded from SBGNview.data")
 
   } else {  ##### Use pathview
@@ -480,7 +477,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                    out.type = output.type)
     } else {
       message("\nCouldn't fine ID mapping table between ", input.type, " and ", output.type, "!!!\n")
-      message("Tried online resource ", online.mapping.file, "\n")
+      #message("Tried online resource ", online.mapping.file, "\n")
       message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
       stop("ID mapping table not provided")
     }
@@ -518,7 +515,8 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   
   # convert to mapping.list: many functions which call loadMappingTable expect a list 
   #                          and extract the mapping table from the returned list
-  type.pair.name <- paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+  type.pair.name <- paste(sort(c(input.type,output.type), method = "radix", 
+                               decreasing = TRUE), collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
   id.map <- mapping.list
   mapping.list <- list()
   if(is.vector(id.map)){
@@ -908,14 +906,14 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #########################################################################################################
 #' Retrieve gene list or compound list from collected databases
 #' 
-#' @param database Character string. The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.
-#' @param mol.list.ID.type Character string. The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}
-#' @param org Character string. The three letter species code used by KEGG. E.g. 'hsa','mmu'
-#' @param cpd.or.gene Character string. One of 'gene' or 'compound'
-#' @param output.pathway.name Logical. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'
-#' @param combine.duplicated.set Logical.  Some pathways have the same geneset. If this parameter is set to 'TRUE', the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with '||'
-#' @param truncate.name.length Integer. The pathway names will be truncated to at most that length. 
-#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.
+#' @param database A character string. Default: "pathwayCommons". The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.
+#' @param mol.list.ID.type A character string. Default: "ENTREZID". The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}
+#' @param org A character string. Default: "hsa". The three letter species code used by KEGG. E.g. 'hsa','mmu'
+#' @param cpd.or.gene A character string. Default: "gene". One of 'gene' or 'compound'
+#' @param output.pathway.name Logical. Default: T. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'
+#' @param combine.duplicated.set Logical. Default: T. Some pathways have the same geneset. If this parameter is set to 'TRUE', the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with '||'
+#' @param truncate.name.length Integer. Default: 50. The pathway names will be truncated to at most that length. 
+#' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @return A list. Each element is a genelist of a pathway.
 #' @examples 
 #' data(pathways.info)
@@ -1013,8 +1011,8 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
 #' 
 #' This function will download a SBGN-ML file from our pre-collected SBGN-ML files given the 'pathway.id' argument.
 #' 
-#' @param pathway.id The ID of pathway. For accepted pathway IDs, please check \code{data('pathways.info')}. IDs are in column 'pathway.id' (pathways.info[,'pathway.id'])
-#' @param download.folder The output folder to store created SBGN-ML files.
+#' @param pathway.id A character string. The ID of pathway. For accepted pathway IDs, please check \code{data('pathways.info')}. IDs are in column 'pathway.id' (pathways.info[,'pathway.id'])
+#' @param download.folder A character string. Default: "./". The output folder to store created SBGN-ML files.
 #' @return A vector of character strings. The path to the created SBGN-ML files.
 #' @examples 
 #' data('pathways.info')
@@ -1024,7 +1022,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
 #'                   download.folder = './')
 #' @export
 
-downloadSbgnFile <- function(pathway.id, download.folder = ".") {
+downloadSbgnFile <- function(pathway.id, download.folder = "./") {
   if (!file.exists(download.folder)) {
     dir.create(download.folder)
   }
@@ -1221,10 +1219,10 @@ filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways
 #' This function searches for pathways by input keywords.
 #' 
 #' @param keywords A character string or vector. The search is case in-sensitive.
-#' @param keywords.logic A character string. Options are 'and' or 'or'. This will tell the function if the search require 'all' or 'any' of the keywords to be present. It only makes difference when keyword.type is 'pathway.name'.
-#' @param keyword.type A character string. Either 'pathway.name' or one of the ID types in \code{data('mapped.ids')}
+#' @param keywords.logic A character string. Options are 'and' or 'or' (default). This will tell the function if the search require 'all' or 'any' of the keywords to be present. It only makes difference when keyword.type is 'pathway.name'.
+#' @param keyword.type A character string. Either 'pathway.name' (default) or one of the ID types in \code{data('mapped.ids')}
 #' @param org  A character string. The KEGG species code.
-#' @param SBGNview.data.folder A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.
+#' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @details If 'keyword.type' is 'pathway.name' (default), this function will search for the presence of any keyword in the pathway.name column of data(pathways.info). The search is case in-sensitive. If 'keyword.type' is one of the identifier types and 'keywords' are corresponding identifiers, this function will return pathways that include nodes mapped to input identifiers. 
 #' @return A dataframe. Contains information of pathways found.
 #' @examples 
@@ -1233,7 +1231,7 @@ filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways
 #' @export
 
 findPathways <- function(keywords = NULL, keywords.logic = "or", keyword.type = "pathway.name", 
-                         org = NULL,   SBGNview.data.folder = "./SBGNview.tmp.data/") {
+                         org = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") {
   pathway.completeness = NULL
   mol.name.match = c("exact.match", "jaccard", 
                      "presence.of.input-string.in.target-name")[1]

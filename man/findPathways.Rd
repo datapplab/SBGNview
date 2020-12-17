@@ -9,19 +9,19 @@ findPathways(
   keywords.logic = "or",
   keyword.type = "pathway.name",
   org = NULL,
-  SBGNview.data.folder = "./SBGNview.tmp.data/"
+  SBGNview.data.folder = "./SBGNview.tmp.data"
 )
 }
 \arguments{
 \item{keywords}{A character string or vector. The search is case in-sensitive.}
 
-\item{keywords.logic}{A character string. Options are 'and' or 'or'. This will tell the function if the search require 'all' or 'any' of the keywords to be present. It only makes difference when keyword.type is 'pathway.name'.}
+\item{keywords.logic}{A character string. Options are 'and' or 'or' (default). This will tell the function if the search require 'all' or 'any' of the keywords to be present. It only makes difference when keyword.type is 'pathway.name'.}
 
-\item{keyword.type}{A character string. Either 'pathway.name' or one of the ID types in \code{data('mapped.ids')}}
+\item{keyword.type}{A character string. Either 'pathway.name' (default) or one of the ID types in \code{data('mapped.ids')}}
 
 \item{org}{A character string. The KEGG species code.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
+\item{SBGNview.data.folder}{A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 }
 \value{
 A dataframe. Contains information of pathways found.

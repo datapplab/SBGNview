@@ -4,12 +4,12 @@
 \alias{downloadSbgnFile}
 \title{Download pre-generated SBGN-ML file from GitHub}
 \usage{
-downloadSbgnFile(pathway.id, download.folder = ".")
+downloadSbgnFile(pathway.id, download.folder = "./")
 }
 \arguments{
-\item{pathway.id}{The ID of pathway. For accepted pathway IDs, please check \code{data('pathways.info')}. IDs are in column 'pathway.id' (pathways.info[,'pathway.id'])}
+\item{pathway.id}{A character string. The ID of pathway. For accepted pathway IDs, please check \code{data('pathways.info')}. IDs are in column 'pathway.id' (pathways.info[,'pathway.id'])}
 
-\item{download.folder}{The output folder to store created SBGN-ML files.}
+\item{download.folder}{A character string. Default: "./". The output folder to store created SBGN-ML files.}
 }
 \value{
 A vector of character strings. The path to the created SBGN-ML files.

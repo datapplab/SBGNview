@@ -14,9 +14,9 @@
 #' @param cpd.data A matrix, vector or SummarizedExperiment object. The same as 'gene.data', excpet named with compound IDs. Default cpd.data=NULL. 
 #' @param simulate.data Logical. SBGNview can simulate a dataset. If set to TRUE, SBGNview will simulate a gene data set and a compound dataset and user input 'gene.data' and 'cpd.data' are ignored.
 #' @param input.sbgn  A vector. Can be either names of local SBGN files or pathway IDs of our pre-collected pathways. For pre-collected pathway IDs, run 'data(pathways.info)'
-#' @param sbgn.dir  A character string. The path to the folder that holds SBGN-ML files. If 'input.sbgn' is a vector of pathway IDs in data 'pathways.info', the SBGN-ML files will be downloaded into this folder.
+#' @param sbgn.dir  A character string. Default: ".". The path to the folder that holds SBGN-ML files. If 'input.sbgn' is a vector of pathway IDs in data 'pathways.info', the SBGN-ML files will be downloaded into this folder. 
 #' @param output.formats   A vector. It specifies the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file. SBGNview uses rsvg to convert svg file to other formats. If other 'output.formats' is set but 'rsvg' package is not installed, an error will occur. See this page for how to install 'rsvg': \cr https://github.com/jeroen/rsvg
-#' @param output.file   A character string. Path to the output image files. Because we often work with multiple pathways, each pathway will have its own image files. Each string in 'input.sbgn' will be added to the end of 'output.file'. Depending on the image format specified by the 'output.formats' parameter, extentions will be added to the end (e.g. .pdf, .png etc.).
+#' @param output.file   A character string. Default: "./output.svg". Path to the output image files. Because we often work with multiple pathways, each pathway will have its own image files. Each string in 'input.sbgn' will be added to the end of 'output.file'. Depending on the image format specified by the 'output.formats' parameter, extentions will be added to the end (e.g. .pdf, .png etc.).
 #' @param gene.id.type  A character string. The type of gene ID in 'gene.data'. This parameter is used for ID mapping. It should be one of the IDs in data 'mapped.ids'. For details, run: \code{data('mapped.ids')}
 #' @param cpd.id.type  A character string. The type of compound ID in 'cpd.data'.  For details, run: \code{data('mapped.ids')}
 #' @param sbgn.id.attr  A character string. This tells SBGNview where to find the ID of a glyph in SBGN-ML file for ID mapping. This ID is used to map omics data to the glyph. It is normally the name of an attribute in the 'glyph' element . For example : <glyph class='macromolecule' id='p53'> </glyph>. We can specify: sbgn.id.attr = 'id'; sbgn.gene.id.type = 'SYMBOL'. For \href{https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN}{our pre-generated SBGN-ML files}, the ID attribute will be determined automatically thus can be omitted. 
@@ -27,12 +27,12 @@
 #' @param sbgn.cpd.id.type   A character string. Similar to 'sbgn.gene.id.type'. The corresponding glyphs are "simple chemicals"
 #' @param id.mapping.gene A matrix.  Mapping table between gene.id.type and sbgn.gene.id.type. This table is needed if the ID pair of gene.id.type and sbgn.gene.id.type is NOT included in data 'mapped.ids' or not mappable by package 'pathview'. This matrix should have two columns for gene.id.type and sbgn.gene.id.type, respectively.  Column names should be the values of parameters 'sbgn.gene.id.type' and 'gene.id.type'.  See example section for an example.
 #' @param id.mapping.cpd A matrix. See id.mapping.gene.
-#' @param node.sum  A character string. Sometimes multiple omics genes/compounds are mapped to one SBGN glyph. Therefore multiple values will be mapped to one measurement/slice on the glyph. In this situation ,we may need to derive a single value for the slice on the glyph. This function can be any R function that takes a numeric vector as input and output a single numeric value (e.g. 'sum','max','min','mean'). It can also be a User Defined Function (UDF).
-#' @param show.pathway.name Logical. If set to TRUE and 'input.sbgn' are pre-collected pathway IDs, the pathway name will be added to the output file name.
-#' @param org A character string. The species of the gene omics data. It is used for species specific gene ID mapping. Currently only supports three letters KEGG code (e.g. hsa, mmu, ath).  For a complete list of KEGG codes, see this page:\cr https://www.genome.jp/kegg/catalog/org_list.html
-#' @param SBGNview.data.folder A character string. The path to a folder that will hold temp data files.            
+#' @param node.sum  A character string. Default: "sum". Sometimes multiple omics genes/compounds are mapped to one SBGN glyph. Therefore multiple values will be mapped to one measurement/slice on the glyph. In this situation, we may need to derive a single value for the slice on the glyph. This function can be any R function that takes a numeric vector as input and output a single numeric value (e.g. 'sum','max','min','mean'). It can also be a User Defined Function (UDF).
+#' @param show.pathway.name Logical. Default: F. If set to TRUE and 'input.sbgn' are pre-collected pathway IDs, the pathway name will be added to the output file name.
+#' @param org A character string. Default: "hsa". The species of the gene omics data. It is used for species specific gene ID mapping. Currently only supports three letters KEGG code (e.g. hsa, mmu, ath).  For a complete list of KEGG codes, see this page:\cr https://www.genome.jp/kegg/catalog/org_list.html
+#' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold temp data files.            
 #' @param ... Other parameters passed to function \code{\link{renderSbgn}}
-#' @return  A SBGNview object. 
+#' @return  SBGNview object (S3 class object). 
 #' @details 
 #'          1. About SBGNview()
 #' 
@@ -117,7 +117,7 @@
 #' @export
 
 SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, input.sbgn = NULL, 
-    sbgn.dir = ".", output.file = "./output.svg", node.sum = "sum", gene.id.type = NA, 
+    sbgn.dir = "./", output.file = "./output.svg", node.sum = "sum", gene.id.type = NA, 
     cpd.id.type = NA, sbgn.id.attr = "id", sbgn.gene.id.type = NULL, sbgn.cpd.id.type = NA, 
     id.mapping.gene = NULL, id.mapping.cpd = NULL, org = "hsa", output.formats = c("svg"), 
     show.pathway.name = FALSE, SBGNview.data.folder = "./SBGNview.tmp.data", ...) {

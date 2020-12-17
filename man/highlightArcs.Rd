@@ -7,13 +7,13 @@
 highlightArcs(class = "all", color = "black", line.width = 2, tip.size = 6)
 }
 \arguments{
-\item{class}{String. The arc class to modify.}
+\item{class}{A character string. Default: "arc". The arc class to modify.}
 
-\item{color}{String. The color of arcs with selected 'class'}
+\item{color}{A character string. Default: "black". The color of arcs with selected 'class'.}
 
-\item{line.width}{Numeric. Line thickness}
+\item{line.width}{Numeric. Default: 2. Line thickness.}
 
-\item{tip.size}{Numeric}
+\item{tip.size}{Numeric. Default: 6. Tip size.}
 }
 \value{
 A SBGNview object

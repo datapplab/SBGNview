@@ -12,7 +12,7 @@ sbgnNodes(
   species = NA,
   show.ids.for.multiHit = NULL,
   SBGNview.data.folder = "./SBGNview.tmp.data",
-  sbgn.dir = "./SBGNview.tmp.data"
+  sbgn.dir = "./"
 )
 }
 \arguments{
@@ -28,12 +28,12 @@ sbgnNodes(
 
 \item{show.ids.for.multiHit}{Vector. When there are multiple output IDs mapped to a glyph, we only show the ones in this vector.}
 
-\item{SBGNview.data.folder}{A character string. The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
+\item{SBGNview.data.folder}{A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.}
 
-\item{sbgn.dir}{A character string. The path to a folder that will hold created SBGN-ML files, if the input.sbgn are IDs of pre-collected pathways.}
+\item{sbgn.dir}{A character string. Default: "./". The path to a folder that will hold created SBGN-ML files, if the input.sbgn are IDs of pre-collected pathways.}
 }
 \value{
-A list, containing extracted glyph information.
+A list containing extracted glyph information.
 }
 \description{
 This function will extract node information such as complex members, compartment members, node class, nodes with state variables etc.

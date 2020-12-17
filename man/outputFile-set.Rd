@@ -12,7 +12,7 @@ outputFile(obj) <- value
 \item{value}{No need to provide}
 }
 \value{
-A SBGNview object
+A SBGNview class object
 }
 \description{
 Set output file information for a SBGNview object

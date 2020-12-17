@@ -48,20 +48,20 @@ highlight.edges <- function(node.set, arcs = NULL,
 #' 
 #' Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function \code{\link{+.SBGNview}}. 
 #' 
-#' @param node.set A vector of character strings. Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview. 
-#' @param node.set.id.type A character string. ID type of input nodes.
-#' @param glyphs.id.type A character string. ID type of nodes in SBGN-ML file.
-#' @param cpd.or.gene A character string. One of 'gene' or 'compound'. 
-#' @param stroke.color A character string. The border color of highlighted nodes.
-#' @param stroke.width A character string. The border stroke width of highlighted nodes.
-#' @param stroke.opacity Numeric. The border stroke opacity of highlighted nodes.
-#' @param show.glyph.id  Logic. If set to 'TRUE', glyph IDs are plotted instead of their labels.
-#' @param select.glyph.class Character. Select glyphs by class. It should be one of the values of XML attribute 'class' of a 'glyph' element. For example 'macromolecule', "simple chemical"
-#' @param label.x.shift Numeric. Move labels horizontally.
-#' @param label.y.shift  Numeric
-#' @param label.color  Character
-#' @param label.font.size  Numeric
-#' @param label.spliting.string  Character
+#' @param node.set A vector of character strings. Default: "all". Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview. 
+#' @param node.set.id.type A character string. Default: "CompoundName". ID type of input nodes.
+#' @param glyphs.id.type A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.
+#' @param cpd.or.gene A character string. One of 'gene' or 'compound' (default). 
+#' @param stroke.color A character string. Default: "black". The border color of highlighted nodes.
+#' @param stroke.width Integer. Default: 10. The border stroke width of highlighted nodes.
+#' @param stroke.opacity Numeric. Default: 1. The border stroke opacity of highlighted nodes.
+#' @param show.glyph.id  Logical. Default: F. If set to 'TRUE', glyph IDs are plotted instead of their labels.
+#' @param select.glyph.class Character vector. Select glyphs by class. It should be one of the values of XML attribute 'class' of a 'glyph' element. For example 'macromolecule', "simple chemical"
+#' @param label.x.shift Integer. Default: 0. Move labels horizontally.
+#' @param label.y.shift  Integer. Default: 0. Move labels vertically. 
+#' @param label.color  A character string. Default: "black". Change label color.
+#' @param label.font.size  Integer. Adjust label font size. 
+#' @param label.spliting.string  A character vector. When we split text into multiple lines, these characters will be used to split label (where a new line can be created). For example: label.spliting.string = c(' ','-',';','/','_'). 
 #' @param labels  A vector of character strings. The labels to display on the nodes of input molecules. The names of this vector should be the vector of 'node.set'. The values are the new labels to display.
 #' @return A SBGNview obj
 #' @examples 
@@ -189,19 +189,19 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 #' @param from.node A character string. The molecule ID of source node.
 #' @param to.node A character string. The molecule ID of target node.
 #' @param directed.graph Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from 'source' node to 'target' node.
-#' @param node.set.id.type A character string. ID type of input nodes.
-#' @param glyphs.id.type A character string. ID type of nodes in SBGN-ML file.
-#' @param cpd.or.gene A character string. One of 'gene' or 'compound'. 
-#' @param path.node.color String. Border color of nodes in the path.
-#' @param path.node.stroke.width Numeric
-#' @param input.node.stroke.width A character string. Border stroke width of input nodes (affects both from.node and to.node)
-#' @param from.node.color A character string. Border color of 'source'/from.node
-#' @param to.node.color A character string. Border color of 'target'/to.node
-#' @param n.shortest.paths.plot Integer. There could be more than one shortest paths between two nodes. User can choose how many of them to plot.
-#' @param shortest.paths.cols A character string. The colors of arcs in different shortest paths. The length of this vector (number of colors) should be the value of n.shortest.paths.plot. If one arc is in multiple shortest paths, its color will be set to the color that appears later in this vector.
-#' @param path.stroke.width Numeric. The width of line in edges in the shortest paths.
-#' @param tip.size Numeric. The size of arc tip in edges of the shortest paths.
-#' @return A SBGNview obj.
+#' @param node.set.id.type A character string. Default: "CompoundName". ID type of input nodes.
+#' @param glyphs.id.type A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.
+#' @param cpd.or.gene A character string. One of 'gene' or 'compound' (default). 
+#' @param path.node.color A character string. Default: "black". Border color of nodes in the path.
+#' @param path.node.stroke.width Integer. Default: 10. Adjust stroke width of path between nodes.
+#' @param input.node.stroke.width Integer. Default: 10. Border stroke width of input nodes (affects both from.node and to.node)
+#' @param from.node.color A character string. Default: "red". Border color of 'source'/from.node
+#' @param to.node.color A character string. Default: "blue". Border color of 'target'/to.node
+#' @param n.shortest.paths.plot Integer. Default: 1. There could be more than one shortest paths between two nodes. User can choose how many of them to plot.
+#' @param shortest.paths.cols A vector of character string. Default: c("purple"). The colors of arcs in different shortest paths. The length of this vector (number of colors) should be the value of n.shortest.paths.plot. If one arc is in multiple shortest paths, its color will be set to the color that appears later in this vector.
+#' @param path.stroke.width Integer. Default: 2. The width of line in edges in the shortest paths.
+#' @param tip.size Integer. Default: 4. The size of arc tip in edges of the shortest paths.
+#' @return A SBGNview obj
 #' @examples 
 #'  data(SBGNview.obj)
 #' \dontrun{
@@ -346,10 +346,10 @@ highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = N
 #' 
 #' This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
 #' 
-#' @param class String. The arc class to modify.
-#' @param color String. The color of arcs with selected 'class'
-#' @param line.width Numeric. Line thickness
-#' @param tip.size Numeric
+#' @param class A character string. Default: "arc". The arc class to modify.
+#' @param color A character string. Default: "black". The color of arcs with selected 'class'.
+#' @param line.width Numeric. Default: 2. Line thickness.
+#' @param tip.size Numeric. Default: 6. Tip size. 
 #' @return A SBGNview object
 #' @examples
 #' data(SBGNview.obj)

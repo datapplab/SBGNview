@@ -7,7 +7,7 @@
 \method{print}{SBGNview}(x, ...)
 }
 \arguments{
-\item{x}{An object of class SBGNview}
+\item{x}{A SBGNview class object.}
 
 \item{...}{Other parameters passed to print.}
 }
@@ -18,7 +18,7 @@ None
 A wrapper to run function \code{\link{renderSbgn}} for all pathways in a SBGNview object and generate image files.
 }
 \examples{
-### use simulated data. Please see vignettes for more examples
+### use simulated data. Please see vignettes for more examples.
 data('pathways.info','sbgn.xmls')
 SBGNview.obj = SBGNview(
               simulate.data = TRUE
