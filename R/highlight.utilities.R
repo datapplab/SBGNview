@@ -185,7 +185,10 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 }
 
 #########################################################################################################
+#' Highlight shortest path between two nodes
+#' 
 #' Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.
+#' 
 #' @param from.node A character string. The molecule ID of source node.
 #' @param to.node A character string. The molecule ID of target node.
 #' @param directed.graph Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from 'source' node to 'target' node.

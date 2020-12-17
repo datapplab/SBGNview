@@ -2,7 +2,7 @@
 % Please edit documentation in R/highlight.utilities.R
 \name{highlightPath}
 \alias{highlightPath}
-\title{Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.}
+\title{Highlight shortest path between two nodes}
 \usage{
 highlightPath(
   from.node = NULL,
