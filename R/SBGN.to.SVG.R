@@ -281,12 +281,25 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
     pathway.name.font <- col.panel.w/7 * global.parameters.list$pathway.name.font.size
     pathway.name.y <- col.panel.y - pathway.name.font
     
-    pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph
+    pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph # pathwayname::databse::id
 
     # split pathway.name.display into 1) pathway name and 2) database :: id
     split.name.db <- regmatches(pathway.name.display, regexpr("::", pathway.name.display), invert = TRUE)
     name.of.pathway <- split.name.db[[1]][1]
     db.and.id <- paste("(", split.name.db[[1]][2], ")", sep = "")
+    
+    # if db.and.id = 'user.data' and name.of.pathway not in sbgn.xmls, or not in pathways.info[,'pathway.name']
+    # display nothing for top left stamp, if in sbgn.xmls or pathways.info[,'pathway.name'], show first line not second line
+    if(split.name.db[[1]][2] == "user.data") {
+        if(name.of.pathway %in% names(sbgn.xmls) || 
+           name.of.pathway %in% pathways.info[,'pathway.name']) {
+            db.and.id <- ""
+        } else {
+            name.of.pathway <- ""
+            db.and.id <- ""
+        }
+    }
+    
     # Using template.text.pathway.name to display in two lines
     pathway.name.svg <- sprintf(template.text.pathway.name, min.x + 10, pathway.name.y, "pathway.name",
                                 pathway.name.font, "left", "baseline", 1, "baseline", "black", 

@@ -192,7 +192,7 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
       for(i in seq_len(length(json.items))){
         found.files <- append(found.files, json.items[[i]][["path"]])
       }
-      # if file in data/id.mapping directory
+      # if file in data/id.mapping.unique.pair.name directory
       check.file.path <- paste("data/id.mapping.unique.pair.name/", fi, ".RData", sep = "")
       
       if(check.file.path %in% found.files){ # if file in data/id.mapping, then download file
@@ -200,9 +200,9 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
         print(paste(fi, " found in SBGNhub. Dowloading it.", sep = ""))
         mapping.file.name <- paste(fi, ".RData", sep = "")
         
-        # need'?raw=true' end of url to download file 
-        file.url <- paste("https://github.com/datapplab/SBGNhub/blob/master/", 
-                          check.file.path, "?raw=true", sep = "")
+        # url to download raw file
+        file.url <- paste("https://raw.githubusercontent.com/datapplab/SBGNhub/master/", 
+                          check.file.path, sep = "")
 
         file.destination <- paste(file.destination, "/", fi, ".RData", sep = "")
         # download.file
