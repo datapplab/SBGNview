@@ -13,7 +13,7 @@
 #' @param user.data A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule. 
 #' @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file.
 #' @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.
-#' @param color.panel.scale Numeric. Default: 1.5. It controls the relative size of color scheme panel. 
+#' @param color.panel.scale Numeric. Default: 0.7. It controls the relative size of color scheme panel. 
 #' @param if.write.files Logical. Default: T. If generate image files.
 #' @param if.plot.cardinality Logical. Default: F. If plot cardinality glyphs.
 #' @param status.node.font.scale Numeric. Default: 3. Scale the font size for status variable and unit of information nodes.
@@ -54,10 +54,10 @@
 #' @param node.width.adjust.factor Numeric. Default: 2. Change font size according to the width of its glyph. If the glyph is too large (e.g. compartment), its label may look too small. Then we can enlarge the label in proportion to the width of the glyph. It affects all types of glyphs. 
 #' @param pathway.name List containing two elements: 1. pathway name 2. stamp information
 #' @param pathway.name.font.size Numeric. Default: 1. When pathway names are plotted on graph, this parameter controls their font size.
-#' @param if.scale.complex.font.size Logical. Default: F.  Whether to scale complex font size according to its width.
-#' @param if.scale.compartment.font.size  Logical. Default: F. Whether to scale compartment font size according to its width.
-#' @param node.width.adjust.factor.compartment Numeric. Default: 1. How much the font size should change in proportion to the width of compartment.
-#' @param node.width.adjust.factor.complex Numeric. Default: 3. How much the font size should change in proportion to the width of complex.
+#' @param if.scale.complex.font.size Logical. Default: F.  Whether to scale complex font size according to its width. If set to 'T', the 'node.width.adjust.factor.complex' argument can be used to specify the scale factor. 
+#' @param if.scale.compartment.font.size  Logical. Default: F. Whether to scale compartment font size according to its width. If set to 'T', the 'node.width.adjust.factor.compartment' argument can be used to specify the scale factor.   
+#' @param node.width.adjust.factor.compartment Numeric. Default: 0.02. How much the font size should change in proportion to the width of compartment. The font is scaled only if 'if.scale.compartment.font.size' is set to 'T'. To find the best scale factor which works you, start with 0.02 (default) and incrementally increase that value.  
+#' @param node.width.adjust.factor.complex Numeric. Default: 0.02. How much the font size should change in proportion to the width of complex. The font is scaled only if 'if.scale.complex.font.size' is set to 'T'. To find the best scale factor which works you, start with 0.02 (default) and incrementally increase that value. 
 #' @param space.between.color.panel.and.entity Numeric. Default: 100. The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph. This parameter controls how close it can reach a glyph.
 #' @return A list of three elements: glyphs.list, arcs.list, global.parameters.list
 #' @examples
@@ -99,8 +99,8 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         font.size.scale.gene = 3,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
         font.size.scale.cpd = 3, # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
         font.size.scale.complex = 1.1, font.size.scale.compartment = 1.6, if.scale.complex.font.size = FALSE, 
-        if.scale.compartment.font.size = FALSE, node.width.adjust.factor.compartment = 1,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        node.width.adjust.factor.complex = 3,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+        if.scale.compartment.font.size = FALSE, node.width.adjust.factor.compartment = 0.02,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+        node.width.adjust.factor.complex = 0.02,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
         text.length.factor = 2, text.length.factor.macromolecule = 2,  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for how wide the wrapped text should be.
         text.length.factor.compartment = 2, text.length.factor.complex = 2, space.between.color.panel.and.entity = 100, 
         global.parameters.list = NULL) {
