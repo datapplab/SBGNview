@@ -1,49 +1,6 @@
 
 #########################################################################################################
-### original function
-# download.mapping.file <- function(input.type, output.type, 
-#                                   species = NULL, SBGNview.data.folder = "./SBGNview.tmp.data/") {
-#   options(warn = -1)
-#   # R CMD check will give different sort result if you didn't specify 'method': the
-#   # default sort method depends on the locale of your system. And R CMD check uses
-#   # a different locale than my interactive session.  The issue resided in this: R
-#   # interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C;
-#   # https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-#   type.pair.name.1 <- paste(sort(c(input.type, output.type), method = "radix", 
-#                                  decreasing = FALSE), collapse = "_")
-#   type.pair.name.2 <- paste(sort(c(input.type, output.type), method = "radix", 
-#                                  decreasing = TRUE), collapse = "_")
-#   type.pair.name.1.org <- paste(species, type.pair.name.1, sep = "_")
-#   type.pair.name.2.org <- paste(species, type.pair.name.2, sep = "_")
-#   try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org, type.pair.name.1, 
-#                       type.pair.name.2)
-#   if.online.mapping.avai <- FALSE
-#   if.mapping.in.data.package <- FALSE
-#   for (i in seq_len(length(try.file.names))) {
-#     type.pair.name.try <- try.file.names[i]
-#     if.data.exists <- tryCatch(data(list = type.pair.name.try), warning = function(w) "no such data")
-#     if (if.data.exists %in% c(type.pair.name.try, "mapping.list", "mapping.table")) {
-#       mapping.file.name <- type.pair.name.try
-#       message("ID mapping ", type.pair.name.try, " is included in SBGNview.data package. Loading it.")
-#       if.mapping.in.data.package <- TRUE
-#       (break)()
-#     } else {
-#       print("ID mapping not in data package for this pair")
-#       print(type.pair.name.try)
-#       print(if.data.exists)
-#     }
-#   }
-#   if (!if.mapping.in.data.package) {
-#     # stop("Can't map this pair of IDs with SBGNview.data!", type.pair.name.try,  "\n")
-#     warning("Can't map this pair of IDs with SBGNview.data! Generating mapping with Pathview!", type.pair.name.try,  "\n")
-#     mapping.file.name = "online mapping not available"
-#   }
-#   options(warn = 1)
-#   return(mapping.file.name)
-# }
-
-#########################################################################################################
-### working copy of download.mapping.file
+### searches for different id mapping file name combinations in local, SBGNview.data, SBGNhub locations
 ### check local directory for any mapping files, if not found then check SBGNView.data, then SBGNhub
 download.mapping.file <- function(input.type, output.type, species = NULL, 
                                   SBGNview.data.folder = "./SBGNview.tmp.data") { 
@@ -63,7 +20,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
                       type.pair.name.2)
   try.file.names <- gsub("[[:space:]]", "", try.file.names) # remove any spaces
   
-  # KO_ENTREZID.RData in hub may not contain the all the information for the speices in it. 
+  # KO_ENTREZID.RData in SBGNhub may not contain the all the information for the speices in it. 
   # For case when input/output is KO/ENTREZID, try.file.names contains KO_ENTREZID,
   # so if species specific file not found, KO_ENTREZID will be downloaded and used instead 
   # of generating the species specific mapping between KO and ENTREZID. Modify 'try.files.names'
@@ -139,7 +96,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
 }
 
 #########################################################################################################
-# used by download.mapping.file function to find mapping files .RData in given directory
+### used by download.mapping.file function to find mapping files .RData in given directory
 find.mapping.files.in.folder <- function(try.file.names, SBGNview.data.folder){
   # read .RData files in given direcotry
   files.in.exist.data.folder <-  list.files(path = SBGNview.data.folder, pattern = "*.RData")
@@ -169,8 +126,8 @@ find.mapping.files.in.folder <- function(try.file.names, SBGNview.data.folder){
 }
 
 #########################################################################################################
-# used by download.mapping.file function
-# search SBGNhub data/id.mapping directory for mapping file and download it if exits
+### used by download.mapping.file function
+### search SBGNhub data/id.mapping.unique.pair directory for mapping file and download it if exits
 search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
   
   mapping.file.name <- NULL
@@ -181,7 +138,7 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
     request <- httr::GET(github.api) # get the information from the api
     httr::warn_for_status(request) # warning if bad request from GET()
     
-    json.info <- httr::content(request) # the content from request as list structure
+    json.info <- httr::content(request) # the content from request is as list structure
     json.items <- json.info$items # $items element contains information of any files found with file path
     
     if(length(json.items) == 0){ # if 0, no matching files found
@@ -219,7 +176,7 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
 #' Generate ID mapping table from input and output ID types 
 #' 
 #' This function generates the ID mapping table between input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
-#' This function will check if a mapping table exists in local folder ('SBGNview.data.folder' argument), SBGNview.data package, and SBGNhub. If no mapping table is found in these locations, a mapping table is generated from scratch and saved to path specified by 'SBGNview.data.folder' argument.
+#' This function will check if a mapping table exists in local folder ('SBGNview.data.folder' argument), SBGNview.data package, and SBGNhub. If no mapping table is found in these locations, a mapping table is generated using Pathview and saved to path specified by 'SBGNview.data.folder' argument.
 #' 
 #' @param input.type A character string. Gene or compound ID type
 #' @param output.type A character string. Gene or compound ID type
@@ -238,149 +195,8 @@ search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
 #'                              
 #' @export
 
-# loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
-#                              limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){ 
-#   
-#   input.type = gsub("entrez","ENTREZID",input.type)
-#   output.type = gsub("entrez","ENTREZID",output.type)
-#   if(input.type == output.type){
-#     stop("Input type and output types are the same!")
-#   }
-#   species = gsub("Hs","hsa",species)
-#   type.pair.name = paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-#   if(!file.exists(SBGNview.data.folder)){
-#     dir.create(SBGNview.data.folder)
-#   }
-#   
-#   mapping.file.name <- download.mapping.file(input.type, output.type, species, SBGNview.data.folder = SBGNview.data.folder)
-#   
-#   if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name), 
-#                                                warning = function(w) "no such data") %in% c(mapping.file.name, "mapping.list", "mapping.table" )
-#   ){
-#     message("Loading ID mapping file: ",mapping.file.name," \n")
-#     .GlobalEnv$mapping.list = NULL; .GlobalEnv$mapping.table = NULL
-#     if.from.file = FALSE
-#     if(file.exists(mapping.file.name)){
-#       if.from.file = TRUE
-#       var.name = load(mapping.file.name)
-#     }else{
-#       if(!exists(mapping.file.name)){
-#         data(list = mapping.file.name)
-#       }
-#     }
-#     if(!is.null(mapping.list)){ # if one of "output.type" or "input.type" is NOT "pathway.id", then the data's names is "mapping.list"
-#       id.map = mapping.list[[1]][[1]]
-#     }else if(!is.null(mapping.table)){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
-#       id.map = mapping.table
-#     }else if(if.from.file){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
-#       id.map = get(var.name)
-#     }else{
-#       # print("loading mapping file from data package")
-#       # print(mapping.file.name)
-#       # data(list = mapping.file.name)
-#       id.map = get(mapping.file.name)
-#     }
-#     message("Finished loading")
-#     
-#     if("species" %in% colnames(id.map) &  !is.null(id.map) ){
-#       if(any(id.map[,"species"] %in% species) ){
-#         id.map = id.map[id.map[,"species"] %in% species,c(input.type,output.type)]
-#       }
-#     }
-#   } else {
-#     if(cpd.or.gene == "gene"){
-#       # pathway.id used for heterogeneous purposes and mapping gene to pathway
-#       # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
-#       # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"  
-#       # ENZYME not in if condition below b/c it can be mapped directly 
-#       if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
-#          !any(c(input.type,output.type) %in% c("KO")) 
-#       ){ # if input and output don't contain KO
-#         
-#         # load mapping table for mapping KO to glyph id
-#         ko.to.glyph.id = loadMappingTable(input.type = output.type,
-#                                           output.type = "KO",
-#                                           cpd.or.gene = "gene",
-#                                           species = species,
-#                                           SBGNview.data.folder = SBGNview.data.folder)
-#         ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
-#         
-#         # load mapping table for mapping user input to KO id
-#         input.to.ko = loadMappingTable(input.type = input.type,
-#                                        output.type = "KO",
-#                                        cpd.or.gene = "gene",
-#                                        limit.to.ids = limit.to.ids,
-#                                        species = species,
-#                                        SBGNview.data.folder = SBGNview.data.folder)
-#         input.to.ko = input.to.ko$gene[[1]]
-#         input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
-#         id.map = input.to.glyph.id[,c(input.type,output.type)]
-#       } else {
-#         message("\nID mapping not pre-generated. Using Pathview!!!\n")
-#         id.map = geneannot.map.ko(in.ids = limit.to.ids,
-#                                   in.type = input.type,
-#                                   out.type = output.type,
-#                                   species = species,
-#                                   unique.map= FALSE,
-#                                   SBGNview.data.folder = SBGNview.data.folder)
-#         if(is.vector(id.map)){
-#           id.map = as.matrix(t(id.map))
-#         }
-#       }
-#     } else if(cpd.or.gene == "compound"){
-#       message("\nID mapping not pre-generated. Using Pathview cpd!!!\n")
-#       if(is.null(limit.to.ids)){
-#         stop("Must provide input IDs when using pathview mapping!")
-#       }
-#       print(input.type)
-#       print(output.type)
-#       id.map =  pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type, 
-#                                    out.type = output.type)
-#     } else {
-#       message("\nCouldn't fine ID mapping table between ", input.type, " and ", output.type, "!!!\n")
-#       #message("Tried online resource ", online.mapping.file, "\n")
-#       message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
-#       stop("ID mapping table not provided")
-#     }
-#     
-#     id.map = id.map[!is.na(id.map[,2]),]
-#     if(is.vector(id.map)){
-#       id.map = as.matrix(t(id.map))
-#     }
-#     id.map = id.map[!is.na(id.map[,1]),]
-#     if(is.vector(id.map)){
-#       id.map = as.matrix(t(id.map))
-#     }
-#     id.map = unique(id.map)
-#   }
-#   
-#   # if(!is.null(limit.to.ids)){
-#   #     # some IDs are quoted, need to remove the quote characters
-#   #     id.map[,input.type] = gsub("^\"","",id.map[,input.type])
-#   #     id.map[,input.type] = gsub("\"$","",id.map[,input.type])
-#   #     id.map = id.map[id.map[,input.type] %in% limit.to.ids,]
-#   # }
-#   
-#   # add additional mapping using KO to glyph.id
-#   mapping.list = list()
-#   if(is.vector(id.map)){
-#     id.map = as.matrix(t(id.map))
-#   }
-#   id.map[,1] = as.character(id.map[,1])
-#   id.map[,2] = as.character(id.map[,2])
-#   id.map = as.matrix(id.map)
-#   mapping.list[[cpd.or.gene]]= list()
-#   mapping.list[[cpd.or.gene]][[type.pair.name]] = id.map
-#   message("Generated ID mapping list")
-#   
-#   return(mapping.list)
-# }
-
-#########################################################################################################
-### working copy of loadMappingTable 
-### load from local file, SBGNview.data, or SBGNhub downloaded file. otherwise use pathview
 loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene, 
-                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){ 
+                             limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") { 
   
   input.type = gsub("entrez","ENTREZID",input.type)
   output.type = gsub("entrez","ENTREZID",output.type)
@@ -393,7 +209,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     dir.create(SBGNview.data.folder)
   }
   
-  ### download.mapping.file checks local, SBGNview.data, SBGNhub for mapping file
+  ### 'download.mapping.file checks' local, SBGNview.data, SBGNhub for mapping file
   ### mapping.file.info$location values ("local", "SBGNview.data", "SBGNhub", "pathview")
   ### mapping.file.info$mapping.file.name (".RData", "name",      ".RData,       "")
   mapping.file.info <- download.mapping.file(input.type = input.type,
@@ -532,9 +348,8 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
 }
 
 #########################################################################################################
-# working copy of geneannot.map.ko 
-# break loop caused by loadMappingTable
-# uses generate.ko.mapping.list
+### uses generate.ko.mapping.list to generate mapping table from scratch using KEGGREST
+### otherwise will use pathview
 geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", unique.map, 
                              SBGNview.data.folder = "./SBGNview.tmp.data") {
   # pathview's geneannot.map can't map KO, so here included KO mapping
@@ -578,7 +393,7 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
 
 #########################################################################################################
 ### generate mapping list on the fly for mapping between KO and other IDs in gene.idtype.list
-# Pseudocode:
+# Pseudocode for this function:
 # input = in.type, out.type ("ko"), species, in.ids
 #   if species not in bods 
 #       if in.type = entrez id
@@ -1255,7 +1070,193 @@ findPathways <- function(keywords = NULL, keywords.logic = "or", keyword.type = 
 }
 
 #########################################################################################################
-## old version of function. uses geneannot.map.all function.
+############# Below are previous versions of some of the above functions. 
+############# These are kept for reference purposes.
+#########################################################################################################
+### original (old version) function replaced with new version. 
+# download.mapping.file <- function(input.type, output.type, 
+#                                   species = NULL, SBGNview.data.folder = "./SBGNview.tmp.data/") {
+#   options(warn = -1)
+#   # R CMD check will give different sort result if you didn't specify 'method': the
+#   # default sort method depends on the locale of your system. And R CMD check uses
+#   # a different locale than my interactive session.  The issue resided in this: R
+#   # interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C;
+#   # https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+#   type.pair.name.1 <- paste(sort(c(input.type, output.type), method = "radix", 
+#                                  decreasing = FALSE), collapse = "_")
+#   type.pair.name.2 <- paste(sort(c(input.type, output.type), method = "radix", 
+#                                  decreasing = TRUE), collapse = "_")
+#   type.pair.name.1.org <- paste(species, type.pair.name.1, sep = "_")
+#   type.pair.name.2.org <- paste(species, type.pair.name.2, sep = "_")
+#   try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org, type.pair.name.1, 
+#                       type.pair.name.2)
+#   if.online.mapping.avai <- FALSE
+#   if.mapping.in.data.package <- FALSE
+#   for (i in seq_len(length(try.file.names))) {
+#     type.pair.name.try <- try.file.names[i]
+#     if.data.exists <- tryCatch(data(list = type.pair.name.try), warning = function(w) "no such data")
+#     if (if.data.exists %in% c(type.pair.name.try, "mapping.list", "mapping.table")) {
+#       mapping.file.name <- type.pair.name.try
+#       message("ID mapping ", type.pair.name.try, " is included in SBGNview.data package. Loading it.")
+#       if.mapping.in.data.package <- TRUE
+#       (break)()
+#     } else {
+#       print("ID mapping not in data package for this pair")
+#       print(type.pair.name.try)
+#       print(if.data.exists)
+#     }
+#   }
+#   if (!if.mapping.in.data.package) {
+#     # stop("Can't map this pair of IDs with SBGNview.data!", type.pair.name.try,  "\n")
+#     warning("Can't map this pair of IDs with SBGNview.data! Generating mapping with Pathview!", type.pair.name.try,  "\n")
+#     mapping.file.name = "online mapping not available"
+#   }
+#   options(warn = 1)
+#   return(mapping.file.name)
+# }
+
+#########################################################################################################
+### original (old version) of the function
+# loadMappingTable <- function(output.type, input.type, species = NULL, cpd.or.gene, 
+#                              limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data"){ 
+#   
+#   input.type = gsub("entrez","ENTREZID",input.type)
+#   output.type = gsub("entrez","ENTREZID",output.type)
+#   if(input.type == output.type){
+#     stop("Input type and output types are the same!")
+#   }
+#   species = gsub("Hs","hsa",species)
+#   type.pair.name = paste(sort(c(input.type,output.type),method = "radix",decreasing = TRUE),collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+#   if(!file.exists(SBGNview.data.folder)){
+#     dir.create(SBGNview.data.folder)
+#   }
+#   
+#   mapping.file.name <- download.mapping.file(input.type, output.type, species, SBGNview.data.folder = SBGNview.data.folder)
+#   
+#   if(file.exists(mapping.file.name) | tryCatch(data(list = mapping.file.name), 
+#                                                warning = function(w) "no such data") %in% c(mapping.file.name, "mapping.list", "mapping.table" )
+#   ){
+#     message("Loading ID mapping file: ",mapping.file.name," \n")
+#     .GlobalEnv$mapping.list = NULL; .GlobalEnv$mapping.table = NULL
+#     if.from.file = FALSE
+#     if(file.exists(mapping.file.name)){
+#       if.from.file = TRUE
+#       var.name = load(mapping.file.name)
+#     }else{
+#       if(!exists(mapping.file.name)){
+#         data(list = mapping.file.name)
+#       }
+#     }
+#     if(!is.null(mapping.list)){ # if one of "output.type" or "input.type" is NOT "pathway.id", then the data's names is "mapping.list"
+#       id.map = mapping.list[[1]][[1]]
+#     }else if(!is.null(mapping.table)){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
+#       id.map = mapping.table
+#     }else if(if.from.file){ # if one of "output.type" or "input.type" is "pathway.id", then the data's names is "mapping.table"
+#       id.map = get(var.name)
+#     }else{
+#       # print("loading mapping file from data package")
+#       # print(mapping.file.name)
+#       # data(list = mapping.file.name)
+#       id.map = get(mapping.file.name)
+#     }
+#     message("Finished loading")
+#     
+#     if("species" %in% colnames(id.map) &  !is.null(id.map) ){
+#       if(any(id.map[,"species"] %in% species) ){
+#         id.map = id.map[id.map[,"species"] %in% species,c(input.type,output.type)]
+#       }
+#     }
+#   } else {
+#     if(cpd.or.gene == "gene"){
+#       # pathway.id used for heterogeneous purposes and mapping gene to pathway
+#       # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
+#       # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"  
+#       # ENZYME not in if condition below b/c it can be mapped directly 
+#       if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) & 
+#          !any(c(input.type,output.type) %in% c("KO")) 
+#       ){ # if input and output don't contain KO
+#         
+#         # load mapping table for mapping KO to glyph id
+#         ko.to.glyph.id = loadMappingTable(input.type = output.type,
+#                                           output.type = "KO",
+#                                           cpd.or.gene = "gene",
+#                                           species = species,
+#                                           SBGNview.data.folder = SBGNview.data.folder)
+#         ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
+#         
+#         # load mapping table for mapping user input to KO id
+#         input.to.ko = loadMappingTable(input.type = input.type,
+#                                        output.type = "KO",
+#                                        cpd.or.gene = "gene",
+#                                        limit.to.ids = limit.to.ids,
+#                                        species = species,
+#                                        SBGNview.data.folder = SBGNview.data.folder)
+#         input.to.ko = input.to.ko$gene[[1]]
+#         input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
+#         id.map = input.to.glyph.id[,c(input.type,output.type)]
+#       } else {
+#         message("\nID mapping not pre-generated. Using Pathview!!!\n")
+#         id.map = geneannot.map.ko(in.ids = limit.to.ids,
+#                                   in.type = input.type,
+#                                   out.type = output.type,
+#                                   species = species,
+#                                   unique.map= FALSE,
+#                                   SBGNview.data.folder = SBGNview.data.folder)
+#         if(is.vector(id.map)){
+#           id.map = as.matrix(t(id.map))
+#         }
+#       }
+#     } else if(cpd.or.gene == "compound"){
+#       message("\nID mapping not pre-generated. Using Pathview cpd!!!\n")
+#       if(is.null(limit.to.ids)){
+#         stop("Must provide input IDs when using pathview mapping!")
+#       }
+#       print(input.type)
+#       print(output.type)
+#       id.map =  pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type, 
+#                                    out.type = output.type)
+#     } else {
+#       message("\nCouldn't fine ID mapping table between ", input.type, " and ", output.type, "!!!\n")
+#       #message("Tried online resource ", online.mapping.file, "\n")
+#       message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
+#       stop("ID mapping table not provided")
+#     }
+#     
+#     id.map = id.map[!is.na(id.map[,2]),]
+#     if(is.vector(id.map)){
+#       id.map = as.matrix(t(id.map))
+#     }
+#     id.map = id.map[!is.na(id.map[,1]),]
+#     if(is.vector(id.map)){
+#       id.map = as.matrix(t(id.map))
+#     }
+#     id.map = unique(id.map)
+#   }
+#   
+#   # if(!is.null(limit.to.ids)){
+#   #     # some IDs are quoted, need to remove the quote characters
+#   #     id.map[,input.type] = gsub("^\"","",id.map[,input.type])
+#   #     id.map[,input.type] = gsub("\"$","",id.map[,input.type])
+#   #     id.map = id.map[id.map[,input.type] %in% limit.to.ids,]
+#   # }
+#   
+#   # add additional mapping using KO to glyph.id
+#   mapping.list = list()
+#   if(is.vector(id.map)){
+#     id.map = as.matrix(t(id.map))
+#   }
+#   id.map[,1] = as.character(id.map[,1])
+#   id.map[,2] = as.character(id.map[,2])
+#   id.map = as.matrix(id.map)
+#   mapping.list[[cpd.or.gene]]= list()
+#   mapping.list[[cpd.or.gene]][[type.pair.name]] = id.map
+#   message("Generated ID mapping list")
+#   
+#   return(mapping.list)
+# }
+
+#########################################################################################################
+### old version of function
 # geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "all", unique.map, 
 #     SBGNview.data.folder = "./SBGNview.tmp.data") {
 #     # pathview's geneannot.map can't map KO, so here included KO mapping
@@ -1322,8 +1323,9 @@ findPathways <- function(keywords = NULL, keywords.logic = "or", keyword.type = 
 # }
 
 #########################################################################################################
-## this function was previously used in the older version geneannot.map.ko
-## the functionality provided by this function was replaced with pathview::geneannot.map
+### this function was previously used in the older version geneannot.map.ko
+### the functionality provided by this function was replaced with 
+### pathview::geneannot.map in the updated geneannot.map.ko function 
 # geneannot.map.all <- function(in.ids, in.type, out.type, org = "Hs", pkg.name = NULL, 
 #                               unique.map = TRUE, na.rm = TRUE, keep.order = FALSE) {
 #   

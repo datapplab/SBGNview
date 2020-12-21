@@ -31,7 +31,7 @@ A list containing the mapping table.
 }
 \description{
 This function generates the ID mapping table between input and output ID types. If provided a vector of input IDs (limit.to.ids argument), the function will output mapping table only containing the input IDs. Otherwise, the function will output all IDs of input and output types (restricted to a species if working on gene types and specified  the 'species' parameter).
-This function will check if a mapping table exists in local folder ('SBGNview.data.folder' argument), SBGNview.data package, and SBGNhub. If no mapping table is found in these locations, a mapping table is generated from scratch and saved to path specified by 'SBGNview.data.folder' argument.
+This function will check if a mapping table exists in local folder ('SBGNview.data.folder' argument), SBGNview.data package, and SBGNhub. If no mapping table is found in these locations, a mapping table is generated using Pathview and saved to path specified by 'SBGNview.data.folder' argument.
 }
 \examples{
  data(mapped.ids)
