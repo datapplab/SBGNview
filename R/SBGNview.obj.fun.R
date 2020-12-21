@@ -74,14 +74,15 @@
 #' fileOutput(SBGNview.obj) 
 #' @export
 
-# outputFile <- function(obj) {
-#     obj$outputFile
-# }
-
-# changed name of outputFile function to fileOutput - Date: 10-19-2020
+# changed name of outputFile function to fileOutput
 fileOutput <- function(obj) {
     obj$output.file
 }
+
+### old version of function
+# outputFile <- function(obj) {
+#     obj$outputFile
+# }
 
 #########################################################################################################
 #' Set output file information for a SBGNview object

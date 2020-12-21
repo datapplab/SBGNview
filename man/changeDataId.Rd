@@ -2,7 +2,7 @@
 % Please edit documentation in R/mapping.utilities.R
 \name{changeDataId}
 \alias{changeDataId}
-\title{Change the data IDs of input omics data}
+\title{Change the data IDs of input omics data matrix}
 \usage{
 changeDataId(
   data.input.id,
@@ -36,7 +36,7 @@ changeDataId(
 A matrix, row names are changed to IDs of 'output.type'. Note the number of rows may be different from input matrix, because multiple input IDs could be collapsed to a single output ID. Also a single input ID could map to multiple output IDs.
 }
 \description{
-This function changes the IDs of input omics data from one type to another.
+This function changes the IDs of input omics data from one type to another. It returns a data matrix with row names changed to the specified output ID type. To change a vector of input IDs to another type, use the \code{\link{changeIds}} function.
 }
 \details{
 This function maps between various gene/compound ID types.

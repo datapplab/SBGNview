@@ -54,8 +54,8 @@ renderSbgn(
   font.size.scale.compartment = 1.6,
   if.scale.complex.font.size = FALSE,
   if.scale.compartment.font.size = FALSE,
-  node.width.adjust.factor.compartment = 1,
-  node.width.adjust.factor.complex = 3,
+  node.width.adjust.factor.compartment = 0.02,
+  node.width.adjust.factor.complex = 0.02,
   text.length.factor = 2,
   text.length.factor.macromolecule = 2,
   text.length.factor.compartment = 2,
@@ -85,7 +85,7 @@ renderSbgn(
 
 \item{key.pos}{A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.}
 
-\item{color.panel.scale}{Numeric. Default: 1.5. It controls the relative size of color scheme panel.}
+\item{color.panel.scale}{Numeric. Default: 0.7. It controls the relative size of color scheme panel.}
 
 \item{color.panel.n.grid}{Numeric. Default: 21. How many colors does the color scheme show.}
 
@@ -155,13 +155,13 @@ renderSbgn(
 
 \item{font.size.scale.compartment}{Numeric. Default: 1.6. Scale the font size of a compartment. A compartment is an enclosed shape that contains entity pool nodes.}
 
-\item{if.scale.complex.font.size}{Logical. Default: F.  Whether to scale complex font size according to its width.}
+\item{if.scale.complex.font.size}{Logical. Default: F.  Whether to scale complex font size according to its width. If set to 'T', the 'node.width.adjust.factor.complex' argument can be used to specify the scale factor.}
 
-\item{if.scale.compartment.font.size}{Logical. Default: F. Whether to scale compartment font size according to its width.}
+\item{if.scale.compartment.font.size}{Logical. Default: F. Whether to scale compartment font size according to its width. If set to 'T', the 'node.width.adjust.factor.compartment' argument can be used to specify the scale factor.}
 
-\item{node.width.adjust.factor.compartment}{Numeric. Default: 1. How much the font size should change in proportion to the width of compartment.}
+\item{node.width.adjust.factor.compartment}{Numeric. Default: 0.02. How much the font size should change in proportion to the width of compartment. The font is scaled only if 'if.scale.compartment.font.size' is set to 'T'. To find the best scale factor which works you, start with 0.02 (default) and incrementally increase that value.}
 
-\item{node.width.adjust.factor.complex}{Numeric. Default: 3. How much the font size should change in proportion to the width of complex.}
+\item{node.width.adjust.factor.complex}{Numeric. Default: 0.02. How much the font size should change in proportion to the width of complex. The font is scaled only if 'if.scale.complex.font.size' is set to 'T'. To find the best scale factor which works you, start with 0.02 (default) and incrementally increase that value.}
 
 \item{text.length.factor}{Numeric. Default: 2. How wide the wrapped text should be. If text is longer than the width controled by this parameter, the text is split into a new line, but only at characters in 'label.spliting.string'. Controls all glyphs.}
 

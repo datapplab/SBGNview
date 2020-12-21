@@ -2,7 +2,7 @@
 % Please edit documentation in R/mapping.utilities.R
 \name{changeIds}
 \alias{changeIds}
-\title{Change input IDs to another ID type}
+\title{Change vector of input IDs to another ID type}
 \usage{
 changeIds(
   input.ids,
@@ -33,10 +33,10 @@ changeIds(
 A list. Each element is the IDs in output.type that are mapped to one input ID.
 }
 \description{
-Change input IDs to another ID type
+This function changes a vector of input IDs to another ID type. It returns a list where each element is the input ID type is mapped to the output ID type. Please note that not every input ID might be mapped to the output type. To change the input IDs to another ID type for a data matrix, use the \code{\link{changeDataId}} function.
 }
 \examples{
- data(mapped.ids)
+data(mapped.ids)
 mapping = changeIds(
   input.ids = c(100048912),
   input.type = 'ENTREZID',

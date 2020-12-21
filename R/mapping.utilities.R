@@ -249,7 +249,9 @@ merge.molecule.data <- function(in.data.source.id, id.map.in.target.and.source, 
 }
 
 #########################################################################################################
-#' Change input IDs to another ID type
+#' Change vector of input IDs to another ID type
+#' 
+#' This function changes a vector of input IDs to another ID type. It returns a list where each element is the input ID type is mapped to the output ID type. Please note that not every input ID might be mapped to the output type. To change the input IDs to another ID type for a data matrix, use the \code{\link{changeDataId}} function. 
 #' 
 #' @param input.ids A vector of character strings. Input IDs that need to be converted.
 #' @param input.type A character string. The type of input IDs. Supported ID types can be found in data(mapped.ids)
@@ -261,7 +263,7 @@ merge.molecule.data <- function(in.data.source.id, id.map.in.target.and.source, 
 #' @return A list. Each element is the IDs in output.type that are mapped to one input ID.
 #' 
 #' @examples 
-#'  data(mapped.ids)
+#' data(mapped.ids)
 #' mapping = changeIds(
 #'   input.ids = c(100048912),
 #'   input.type = 'ENTREZID',
@@ -284,98 +286,26 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
     limit.to.output.ids <- NULL
   }
   if (cpd.or.gene == "gene") {
-    id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.gene.id.type = output.type, 
-                                                    output.gene.id.type = input.type, species = org, SBGNview.data.folder = SBGNview.data.folder)
-  } else if (cpd.or.gene %in% c("cpd", "compound")) {
-    id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type = output.type, 
-                                                    output.cpd.id.type = input.type, species = org, SBGNview.data.folder = SBGNview.data.folder)
-  } else {
-    stop("cpd.or.gene must be one of 'gene' or 'compound'!!")
-  }
-  new.ids <- sapply(input.ids, function(x) {
-    mapped.ids <- change.id(input.id = x, cpd.or.gene = cpd.or.gene, input.type = input.type, 
-                            output.type = output.type, id.mapping.all.list = id.mapping.all.list)
-    mapped.ids
-    mapped.ids <- strsplit(mapped.ids, "; ")[[1]]  # one input id can map to multiple glyph ids(from the same pathway or different pathways), we select the ones that are in the glyphs (same pathway).
-    if (!is.null(limit.to.output.ids)) {
-      mapped.ids <- intersect(mapped.ids, limit.to.output.ids)
-    }
-    return(mapped.ids)
-  })
-  if (is.matrix(new.ids)) {
-    new.ids <- as.list(as.data.frame(new.ids, stringsAsFactors = FALSE))
-    new.ids
-  }
-  
-  message("\nChanged IDs from ", input.type, " to ", output.type)
-  
-  ###### checking how many IDs were mapped
-  not.mapped.count <- 0
-  mapped.count <- 0
-  for(idx in seq_along(new.ids)){
-    if(length(new.ids[[idx]]) == 0) { not.mapped.count <- not.mapped.count + 1 
-    } else { mapped.count <- mapped.count + 1 }
-  }
-  if(not.mapped.count == length(new.ids)){
-    message("None of the input IDs were mapped to specified ouput type")
-  } else if (mapped.count == length(new.ids)) {
-    message("All input IDs were mapped")
-  } else {
-    message("**NOTE**: ", mapped.count, " of ", length(new.ids), " in 'input.ids' were mapped to the output type ")
-    message("Please check the ouput list for more information")
-  }
-  ######
-  
-  return(new.ids)
-}
-
-#########################################################################################################
-### copy of changeIds. Error when change ids from type in gene.idtype.bods to KO
-# Error message: Error in mapping.ko.to.arbitrary.id.type(input.ko.ids = in.ids, output.type = toupper(out.type), : Need vector of input KO IDs 
-changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.pathways = NULL, 
-                      org = "hsa", SBGNview.data.folder = "./SBGNview.tmp.data") {
-  
-  if (!is.null(limit.to.pathways) & output.type %in% c("pathwayCommons", "metacyc.SBGN")) {
-    ids.in.pathways <- sbgnNodes(limit.to.pathways, SBGNview.data.folder = SBGNview.data.folder)
-    limit.to.output.ids <- unlist(lapply(ids.in.pathways, function(all.nodes) {
-      # pathway.nodes$all.nodes[,'glyph.id']
-      all.nodes[, "glyph.id"]
-    }))
-    limit.to.output.ids
-  } else {
-    limit.to.output.ids <- NULL
-  }
-  
-  if (cpd.or.gene == "gene") {
-    #### original code
     # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.gene.id.type = output.type, 
     #                                                 output.gene.id.type = input.type, 
-    #                                                 species = org, 
-    #                                                 SBGNview.data.folder = SBGNview.data.folder)
-    #### use loadMappingTable directly
-    id.mapping.all.list <- loadMappingTable(input.type = input.type, 
-                                            output.type = output.type,
-                                            species = org,
-                                            cpd.or.gene = "gene",
-                                            limit.to.ids = input.ids,
+    #                                                 species = org, SBGNview.data.folder = SBGNview.data.folder)
+    #### use loadMappingTable
+    id.mapping.all.list <- loadMappingTable(input.type = input.type, output.type = output.type,
+                                            species = org, cpd.or.gene = "gene", limit.to.ids = input.ids,
                                             SBGNview.data.folder = SBGNview.data.folder)
     
   } else if (cpd.or.gene %in% c("cpd", "compound")) {
-    ### original code
     # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type = output.type, 
     #                                                 output.cpd.id.type = input.type, 
-    #                                                 species = org, 
-    #                                                 SBGNview.data.folder = SBGNview.data.folder)
-    ### use loadMappingTable direclty
-    id.mapping.all.list <- loadMappingTable(input.type = input.type,
-                                            output.type = output.type,
-                                            cpd.or.gene = "compound",
-                                            limit.to.ids = input.ids,
+    #                                                 species = org, SBGNview.data.folder = SBGNview.data.folder)
+    ### use loadMappingTable
+    id.mapping.all.list <- loadMappingTable(input.type = input.type, output.type = output.type,
+                                            cpd.or.gene = "compound", limit.to.ids = input.ids,
                                             SBGNview.data.folder = SBGNview.data.folder)
+    
   } else {
     stop("cpd.or.gene must be one of 'gene' or 'compound'!!")
   }
-  
   new.ids <- sapply(input.ids, function(x) {
     mapped.ids <- change.id(input.id = x, cpd.or.gene = cpd.or.gene, input.type = input.type, 
                             output.type = output.type, id.mapping.all.list = id.mapping.all.list)
@@ -414,9 +344,9 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
 }
 
 #########################################################################################################
-#' Change the data IDs of input omics data
+#' Change the data IDs of input omics data matrix
 #' 
-#' This function changes the IDs of input omics data from one type to another. 
+#' This function changes the IDs of input omics data from one type to another. It returns a data matrix with row names changed to the specified output ID type. To change a vector of input IDs to another type, use the \code{\link{changeIds}} function.
 #' 
 #' @param data.input.id A matrix. Input omics data. Rows are genes or compounds, columns are measurements. Row names are the original IDs that need to be transformed.
 #' @param input.type A character string. The type of input IDs. Please check \code{data('mapped.ids')} for supported types.
