@@ -176,7 +176,10 @@ find.col.panel.range <- function(user.data, max.gene.value, mid.gene.value, min.
 #########################################################################################################
 find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, if.has.gene.data, 
     if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, min.y) {
-    col.panel.w <- y.margin * 0.8
+    
+    #col.panel.w <- y.margin * 0.8
+    col.panel.w <- y.margin * 0.8 * global.parameters.list$color.panel.scale # scale color.panel
+    
     if (global.parameters.list$key.pos == "none") {
         print("no color panel will be plotted")
         col.panel.svg <- ""

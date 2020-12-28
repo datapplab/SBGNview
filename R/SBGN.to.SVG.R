@@ -11,10 +11,8 @@
 #' @param arcs.info A character string. It should be one of the following: 'parse splines', 'straight' or a string of svg code of arcs. If it is 'parse splines', this function will look for XML element 'arc.spline' in the SBGN-ML file and plot spline arcs. If it is 'straight', the function will look for element 'arc' and plot straight line arcs. If it is a string of svg code, it will write this code directly to the output svg file.
 #' @param compartment.layer.info A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. This layer information ensures that a glyph laying in the overlapped region belongs to the compartment on the top layer.
 #' @param user.data A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule. 
-#' @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file.
 #' @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.
-#' @param color.panel.scale Numeric. Default: 0.7. It controls the relative size of color scheme panel. 
-#' @param if.write.files Logical. Default: T. If generate image files.
+#' @param color.panel.scale Numeric. Default: 1. It controls the relative size of color scheme panel. 
 #' @param if.plot.cardinality Logical. Default: F. If plot cardinality glyphs.
 #' @param status.node.font.scale Numeric. Default: 3. Scale the font size for status variable and unit of information nodes.
 #' @param font.size.scale.complex Numeric. Default: 1.1. Scale the font size of a complex. A complex represents a pool of biochemical entities which can be composed of macromolecules, simple chemicals, multimers, or other complexes.
@@ -78,10 +76,20 @@
 #' 
 #' @export
 
+#################################################
+###### Below arguments are removed from documentation because they are not necessary 
+###### or mess up the output
+
+## files will be written when print(obj) is called
+# @param if.write.files Logical. Default: T. If generate image files.
+# @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file.
+
+#################################################
+
 renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.formats, 
         sbgn.id.attr, glyphs.user = list(), arcs.user = list(), arcs.info = "straight", 
         compartment.layer.info = "original", user.data = matrix("no.user.data", nrow = 1), 
-        if.plot.svg = TRUE, key.pos = "topright", color.panel.scale = 0.7,  # Control the relative size of color scheme panel
+        if.plot.svg = TRUE, key.pos = "topright", color.panel.scale = 1,  # Control the relative size of color scheme panel
         color.panel.n.grid = 21,  # how many colors doese the color scheme show
         col.gene.low = "green", col.gene.high = "red", col.gene.mid = "gray", col.cpd.low = "blue", col.cpd.high = "yellow", 
         col.cpd.mid = "gray", min.gene.value = -1,  # color panel min value, values smaller than this will have the min.value color
@@ -156,7 +164,7 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
             
             global.parameters.list$key.pos <- key.pos  # ll , lr, ur, ul  # location of color panel: lower left, lower right, upper right, upper left
             global.parameters.list$color.panel.scale <- color.panel.scale  # Control the relative size of color scheme panel
-            global.parameters.list$color.panel.n.grid <- color.panel.n.grid  # how many colors doese the color scheme show
+            global.parameters.list$color.panel.n.grid <- color.panel.n.grid  # how many colors does the color scheme show
             global.parameters.list$col.gene.low <- col.gene.low
             global.parameters.list$col.gene.high <- col.gene.high
             global.parameters.list$col.gene.mid <- col.gene.mid
@@ -312,6 +320,46 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
     
     return(list(pathway.name.svg = pathway.name.svg, stamp.svg = stamp.svg))
 }
+
+
+###### copy. fix issue with font size increasing when color.panel.scale is set. 
+add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, template.text.pathway.name,
+                      min.x, max.x, max.y, y.margin) {
+    
+    pathway.name.font <- col.panel.w/global.parameters.list$color.panel.scale/7  * global.parameters.list$pathway.name.font.size
+    pathway.name.y <- col.panel.y - pathway.name.font
+    
+    pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph # pathwayname::databse::id
+    
+    # split pathway.name.display into 1) pathway name and 2) database :: id
+    split.name.db <- regmatches(pathway.name.display, regexpr("::", pathway.name.display), invert = TRUE)
+    name.of.pathway <- split.name.db[[1]][1]
+    db.and.id <- paste("(", split.name.db[[1]][2], ")", sep = "")
+    
+    # if db.and.id = 'user.data' and name.of.pathway not in sbgn.xmls, or not in pathways.info[,'pathway.name']
+    # display nothing for top left stamp, if in sbgn.xmls or pathways.info[,'pathway.name'], show first line not second line
+    if(split.name.db[[1]][2] == "user.data") {
+        if(name.of.pathway %in% names(sbgn.xmls) || 
+           name.of.pathway %in% pathways.info[,'pathway.name']) {
+            db.and.id <- ""
+        } else {
+            name.of.pathway <- ""
+            db.and.id <- ""
+        }
+    }
+    
+    # Using template.text.pathway.name to display in two lines
+    pathway.name.svg <- sprintf(template.text.pathway.name, min.x + 10, pathway.name.y, "pathway.name",
+                                pathway.name.font, "left", "baseline", 1, "baseline", "black", 
+                                min.x + 10, name.of.pathway, min.x + 10, 30, db.and.id)
+    
+    stamp.if.sbgnhub.h <- max.x/5/9
+    stamp.y <- max(max.y, col.panel.y + col.panel.w) + stamp.if.sbgnhub.h + y.margin
+    stamp.svg <- sprintf(template.text, 20, stamp.y, "stamp", 22,
+                         "left", "baseline", 1, "baseline", "black", global.parameters.list$pathway.name$if.file.in.collection)
+    return(list(pathway.name.svg = pathway.name.svg, stamp.svg = stamp.svg))
+}
+
 
 #########################################################################################################
 get.arcs <- function(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.parameters.list, arcs.user) {
