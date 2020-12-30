@@ -17,7 +17,7 @@ renderSbgn(
   user.data = matrix("no.user.data", nrow = 1),
   if.plot.svg = TRUE,
   key.pos = "topright",
-  color.panel.scale = 0.7,
+  color.panel.scale = 1,
   color.panel.n.grid = 21,
   col.gene.low = "green",
   col.gene.high = "red",
@@ -79,9 +79,7 @@ renderSbgn(
 
 \item{user.data}{A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule.}
 
-\item{key.pos}{A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.}
-
-\item{color.panel.scale}{Numeric. Default: 0.7. It controls the relative size of color scheme panel.}
+\item{color.panel.scale}{Numeric. Default: 1. It controls the relative size of color scheme panel.}
 
 \item{color.panel.n.grid}{Numeric. Default: 21. How many colors does the color scheme show.}
 
@@ -108,8 +106,6 @@ renderSbgn(
 \item{max.cpd.value}{Numeric. Default: 1. Color panel's max value for compound data. Values greater than this will have the same color as max value.}
 
 \item{mid.cpd.value}{Numeric. Default: 0. Color panel's mid value for compound data.}
-
-\item{pathway.name}{List containing two elements: 1. pathway name 2. stamp information}
 
 \item{pathway.name.font.size}{Numeric. Default: 1. When pathway names are plotted on graph, this parameter controls their font size.}
 

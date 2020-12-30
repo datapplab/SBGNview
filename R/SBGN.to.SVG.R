@@ -11,7 +11,6 @@
 #' @param arcs.info A character string. It should be one of the following: 'parse splines', 'straight' or a string of svg code of arcs. If it is 'parse splines', this function will look for XML element 'arc.spline' in the SBGN-ML file and plot spline arcs. If it is 'straight', the function will look for element 'arc' and plot straight line arcs. If it is a string of svg code, it will write this code directly to the output svg file.
 #' @param compartment.layer.info A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. This layer information ensures that a glyph laying in the overlapped region belongs to the compartment on the top layer.
 #' @param user.data A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule. 
-#' @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', 'topleft'. The location of color panel: lower left, lower right, upper right, upper left.
 #' @param color.panel.scale Numeric. Default: 1. It controls the relative size of color scheme panel. 
 #' @param if.plot.cardinality Logical. Default: F. If plot cardinality glyphs.
 #' @param status.node.font.scale Numeric. Default: 3. Scale the font size for status variable and unit of information nodes.
@@ -50,7 +49,6 @@
 #' @param font.size.scale.cpd Numeric. Default: 3. Scales font size according to the node's width for large compartments. Only affects font size of 'simple chemical' glyphs.
 #' @param logic.node.font.scale Numeric. Default: 3. Controls the size of logical glyphs ('and', 'or', 'not' etc.).
 #' @param node.width.adjust.factor Numeric. Default: 2. Change font size according to the width of its glyph. If the glyph is too large (e.g. compartment), its label may look too small. Then we can enlarge the label in proportion to the width of the glyph. It affects all types of glyphs. 
-#' @param pathway.name List containing two elements: 1. pathway name 2. stamp information
 #' @param pathway.name.font.size Numeric. Default: 1. When pathway names are plotted on graph, this parameter controls their font size.
 #' @param if.scale.complex.font.size Logical. Default: F.  Whether to scale complex font size according to its width. If set to 'T', the 'node.width.adjust.factor.complex' argument can be used to specify the scale factor. 
 #' @param if.scale.compartment.font.size  Logical. Default: F. Whether to scale compartment font size according to its width. If set to 'T', the 'node.width.adjust.factor.compartment' argument can be used to specify the scale factor.   
@@ -77,13 +75,12 @@
 #' @export
 
 #################################################
-###### Below arguments are removed from documentation because they are not necessary 
-###### or mess up the output
-
-## files will be written when print(obj) is called
-# @param if.write.files Logical. Default: T. If generate image files.
+###### Below arguments are removed from documentation because they are not necessary, 
+###### cause error, or mess up the output
+# @param if.write.files Logical. Default: T. If generate image files. ## files will be written when print(obj) is called
 # @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file.
-
+# @param pathway.name List containing two elements: 1. pathway name 2. stamp information
+# @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', or 'topleft' and places the color panel is the respective location.
 #################################################
 
 renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.formats, 
@@ -285,52 +282,12 @@ fill=\"%s\">
 "
 
 add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, template.text.pathway.name,
-    min.x, max.x, max.y, y.margin) {
-    pathway.name.font <- col.panel.w/7 * global.parameters.list$pathway.name.font.size
-    pathway.name.y <- col.panel.y - pathway.name.font
-    
-    pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph # pathwayname::databse::id
-
-    # split pathway.name.display into 1) pathway name and 2) database :: id
-    split.name.db <- regmatches(pathway.name.display, regexpr("::", pathway.name.display), invert = TRUE)
-    name.of.pathway <- split.name.db[[1]][1]
-    db.and.id <- paste("(", split.name.db[[1]][2], ")", sep = "")
-    
-    # if db.and.id = 'user.data' and name.of.pathway not in sbgn.xmls, or not in pathways.info[,'pathway.name']
-    # display nothing for top left stamp, if in sbgn.xmls or pathways.info[,'pathway.name'], show first line not second line
-    if(split.name.db[[1]][2] == "user.data") {
-        if(name.of.pathway %in% names(sbgn.xmls) || 
-           name.of.pathway %in% pathways.info[,'pathway.name']) {
-            db.and.id <- ""
-        } else {
-            name.of.pathway <- ""
-            db.and.id <- ""
-        }
-    }
-    
-    # Using template.text.pathway.name to display in two lines
-    pathway.name.svg <- sprintf(template.text.pathway.name, min.x + 10, pathway.name.y, "pathway.name",
-                                pathway.name.font, "left", "baseline", 1, "baseline", "black", 
-                                min.x + 10, name.of.pathway, min.x + 10, 30, db.and.id)
-   
-    stamp.if.sbgnhub.h <- max.x/5/9
-    stamp.y <- max(max.y, col.panel.y + col.panel.w) + stamp.if.sbgnhub.h + y.margin
-    stamp.svg <- sprintf(template.text, 20, stamp.y, "stamp", pathway.name.font, 
-        "left", "baseline", 1, "baseline", "black", global.parameters.list$pathway.name$if.file.in.collection)
-    
-    return(list(pathway.name.svg = pathway.name.svg, stamp.svg = stamp.svg))
-}
-
-
-###### copy. fix issue with font size increasing when color.panel.scale is set. 
-add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, template.text.pathway.name,
                       min.x, max.x, max.y, y.margin) {
     
-    pathway.name.font <- col.panel.w/global.parameters.list$color.panel.scale/7  * global.parameters.list$pathway.name.font.size
+    pathway.name.font <- col.panel.w/global.parameters.list$color.panel.scale/7 * global.parameters.list$pathway.name.font.size
     pathway.name.y <- col.panel.y - pathway.name.font
     
     pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph # pathwayname::databse::id
-    
     # split pathway.name.display into 1) pathway name and 2) database :: id
     split.name.db <- regmatches(pathway.name.display, regexpr("::", pathway.name.display), invert = TRUE)
     name.of.pathway <- split.name.db[[1]][1]
@@ -349,9 +306,10 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
     }
     
     # Using template.text.pathway.name to display in two lines
+    dy <- (pathway.name.font / 2) + (10*global.parameters.list$pathway.name.font.size) # space between two lines
     pathway.name.svg <- sprintf(template.text.pathway.name, min.x + 10, pathway.name.y, "pathway.name",
                                 pathway.name.font, "left", "baseline", 1, "baseline", "black", 
-                                min.x + 10, name.of.pathway, min.x + 10, 30, db.and.id)
+                                min.x + 10, name.of.pathway, min.x + 10, dy, db.and.id)
     
     stamp.if.sbgnhub.h <- max.x/5/9
     stamp.y <- max(max.y, col.panel.y + col.panel.w) + stamp.if.sbgnhub.h + y.margin
