@@ -181,38 +181,40 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
     col.panel.w <- y.margin * 0.8 * global.parameters.list$color.panel.scale # scale color.panel
     
     if (global.parameters.list$key.pos == "none") {
-        print("no color panel will be plotted")
+        print("no color panel and pathway name will be plotted")
         col.panel.svg <- ""
         col.panel.svg.chemical <- ""
         col.panel.h <- 0
-    } else {
+        col.panel.y <- 0
+    } 
+    else {
         if (all(if.has.gene.data, if.has.cpd.data)) {
             col.panel.h <- col.panel.w
         } else {
             col.panel.h <- col.panel.w/2
         }
         result.list <- find.key.pos(parse.glyph.out.list, col.panel.w, col.panel.h, 
-            ymargin = y.margin, max.y, max.x, min.x, min.y, key.pos = global.parameters.list$key.pos, 
-            space.between.color.panel.and.entity = global.parameters.list$space.between.color.panel.and.entity)
+                                    ymargin = y.margin, max.y, max.x, min.x, min.y, key.pos = global.parameters.list$key.pos, 
+                                    space.between.color.panel.and.entity = global.parameters.list$space.between.color.panel.and.entity)
         col.panel.x <- result.list$col.panel.x
         col.panel.y <- result.list$col.panel.y
         
         # plot color panel
         if (if.has.gene.data & if.has.cpd.data) {
             col.panel.svg <- color.panel(x = col.panel.x, y = col.panel.y, gene.or.cpd = "gene", 
-                col.panel.w = col.panel.w, global.parameters.list = global.parameters.list, 
-                if.insert.sbgn.link = FALSE)
+                                         col.panel.w = col.panel.w, global.parameters.list = global.parameters.list, 
+                                         if.insert.sbgn.link = FALSE)
             col.panel.svg.chemical <- color.panel(x = col.panel.x, y = col.panel.y + 
-                col.panel.w * 0.45, gene.or.cpd = "compond", col.panel.w = col.panel.w, 
-                global.parameters.list = global.parameters.list)
+                                                      col.panel.w * 0.45, gene.or.cpd = "compond", col.panel.w = col.panel.w, 
+                                                  global.parameters.list = global.parameters.list)
         } else if (if.has.cpd.data) {
             col.panel.svg <- ""
             col.panel.svg.chemical <- color.panel(x = col.panel.x, y = col.panel.y, 
-                gene.or.cpd = "compond", col.panel.w = col.panel.w, global.parameters.list = global.parameters.list)
+                                                  gene.or.cpd = "compond", col.panel.w = col.panel.w, global.parameters.list = global.parameters.list)
         } else if (if.has.gene.data) {
             col.panel.svg.chemical <- ""
             col.panel.svg <- color.panel(x = col.panel.x, y = col.panel.y, gene.or.cpd = "gene", 
-                col.panel.w = col.panel.w, global.parameters.list = global.parameters.list)
+                                         col.panel.w = col.panel.w, global.parameters.list = global.parameters.list)
         } else {
             col.panel.svg.chemical <- ""
             col.panel.svg <- ""
@@ -224,37 +226,40 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
 }
 
 #########################################################################################################
+# new version of find.key.pos. If key.pos equals 'topleft' or 'bottomleft', the output is messed up
+# since we have stamps and lables in top/bottom left
+# so only accept key.pos of 'topright' or 'bottomright'. if other, default to 'topright'
+# and show message to user 
 find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin, 
-    max.y, max.x, min.x, min.y, key.pos, space.between.color.panel.and.entity) {
+                         max.y, max.x, min.x, min.y, key.pos, space.between.color.panel.and.entity) {
     
     dist.to.top <- ymargin + min.y
     glyph.coors <- parse.glyph.out.list$glyph.coors
-    if (key.pos == "none") {
+    
+    if(!key.pos %in% c("bottomleft", "topleft", "bottomright", "topright", "none")) {
+        stop("Not a valid input for key.pos arguemnt. Please check renderSbgn function documentation.")
+    }
+    if(key.pos %in% c("bottomleft", "topleft")) {
+        print("key.pos cannot be 'topleft' or 'bottomleft' because it will interfere with labels in those positions. key.pos value set to 'topright'")
+        key.pos <- "topright"
+    }
+    
+    if(key.pos == "none"){
         return("no color key")
-    } else if (key.pos == "bottomright") {
+    }
+    else if (key.pos == "bottomright") {
         if.nodes.within.col.panel.best.area <- glyph.coors[, "xw"] > (max.x - col.panel.w) - 
             space.between.color.panel.and.entity & glyph.coors[, "yh"] > max.y - 
             col.panel.h - space.between.color.panel.and.entity
     } else if (key.pos == "topright") {
-        # if.nodes.within.col.panel.best.area =
-        # glyph.coors[,'xw']>(max.x-col.panel.w)-space.between.color.panel.and.entity &
-        # glyph.coors[,'y'] < ymargin + col.panel.h +
-        # space.between.color.panel.and.entity
         if.nodes.within.col.panel.best.area <- glyph.coors[, "xw"] > (max.x - col.panel.w) - 
             space.between.color.panel.and.entity & glyph.coors[, "y"] < dist.to.top + 
             col.panel.h + space.between.color.panel.and.entity
-    } else if (key.pos == "bottomleft") {
-        if.nodes.within.col.panel.best.area <- glyph.coors[, "x"] < (col.panel.w + 
-            min.x) + space.between.color.panel.and.entity & glyph.coors[, "yh"] > 
-            max.y - col.panel.h - space.between.color.panel.and.entity
-    } else if (key.pos == "topleft") {
-        if.nodes.within.col.panel.best.area <- glyph.coors[, "x"] < (col.panel.w + 
-            min.x) + space.between.color.panel.and.entity & glyph.coors[, "y"] < 
-            dist.to.top + col.panel.h + 4
-    }
+    } 
+    
     if (any(if.nodes.within.col.panel.best.area)) {
         nodes.within.col.panel.best.area <- glyph.coors[if.nodes.within.col.panel.best.area, 
-            ]
+        ]
         if (is.vector(nodes.within.col.panel.best.area)) {
             nodes.within.col.panel.best.area <- as.matrix(t(nodes.within.col.panel.best.area))
         }
@@ -263,16 +268,9 @@ find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin
             col.panel.x <- max.x
         } else if (key.pos == "topright") {
             col.panel.y <- max(0 + dist.to.top/10, min(nodes.within.col.panel.best.area[, 
-                "y"]) - col.panel.h - col.panel.h/10)
+                                                                                        "y"]) - col.panel.h - col.panel.h/10)
             col.panel.x <- max.x
-        } else if (key.pos == "bottomleft") {
-            col.panel.y <- max(nodes.within.col.panel.best.area[, "yh"]) + col.panel.h/10
-            col.panel.x <- col.panel.w + min.x
-        } else if (key.pos == "topleft") {
-            col.panel.y <- max(0 + dist.to.top/10, min(nodes.within.col.panel.best.area[, 
-                "y"]) - col.panel.h - col.panel.h/10)
-            col.panel.x <- col.panel.w + min.x
-        }
+        } 
     } else {
         if (key.pos == "bottomright") {
             col.panel.y <- max.y - col.panel.h + col.panel.h/10
@@ -280,15 +278,80 @@ find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin
         } else if (key.pos == "topright") {
             col.panel.y <- dist.to.top
             col.panel.x <- max.x
-        } else if (key.pos == "bottomleft") {
-            col.panel.y <- max.y - col.panel.h + col.panel.h/10
-            col.panel.x <- col.panel.w + min.x
-        } else if (key.pos == "topleft") {
-            col.panel.y <- dist.to.top
-            col.panel.x <- col.panel.w + min.x
-        }
+        } 
     }
     return(list(col.panel.x = col.panel.x, col.panel.y = col.panel.y))
 }
+
+#########################################################################################################
+### old version of function that allows key.pos to be set to 'bottomleft', 'topleft', 'none'
+### replaced with new version (above) that only allows key.pos to be set to 'topright' or 'bottomright'
+### since other locations contain stamps and labels which interfere with key.pos if set to those locations.
+# find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin, 
+#     max.y, max.x, min.x, min.y, key.pos, space.between.color.panel.and.entity) {
+#     
+#     dist.to.top <- ymargin + min.y
+#     glyph.coors <- parse.glyph.out.list$glyph.coors
+#     if (key.pos == "none") {
+#         return("no color key")
+#     } else if (key.pos == "bottomright") {
+#         if.nodes.within.col.panel.best.area <- glyph.coors[, "xw"] > (max.x - col.panel.w) - 
+#             space.between.color.panel.and.entity & glyph.coors[, "yh"] > max.y - 
+#             col.panel.h - space.between.color.panel.and.entity
+#     } else if (key.pos == "topright") {
+#         # if.nodes.within.col.panel.best.area =
+#         # glyph.coors[,'xw']>(max.x-col.panel.w)-space.between.color.panel.and.entity &
+#         # glyph.coors[,'y'] < ymargin + col.panel.h +
+#         # space.between.color.panel.and.entity
+#         if.nodes.within.col.panel.best.area <- glyph.coors[, "xw"] > (max.x - col.panel.w) - 
+#             space.between.color.panel.and.entity & glyph.coors[, "y"] < dist.to.top + 
+#             col.panel.h + space.between.color.panel.and.entity
+#     } else if (key.pos == "bottomleft") {
+#         if.nodes.within.col.panel.best.area <- glyph.coors[, "x"] < (col.panel.w + 
+#             min.x) + space.between.color.panel.and.entity & glyph.coors[, "yh"] > 
+#             max.y - col.panel.h - space.between.color.panel.and.entity
+#     } else if (key.pos == "topleft") {
+#         if.nodes.within.col.panel.best.area <- glyph.coors[, "x"] < (col.panel.w + 
+#             min.x) + space.between.color.panel.and.entity & glyph.coors[, "y"] < 
+#             dist.to.top + col.panel.h + 4
+#     }
+#     if (any(if.nodes.within.col.panel.best.area)) {
+#         nodes.within.col.panel.best.area <- glyph.coors[if.nodes.within.col.panel.best.area, 
+#             ]
+#         if (is.vector(nodes.within.col.panel.best.area)) {
+#             nodes.within.col.panel.best.area <- as.matrix(t(nodes.within.col.panel.best.area))
+#         }
+#         if (key.pos == "bottomright") {
+#             col.panel.y <- max(nodes.within.col.panel.best.area[, "yh"]) + col.panel.h/10
+#             col.panel.x <- max.x
+#         } else if (key.pos == "topright") {
+#             col.panel.y <- max(0 + dist.to.top/10, min(nodes.within.col.panel.best.area[, 
+#                 "y"]) - col.panel.h - col.panel.h/10)
+#             col.panel.x <- max.x
+#         } else if (key.pos == "bottomleft") {
+#             col.panel.y <- max(nodes.within.col.panel.best.area[, "yh"]) + col.panel.h/10
+#             col.panel.x <- col.panel.w + min.x
+#         } else if (key.pos == "topleft") {
+#             col.panel.y <- max(0 + dist.to.top/10, min(nodes.within.col.panel.best.area[, 
+#                 "y"]) - col.panel.h - col.panel.h/10)
+#             col.panel.x <- col.panel.w + min.x
+#         }
+#     } else {
+#         if (key.pos == "bottomright") {
+#             col.panel.y <- max.y - col.panel.h + col.panel.h/10
+#             col.panel.x <- max.x
+#         } else if (key.pos == "topright") {
+#             col.panel.y <- dist.to.top
+#             col.panel.x <- max.x
+#         } else if (key.pos == "bottomleft") {
+#             col.panel.y <- max.y - col.panel.h + col.panel.h/10
+#             col.panel.x <- col.panel.w + min.x
+#         } else if (key.pos == "topleft") {
+#             col.panel.y <- dist.to.top
+#             col.panel.x <- col.panel.w + min.x
+#         }
+#     }
+#     return(list(col.panel.x = col.panel.x, col.panel.y = col.panel.y))
+# }
 
 #########################################################################################################

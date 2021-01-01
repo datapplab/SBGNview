@@ -79,6 +79,8 @@ renderSbgn(
 
 \item{user.data}{A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule.}
 
+\item{key.pos}{A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', or 'topleft'. The ideal position for the color panel is 'topright' or 'bottomright'. If 'topleft' or 'bottomleft' are passed in, the key.pos location will default to 'topright'. If key.pos is set to 'none', the pathway name and color panel won't be plotted.}
+
 \item{color.panel.scale}{Numeric. Default: 1. It controls the relative size of color scheme panel.}
 
 \item{color.panel.n.grid}{Numeric. Default: 21. How many colors does the color scheme show.}

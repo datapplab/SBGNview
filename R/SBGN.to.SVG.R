@@ -12,6 +12,7 @@
 #' @param compartment.layer.info A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. This layer information ensures that a glyph laying in the overlapped region belongs to the compartment on the top layer.
 #' @param user.data A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule. 
 #' @param color.panel.scale Numeric. Default: 1. It controls the relative size of color scheme panel. 
+#' @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', or 'topleft'. The ideal position for the color panel is 'topright' or 'bottomright'. If 'topleft' or 'bottomleft' are passed in, the key.pos location will default to 'topright'. If key.pos is set to 'none', the pathway name and color panel won't be plotted.
 #' @param if.plot.cardinality Logical. Default: F. If plot cardinality glyphs.
 #' @param status.node.font.scale Numeric. Default: 3. Scale the font size for status variable and unit of information nodes.
 #' @param font.size.scale.complex Numeric. Default: 1.1. Scale the font size of a complex. A complex represents a pool of biochemical entities which can be composed of macromolecules, simple chemicals, multimers, or other complexes.
@@ -80,7 +81,6 @@
 # @param if.write.files Logical. Default: T. If generate image files. ## files will be written when print(obj) is called
 # @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file.
 # @param pathway.name List containing two elements: 1. pathway name 2. stamp information
-# @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', or 'topleft' and places the color panel is the respective location.
 #################################################
 
 renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.formats, 
