@@ -681,11 +681,10 @@ setMethod("plot.glyph", signature("macromolecule.sbgn"), function(object) {
             glyph.data.i@w <- w/length(user.data)
             glyph.data.i@x <- x - w/2 + (i - 1/2) * glyph.data.i@w
             glyph.data.i@label <- " "
-            glyph.data.i@shape$stroke.width <- 0.1
             glyph.data.i@stroke.opacity <- 0.5
             glyph.data.i@stroke.color <- "black"
             glyph.data.i@shape$stroke.opacity <- 0.5  # if we are plotting data shape, don't plot the border
-            glyph.data.i@shape$stroke.width <- 0.1  # if we are plotting data shape, don't plot the border
+            glyph.data.i@shape$stroke.width <- 0.0 # changed 0.1 to 0.0. if we are plotting data shape, don't plot the border
             svg <- paste(svg, plot.glyph(glyph.data.i), sep = "\n")
         }
         fill.opacity <- 0
@@ -1612,7 +1611,7 @@ setMethod("plot.glyph", signature("simple_chemical.sbgn"), function(object) {
                 Coordinates <- paste("x1=", start.x, " y1=", start.y.1, " x2=", start.x, 
                   " y2=", start.y.2, "", sep = "\"")
                 svg.sep.data.line <- paste(svg.sep.data.line, plot.line(LineCoordinates = Coordinates, 
-                  id = id, stroke.width = 0.1, stroke.opacity = 0.5), sep = "\n")
+                  id = id, stroke.width = 0.0, stroke.opacity = 0.5), sep = "\n")
                 
                 if (start.x > x) {
                   large.flag <- 0
