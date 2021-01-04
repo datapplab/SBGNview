@@ -1028,10 +1028,10 @@ find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale) {
     if (arcs.info == "straight") {
         # if there is no spline edges, calculate margin to move both nodes and edges
         # coordinates. This will give room for color legend
-        y.margin <- max(100, max(max.yh, max.xw)/10) * max(1, color.panel.scale)
+        y.margin <- max(100, max(max.yh, max.xw)/22) * max(1, color.panel.scale)
     } else {
         # if there is routed edges' svg in the SBGN-ML file, we can't move the nodes
-        y.margin <- max(100, max(max.xw, max.yh)/5 * color.panel.scale)
+        y.margin <- max(100, max(max.xw, max.yh)/15 * color.panel.scale)
     }
     return(list(max.xw = max.xw, max.yh = max.yh, min.y = min.y, min.x = min.x, y.margin = y.margin))
 }

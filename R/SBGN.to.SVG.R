@@ -238,8 +238,10 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         stamp.svg <- stamp.svg.list$stamp.svg
         
         # generate output xml content
-        svg.dim.x = max.x+50+4*70
-        svg.dim.y = max.y+col.panel.h+50+y.margin
+        # svg.dim.x = max.x+50+4*70
+        # svg.dim.y = max.y+col.panel.h+50+y.margin
+        svg.dim.x = max.x + col.panel.w/2 
+        svg.dim.y = max.y + col.panel.h + y.margin
         svg.header = sprintf (svg.header,svg.dim.x,svg.dim.y)
         
         out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes,
