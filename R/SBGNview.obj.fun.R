@@ -55,7 +55,7 @@
         }
         tp <- renderSbgn(input.sbgn = sbgn.parameters.list$input.sbgn, output.file = sbgn.parameters.list$output.file, 
             arcs.info = sbgn.parameters.list$arcs.info, compartment.layer.info = sbgn.parameters.list$compartment.layer.info, 
-            user.data = sbgn.parameters.list$user.data, output.formats = sbgn.parameters.list$output.formats, 
+            user.data = sbgn.parameters.list$user.data, output.formats = SBGNview.obj$output.formats, 
             sbgn.id.attr = sbgn.parameters.list$sbgn.id.attr, glyphs.user = data.this.sbgn$glyphs.list, 
             arcs.user = data.this.sbgn$arcs.list, pathway.name = sbgn.parameters.list$pathway.name, 
             global.parameters.list = data.this.sbgn$global.parameters.list)

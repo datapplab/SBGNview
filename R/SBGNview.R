@@ -13,9 +13,9 @@
 #' @param gene.data A matrix, vector or SummarizedExperiment object. The same as 'gene.data' argument in package 'pathview', it is either a vector (single measurement) or a matrix-like data (multiple measurements). If the data is a vector, the entries should be numeric and names of entries should be gene IDs. Matrix data structure has genes as rows and samples as columns. Row names should be gene IDs. Here gene ID is a generic concept, including multiple types: gene, transcript or protein. Default gene.data=NULL.
 #' @param cpd.data A matrix, vector or SummarizedExperiment object. The same as 'gene.data', excpet named with compound IDs. Default cpd.data=NULL. 
 #' @param simulate.data Logical. SBGNview can simulate a dataset. If set to TRUE, SBGNview will simulate a gene data set and a compound dataset and user input 'gene.data' and 'cpd.data' are ignored.
-#' @param input.sbgn  A vector. Can be either names of local SBGN files or pathway IDs of our pre-collected pathways. For pre-collected pathway IDs, run 'data(pathways.info)'
+#' @param input.sbgn  A character vector. Can be either names of local SBGN files or pathway IDs of our pre-collected pathways. For pre-collected pathway IDs, run 'data(pathways.info)'
 #' @param sbgn.dir  A character string. Default: ".". The path to the folder that holds SBGN-ML files. If 'input.sbgn' is a vector of pathway IDs in data 'pathways.info', the SBGN-ML files will be downloaded into this folder. 
-#' @param output.formats   A vector. It specifies the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file. SBGNview uses rsvg to convert svg file to other formats. If other 'output.formats' is set but 'rsvg' package is not installed, an error will occur. See this page for how to install 'rsvg': \cr https://github.com/jeroen/rsvg
+#' @param output.formats   A character vector. It specifies the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file. SBGNview uses rsvg to convert svg file to other formats. If other 'output.formats' is set but 'rsvg' package is not installed, an error will occur. See this page for how to install 'rsvg': \cr https://github.com/jeroen/rsvg
 #' @param output.file   A character string. Default: "./output.svg". Path to the output image files. Because we often work with multiple pathways, each pathway will have its own image files. Each string in 'input.sbgn' will be added to the end of 'output.file'. Depending on the image format specified by the 'output.formats' parameter, extentions will be added to the end (e.g. .pdf, .png etc.).
 #' @param gene.id.type  A character string. The type of gene ID in 'gene.data'. This parameter is used for ID mapping. It should be one of the IDs in data 'mapped.ids'. For details, run: \code{data('mapped.ids')}
 #' @param cpd.id.type  A character string. The type of compound ID in 'cpd.data'.  For details, run: \code{data('mapped.ids')}
@@ -183,16 +183,18 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
             user.data = user.data, output.formats = output.formats, sbgn.id.attr = sbgn.id.attr, 
             if.write.files = FALSE, pathway.name = pathway.name.on.graph, if.plot.svg = FALSE, 
             ...)
-        # record all parameters. They might be used again when we later modify the
+        # record all parameters. They might be used again when we later modify the 
         # 'SBGNview' object
         sbgn.result.list[["render.sbgn.parameters.list"]] <- list(input.sbgn = input.sbgn.full.path, 
-            output.file = output.file.sbgn, arcs.info = arcs.info, compartment.layer.info = compartment.layer.info, 
-            user.data = user.data, output.formats = output.formats, sbgn.id.attr = sbgn.id.attr, 
-            pathway.name = pathway.name.on.graph)
+                output.file = output.file.sbgn, arcs.info = arcs.info, compartment.layer.info = compartment.layer.info, 
+                user.data = user.data, sbgn.id.attr = sbgn.id.attr, 
+                pathway.name = pathway.name.on.graph)
         SBGNview.obj.data[[input.sbgn.i]] <- sbgn.result.list
     }
     
-    SBGNview.obj <- createSBGNviewObject(data = SBGNview.obj.data, output.file = output.file)
+    SBGNview.obj <- createSBGNviewObject(data = SBGNview.obj.data, 
+                                         output.file = output.file,
+                                         output.formats = output.formats)
     
     return(SBGNview.obj)
 }
@@ -207,17 +209,22 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
 #' Therefore, we decided to go with the S3 implementation of the SBGNview class since it works well with the binary operator making this 
 #' functionality more intuitive and user friendly. 
 #' 
-#' @format A list containing two elements:
+#' @format A list containing three elements:
 #'           1. data: 
 #'              A list contains information for all input SBGN pathways. Each element is a list (e.g. 'P00001') holding information of a single SBGN pathway. The information include parsed information of glyphs, arcs and SBGNview parameters passed to SBGNview function
 #'              
 #'           2. output.file:
 #'              A string of the path to the output file. It is the string set by parameter 'output.file' in function SBGNview.
+#'              
+#'           3. output.formats:
+#'              A character vector specifying the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file.
 #' @examples 
 #' data(SBGNview.obj)
 
-createSBGNviewObject <- function(data, output.file){
-    structure(list(data = data, output.file = output.file), class = "SBGNview")
+createSBGNviewObject <- function(data, output.file, output.formats){
+    structure(list(data = data, 
+                   output.file = output.file, 
+                   output.formats = output.formats), class = "SBGNview")
 }
 
 #########################################################################################################
