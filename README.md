@@ -79,7 +79,10 @@ SBGNview.obj <- SBGNview(
 print(SBGNview.obj)
 ```
 Two image files (a .svg file by default and a .png file) will be created in the current working directory.
-<img src="inst/app/www/quick.start_P00001.png">   
+<img src="inst/app/www/quick.start_P00001.svg">   
+
+# SVG Editing Tool
+SBGNview provides extensive graphical control options for adjusting glyph/arc attributes such as line color/width and text size/color/wrapping/positioning. The SBGNview main function outputs SVG file format by default and other (png, pdf, ps) specified file formats. There might be cases where you would like to adjust specific graphical details more easily. In such cases, Inkscape can be used to modify the generated SVG file and save/export the SVG to other file formats provided by Inkscape. [Inkscape](https://inkscape.org/about/) is a free, open source, and easy to use vector graphics editor (like Illustrator) which is available on Linux, Windows and MacOS. Download Inkscape from [here](https://inkscape.org/release/inkscape-1.0.1/). 
 
 # Additional information
 SBGN website: https://sbgn.github.io/
