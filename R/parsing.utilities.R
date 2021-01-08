@@ -1036,4 +1036,49 @@ find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale) {
     return(list(max.xw = max.xw, max.yh = max.yh, min.y = min.y, min.x = min.x, y.margin = y.margin))
 }
 
+##### copy. adjust y.margin to fix the margins in the output images
+# removed max.xw when assigning y.margin
+find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale, global.parameters.list) {
+    box.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//bbox")))
+    x <- as.numeric(box.info[, "x"])
+    w <- as.numeric(box.info[, "w"])
+    max.xw <- max(x + w)
+    
+    y <- as.numeric(box.info[, "y"])
+    h <- as.numeric(box.info[, "h"])
+    max.yh <- max(y + h)
+    
+    min.y <- min(y)
+    min.x <- min(x)
+
+    # if (arcs.info == "straight") {
+    #     # if there is no spline edges, calculate margin to move both nodes and edges
+    #     # coordinates. This will give room for color legend
+    #     y.margin <- max(100, max.yh/22 * color.panel.scale)
+    # } else {
+    #     # if there is routed edges' svg in the SBGN-ML file, we can't move the nodes
+    #     y.margin <- max(100, max.yh/15 * color.panel.scale)
+    # }
+    
+    y.margin <- max(100, max.yh/15 * color.panel.scale)
+    
+    if(global.parameters.list$if.scale.compartment.font.size) {
+        y.margin <- y.margin + (16*global.parameters.list$font.size * 100*global.parameters.list$node.width.adjust.factor.compartment)    
+    }  
+    if (global.parameters.list$if.scale.complex.font.size){
+        y.margin <- y.margin + (16*global.parameters.list$font.size * 100*global.parameters.list$node.width.adjust.factor.complex)
+    }
+    if (global.parameters.list$font.size.scale.compartment != 1.6) { # 1.6 default for font.size.scale.compartment
+        y.margin <- y.margin + (16*global.parameters.list$font.size.scale.compartment)
+    }
+    if (global.parameters.list$font.size.scale.complex != 1.1) { # 1.1 default for font.size.scale.complex
+        y.margin <- y.margin + (16*global.parameters.list$font.size.scale.complex)
+    }
+    if (global.parameters.list$font.size != 3) { # 3 default for font.size
+        y.margin <- y.margin + (16*global.parameters.list$font.size)
+    }
+    
+    return(list(max.xw = max.xw, max.yh = max.yh, min.y = min.y, min.x = min.x, y.margin = y.margin))
+}
+
 #########################################################################################################

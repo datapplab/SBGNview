@@ -183,7 +183,8 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         xml_attrs(sbgn.xml) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
         
         message("checking graph size and create margin for color panel")
-        coords.range.list <- find.max.xy(sbgn.xml, arcs.info, color.panel.scale)
+        #coords.range.list <- find.max.xy(sbgn.xml, arcs.info, color.panel.scale)
+        coords.range.list <- find.max.xy(sbgn.xml, arcs.info, color.panel.scale, global.parameters.list)
         max.x <- coords.range.list$max.xw
         max.y <- coords.range.list$max.yh
         min.x <- coords.range.list$min.x

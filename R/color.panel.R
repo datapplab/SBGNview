@@ -177,6 +177,22 @@ find.col.panel.range <- function(user.data, max.gene.value, mid.gene.value, min.
 find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, if.has.gene.data, 
     if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, min.y) {
     
+    if(global.parameters.list$if.scale.compartment.font.size) {
+        y.margin <- y.margin - (16*global.parameters.list$font.size * 100*global.parameters.list$node.width.adjust.factor.compartment)    
+    } 
+    if (global.parameters.list$if.scale.complex.font.size){
+        y.margin <- y.margin - (16*global.parameters.list$font.size * 100*global.parameters.list$node.width.adjust.factor.complex)
+    }
+    if (global.parameters.list$font.size.scale.compartment != 1.6) { # 1.6 default for font.size.scale.compartment
+        y.margin <- y.margin - (16*global.parameters.list$font.size.scale.compartment)
+    }
+    if (global.parameters.list$font.size.scale.complex != 1.1) { # 1.1 default for font.size.scale.complex
+        y.margin <- y.margin - (16*global.parameters.list$font.size.scale.complex)
+    }
+    if (global.parameters.list$font.size != 3) { # 3 default for font.size
+        y.margin <- y.margin - (16*global.parameters.list$font.size)
+    }
+    
     col.panel.w <- y.margin * 2 * global.parameters.list$color.panel.scale # scale color.panel
     
     if (global.parameters.list$key.pos == "none") {
