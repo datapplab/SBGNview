@@ -145,9 +145,9 @@ renderSbgn(
 
 \item{font.size.scale.cpd}{Numeric. Default: 3. Scales font size according to the node's width for large compartments. Only affects font size of 'simple chemical' glyphs.}
 
-\item{font.size.scale.complex}{Numeric. Default: 1.1. Scale the font size of a complex. A complex represents a pool of biochemical entities which can be composed of macromolecules, simple chemicals, multimers, or other complexes.}
+\item{font.size.scale.complex}{Numeric. Default: 1.1. Scale the font size of a complex.}
 
-\item{font.size.scale.compartment}{Numeric. Default: 1.6. Scale the font size of a compartment. A compartment is an enclosed shape that contains entity pool nodes.}
+\item{font.size.scale.compartment}{Numeric. Default: 1.6. Scale the font size of a compartment.}
 
 \item{if.scale.complex.font.size}{Logical. Default: F.  Whether to scale complex font size according to its width. If set to 'T', the 'node.width.adjust.factor.complex' argument can be used to specify the scale factor.}
 

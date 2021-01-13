@@ -15,8 +15,8 @@
 #' @param key.pos  A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', or 'topleft'. The ideal position for the color panel is 'topright' or 'bottomright'. If 'topleft' or 'bottomleft' are passed in, the key.pos location will default to 'topright'. If key.pos is set to 'none', the pathway name and color panel won't be plotted.
 #' @param if.plot.cardinality Logical. Default: F. If plot cardinality glyphs.
 #' @param status.node.font.scale Numeric. Default: 3. Scale the font size for status variable and unit of information nodes.
-#' @param font.size.scale.complex Numeric. Default: 1.1. Scale the font size of a complex. A complex represents a pool of biochemical entities which can be composed of macromolecules, simple chemicals, multimers, or other complexes.
-#' @param font.size.scale.compartment Numeric. Default: 1.6. Scale the font size of a compartment. A compartment is an enclosed shape that contains entity pool nodes. 
+#' @param font.size.scale.complex Numeric. Default: 1.1. Scale the font size of a complex. 
+#' @param font.size.scale.compartment Numeric. Default: 1.6. Scale the font size of a compartment. 
 #' @param text.length.factor Numeric. Default: 2. How wide the wrapped text should be. If text is longer than the width controled by this parameter, the text is split into a new line, but only at characters in 'label.spliting.string'. Controls all glyphs.
 #' @param text.length.factor.macromolecule  Numeric. Default: 2. Used to determine label text wrapping based on number of characters, font size, and node width for macromolecule glyphs. 
 #' @param text.length.factor.compartment Numeric. Default: 2. Used to determine label text wrapping based on number of characters, font size, and node width for compartment glyphs.
