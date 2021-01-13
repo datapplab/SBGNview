@@ -242,8 +242,8 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         # svg.dim.x = max.x+50+4*70
         # svg.dim.y = max.y+col.panel.h+50+y.margin
         svg.dim.x = max.x + col.panel.w/2 
-        svg.dim.y = max.y + col.panel.h + y.margin
-        svg.header = sprintf (svg.header,svg.dim.x,svg.dim.y)
+        svg.dim.y = max.y + col.panel.h + y.margin - sqrt(y.margin)*2
+        svg.header = sprintf(svg.header, svg.dim.x, svg.dim.y)
         
         out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes,
             svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, stamp.svg,
@@ -288,7 +288,7 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
                       min.x, max.x, max.y, y.margin) {
     
     pathway.name.font <- col.panel.w/global.parameters.list$color.panel.scale/7 * global.parameters.list$pathway.name.font.size
-    pathway.name.y <- col.panel.y - pathway.name.font
+    pathway.name.y <- col.panel.y #- pathway.name.font
     
     pathway.name.display <- global.parameters.list$pathway.name$pathway.name.on.graph # pathwayname::databse::id
     # split pathway.name.display into 1) pathway name and 2) database :: id

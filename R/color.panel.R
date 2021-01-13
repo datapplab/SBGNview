@@ -177,20 +177,24 @@ find.col.panel.range <- function(user.data, max.gene.value, mid.gene.value, min.
 find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, if.has.gene.data, 
     if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, min.y) {
     
+    add.scale.factor <- 14
     if(global.parameters.list$if.scale.compartment.font.size) {
-        y.margin <- y.margin - (16*global.parameters.list$font.size * 100*global.parameters.list$node.width.adjust.factor.compartment)    
-    } 
+        y.margin <- y.margin - (add.scale.factor * 100*global.parameters.list$node.width.adjust.factor.compartment)
+    }
     if (global.parameters.list$if.scale.complex.font.size){
-        y.margin <- y.margin - (16*global.parameters.list$font.size * 100*global.parameters.list$node.width.adjust.factor.complex)
+        y.margin <- y.margin - (add.scale.factor * 100*global.parameters.list$node.width.adjust.factor.complex)
     }
     if (global.parameters.list$font.size.scale.compartment != 1.6) { # 1.6 default for font.size.scale.compartment
-        y.margin <- y.margin - (16*global.parameters.list$font.size.scale.compartment)
+        y.margin <- y.margin - (add.scale.factor*global.parameters.list$font.size.scale.compartment)
     }
     if (global.parameters.list$font.size.scale.complex != 1.1) { # 1.1 default for font.size.scale.complex
-        y.margin <- y.margin - (16*global.parameters.list$font.size.scale.complex)
+        y.margin <- y.margin - (add.scale.factor*global.parameters.list$font.size.scale.complex)
     }
     if (global.parameters.list$font.size != 3) { # 3 default for font.size
-        y.margin <- y.margin - (16*global.parameters.list$font.size)
+        y.margin <- y.margin - (4*global.parameters.list$font.size)
+    }
+    if (global.parameters.list$pathway.name.font.size != 1) { # 1 default for pathway.name.font.size
+        y.margin <- y.margin - (add.scale.factor*global.parameters.list$pathway.name.font.size)
     }
     
     col.panel.w <- y.margin * 2 * global.parameters.list$color.panel.scale # scale color.panel
@@ -248,7 +252,9 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
 find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin, 
                          max.y, max.x, min.x, min.y, key.pos, space.between.color.panel.and.entity) {
     
-    dist.to.top <- ymargin + min.y
+    #dist.to.top <- ymargin + min.y # original
+    dist.to.top <- ymargin + 10
+
     glyph.coors <- parse.glyph.out.list$glyph.coors
     
     if(!key.pos %in% c("bottomleft", "topleft", "bottomright", "topright", "none")) {
