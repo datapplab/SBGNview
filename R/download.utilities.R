@@ -58,16 +58,14 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
       if.data.exists <- tryCatch(data(list = type.pair.name.try), warning = function(w) "no such data")
       if (if.data.exists %in% c(type.pair.name.try, "mapping.list", "mapping.table")) {
         mapping.file.name <- type.pair.name.try
-        message(type.pair.name.try, " ID mapping included in SBGNview.data package. Loading it.")
+        print(paste(type.pair.name.try, " ID mapping included in SBGNview.data package", sep = ""))
         if.mapping.in.data.package <- TRUE
         (break)()
-      } else {
-        print(paste(type.pair.name.try, " ID mapping not in data package", sep = ""))
-      }
+      } 
     }
     
     if (!if.mapping.in.data.package) {
-      message("ID mapping not found for this pair in SBGNview.data")
+      print("ID mapping not found for this pair in SBGNview.data")
       location <- "SBGNhub"
     } 
     options(warn = 1)
@@ -216,7 +214,6 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                              output.type = output.type,
                                              species = species,
                                              SBGNview.data.folder = SBGNview.data.folder)
-  message(paste("\nMapping file: ", mapping.file.info$mapping.file.name, sep = ""))
   
   if(mapping.file.info$location == "local" || mapping.file.info$location == "SBGNhub"){
     
