@@ -1036,8 +1036,9 @@ find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale) {
     return(list(max.xw = max.xw, max.yh = max.yh, min.y = min.y, min.x = min.x, y.margin = y.margin))
 }
 
-##### copy. adjust y.margin to fix the margins in the output images
-# removed max.xw when assigning y.margin
+### copy of find.max.xy(). adjust y.margin to fix the margins in the output images
+### removed max.xw when assigning y.margin
+### incrementally increase y.margin based on other parameters that affect height of output image
 find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale, global.parameters.list) {
     box.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//bbox")))
     x <- as.numeric(box.info[, "x"])
@@ -1051,7 +1052,7 @@ find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale, global.parameter
     min.y <- min(y)
     min.x <- min(x)
     
-    y.margin <- max(100, max.yh/15 * color.panel.scale)
+    y.margin <- max(80, max.yh/15 * color.panel.scale)
     
     add.scale.factor <- 14
     if(global.parameters.list$if.scale.compartment.font.size) {

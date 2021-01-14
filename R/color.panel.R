@@ -198,7 +198,7 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
     }
     
     col.panel.w <- y.margin * 2 * global.parameters.list$color.panel.scale # scale color.panel
-    
+       
     if (global.parameters.list$key.pos == "none") {
         print("no color panel and pathway name will be plotted")
         col.panel.svg <- ""
@@ -288,8 +288,8 @@ find.key.pos <- function(parse.glyph.out.list, col.panel.w, col.panel.h, ymargin
             col.panel.y <- max(nodes.within.col.panel.best.area[, "yh"]) + col.panel.h/10
             col.panel.x <- max.x
         } else if (key.pos == "topright") {
-            col.panel.y <- max(0 + dist.to.top/10, min(nodes.within.col.panel.best.area[, 
-                                                                                        "y"]) - col.panel.h - col.panel.h/10)
+            #col.panel.y <- max(0 + dist.to.top/10, min(nodes.within.col.panel.best.area[, "y"]) - col.panel.h - col.panel.h/10)
+            col.panel.y <- dist.to.top/2 + 10
             col.panel.x <- max.x
         } 
     } else {
