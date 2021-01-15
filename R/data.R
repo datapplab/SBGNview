@@ -27,6 +27,6 @@
 #' Therefore, we decided to go with the S3 implementation of the SBGNview class since it works well with the binary operator making this 
 #' functionality more intuitive and user friendly. 
 #' @format A SBGNview S3 class object
-"SBGNview.obj"
+"SBGNview_2.obj"
 
 #########################################################################################################
