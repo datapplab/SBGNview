@@ -122,7 +122,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
 
 #########################################################################################################
 # this function is a slightly modified version of mol.sum from pathview (1.30.1/1.31.1). This is a transitional
-# copy and will be merge into pathview for the future. This function replace the old mol.sum.multiple.mapping
+# copy and will be merged into pathview for the future. This function replace the old mol.sum.multiple.mapping
 # + merge.molecule.data functions, which are very slow, and affect SBGNview() and many higher level functions.
 mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.db", sum.method=c("sum","mean", "median", "max", "max.abs", "random")[1]){
   if(is.character(mol.data)){
@@ -202,134 +202,6 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 
 }
 
-#########################################################################################################
-# the first column of id.map is input ids(need to convert FROM), second column is output ids(converting TO)
-mol.sum.multiple.mapping.old <- function(mol.data, id.map, sum.method, input.sbgn.file = "na"){   
-  # function: change input data matrix with input/uniprot id to data matrix with pathwaycommons id
-  # if there are multiple input ids mapped to a node, collapse their values using user specified function(sum.method)
-  id.map[,1] = as.character(id.map[,1])
-  id.map[,2] = as.character(id.map[,2])
-  if(is.vector(mol.data)){
-    mol.data = as.matrix(mol.data)
-  }
-  
-  # mol.data = mol.data[!duplicated(tolower(row.names(mol.data))),]
-  if(!is.matrix(mol.data)){
-    mol.data = as.matrix(mol.data)
-  }
-  # row.names(mol.data) = tolower(row.names(mol.data))
-  input.ids = row.names(mol.data)
-  if(is.vector(id.map)){
-    id.map = as.matrix(t(id.map))
-  }
-  # id.map[,1] = tolower(as.character(id.map[,1]))
-  # id.map[,2] = as.character(id.map[,2])
-  
-  # if input sbgn file is provided, we just convert the ids that are in the file, to speed up
-  if(input.sbgn.file != "na"){
-    all.nodes = node.ids.from.sbgn(input.sbgn.file)
-  }else{
-    all.nodes = id.map[,2]
-  }
-  if.id.mapping.in.sbgn.file =id.map[,2] %in% all.nodes 
-  # head(if.id.mapping.in.sbgn.file)
-  if(!any(if.id.mapping.in.sbgn.file)){
-    print("no sbgn ids in mapping file!")
-    print(head(id.map))
-    print(head(all.nodes))
-    return("no.id.mapped")
-  }
-  id.map.in.target = id.map[if.id.mapping.in.sbgn.file,]  # if input sbgn file is provided, we just convert the ids that are in the file, to speed up
-  # head(id.map.in.target)
-  
-  if(is.vector(id.map.in.target)){
-    id.map.in.target = as.matrix(t(id.map.in.target))
-  }
-  # if.id.mapping.in.source = tolower(id.map.in.target[,1]) %in% tolower(input.ids)
-  if.id.mapping.in.source = id.map.in.target[,1] %in% input.ids
-  
-  if(!any(if.id.mapping.in.source)){
-    print("no source ids in mapping file!")
-    return("no.id.mapped")
-  }
-  #############################################
-  
-  id.map.in.target.and.source = id.map.in.target[if.id.mapping.in.source,]
-  # head(id.map.in.target.and.source)
-  if(is.vector(id.map.in.target.and.source)){
-    id.map.in.target.and.source = as.matrix(t(id.map.in.target.and.source))
-  }
-  
-  class(id.map.in.target.and.source[,1])
-  # head(mol.data)
-  in.data.source.id = mol.data[id.map.in.target.and.source[,1],]  # the rows are in sequence of sbgn.id
-  if(is.vector(in.data.source.id)){
-    in.data.source.id = as.matrix(in.data.source.id)
-  }
-  message("Merging molecules with the same output ID")
-  in.data.target.id = merge.molecule.data(in.data.source.id
-                                          ,id.map.in.target.and.source
-                                          ,sum.method
-  )
-  message("Merging finished")
-  return(in.data.target.id)
-}
-
-#########################################################################################################
-merge.molecule.data <- function(in.data.source.id, id.map.in.target.and.source, sum.method){
-  
-  target.ids = id.map.in.target.and.source[,2]
-  target.id.count = table(target.ids)
-  
-  if.target.id.single = target.id.count[target.ids] == 1
-  if.target.id.multi = target.id.count[target.ids] > 1
-  
-  in.data.single.target.id = in.data.source.id[if.target.id.single,]
-  if(is.vector(in.data.single.target.id)){
-    in.data.single.target.id = as.matrix(in.data.single.target.id)
-  }
-  single.target.ids = target.ids[if.target.id.single]
-  row.names(in.data.single.target.id) = single.target.ids
-  
-  # handel multiple output IDs to a single input ID
-  if(any(if.target.id.multi)){
-    in.data.multi.target.id = in.data.source.id[if.target.id.multi,]
-    multi.target.ids = target.ids[if.target.id.multi]
-    if(is.vector(in.data.multi.target.id)){
-      in.data.multi.target.id = as.matrix(in.data.multi.target.id)
-    }
-    
-    in.data.target.id = by(
-      in.data.multi.target.id  # the rows are in sequence of sbgn.id
-      ,as.factor(multi.target.ids)  # the rows are in sequence of sbgn.id
-      ,function(data.same.id){
-        # data.same.id = as.numeric(data.same.id)
-        if(is.vector(data.same.id)){
-          return(data.same.id)
-        }else{
-          sumed = apply(
-            data.same.id,2
-            ,FUN = sum.method
-          )
-        }
-        return(sumed)
-      }
-      ,simplify= TRUE
-    )
-    in.data.target.id = as.list(in.data.target.id)
-    if(!is.list(in.data.target.id)){
-      message("No data mapped! From ",colnames(id.map),"\n")
-      return("no.id.mapped")
-    }
-    message("Combinding merging result")
-    in.data.target.id = do.call(rbind,in.data.target.id)
-    in.data.target.id = rbind(in.data.target.id,in.data.single.target.id)
-  }else{
-    in.data.target.id = in.data.single.target.id
-  }
-  
-  return(in.data.target.id)
-}
 
 #########################################################################################################
 #' Change vector of input IDs to another ID type
