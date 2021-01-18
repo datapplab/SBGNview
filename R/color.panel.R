@@ -197,7 +197,7 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
         y.margin <- y.margin - (add.scale.factor*global.parameters.list$pathway.name.font.size)
     }
     
-    col.panel.w <- y.margin * 2 * global.parameters.list$color.panel.scale # scale color.panel
+    col.panel.w <- y.margin * 2.4 * global.parameters.list$color.panel.scale # scale color.panel
        
     if (global.parameters.list$key.pos == "none") {
         print("no color panel and pathway name will be plotted")

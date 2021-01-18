@@ -1052,7 +1052,7 @@ find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale, global.parameter
     min.y <- min(y)
     min.x <- min(x)
     
-    y.margin <- max(80, max.yh/15 * color.panel.scale)
+    y.margin <- max(70, max.yh/20 * color.panel.scale)
     
     add.scale.factor <- 14
     if(global.parameters.list$if.scale.compartment.font.size) {

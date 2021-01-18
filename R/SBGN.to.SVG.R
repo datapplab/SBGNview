@@ -169,7 +169,7 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
             # global.parameters.list$col.gene.mid = NA
             global.parameters.list$col.cpd.low <- col.cpd.low
             global.parameters.list$col.cpd.high <- col.cpd.high
-            global.parameters.list$col.cpd.mid <- "gray"
+            global.parameters.list$col.cpd.mid <- col.cpd.mid
             global.parameters.list$min.gene.value <- min.gene.value  # color panel min value, values smaller than this will have the min.value color
             global.parameters.list$max.gene.value <- max.gene.value
             global.parameters.list$mid.gene.value <- mid.gene.value
@@ -242,7 +242,7 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         # svg.dim.x = max.x+50+4*70
         # svg.dim.y = max.y+col.panel.h+50+y.margin
         svg.dim.x = max.x + col.panel.w/2 
-        remove.margin <- sqrt(y.margin)*2
+        remove.margin <- sqrt(y.margin)#*2
         if(if.has.gene.data & if.has.cpd.data | color.panel.scale != 1) {
             remove.margin <- remove.margin + col.panel.h/2
         }
