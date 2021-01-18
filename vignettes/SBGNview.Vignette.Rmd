@@ -345,7 +345,9 @@ The main function *SBGNview* returns a *SBGNview* object (similar to the *ggplot
     + `SBGNview.obj = SBGNview(...) + highlightNodes(...)`. The assign operation "=" will make the returned object invisible therefore it will not be printed.
           
 ### Structure of *SBGNview* object
-The *SBGNview* object is a S3 object defined as a list structure containing 'data' and 'output.file' elements. The object is created by the SBGNview S3 class defined within the package. The 'data' element of the object is a list containing information for all input SBGN pathways. Each element in 'data' is a list holding information of a single SBGN pathway. The information includes parsed glyphs, parsed arcs and SBGNview parameters passed into *SBGNview* function. The 'output.file' is a string specified for the 'output.file' parameter in *SBGNview* function. It contains the name of the output file. The code below demonstrates how you can access information of a *SBGNview* object. You can load a demo *SBGNview* object by running `data("SBGNview.obj")`. 
+The *SBGNview* object is a S3 object defined as a list structure containing 'data' and 'output.file' and 'output.formats' elements. The object is created by the SBGNview S3 class defined within the package. The 'data' element of the object is a list containing information for all input SBGN pathways. Each element in 'data' is a list holding information of a single SBGN pathway. The information includes parsed glyphs, parsed arcs and other parameters to control graph features passed into *SBGNview* function. The 'output.file' element of the object is a string specified for the 'output.file' parameter in *SBGNview* function. The output file name can be modified using *outputFile*. The output formats can be updated by assigning a character vector of supported file formats by *SBGNview* function.  The code chucks below demonstrate how you can access glyphs and arcs information of a *SBGNview* object as well as changing output file name and output formats. A demo *SBGNview* object can be loaded by running `data("SBGNview.obj")`. 
+
+### Extract glyphs and arcs infromation from *SBGNview* object
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 result.one.sbgn <- SBGNview.obj$data[[1]]
 names(result.one.sbgn)
@@ -354,7 +356,6 @@ arcs <- result.one.sbgn$arcs.list
 str(glyphs[[1]])
 str(arcs[[1]])
 ```
-
 
 ### Change output file name of a *SBGNview* object
 We can change the name of the output file using built-in function *outputFile*:
@@ -368,7 +369,18 @@ fileOutput(SBGNview.obj)
 print(SBGNview.obj)
 ```
 
-# Try different layout for the same pathway.{#tryDifferentLayout}
+### Modify *SBGNview* object directly
+More graph features can be controlled by directly modifying the *SBGNview* object.
+
+We can update or change the output file formats of a *SBGNview* object. Supported output file formats are any combination of "png", "pdf", and "ps". If an empty vector of output file formats are provided, only the SVG file format will be written to current working directory. 
+```{r , echo = TRUE, eval = FALSE, results = 'hide', message = FALSE, warning = FALSE}
+print(SBGNview.obj$output.formats)
+SBGNview.obj$output.formats <- c("png", "pdf")
+```
+
+For each input sbgn (pathway IDs from `data("pathways.info")` or local SBGN-ML files) in *SBGNview* object, the 'global.parameters.list' element contains a record of graphical parameters passed from *SBGNview* function to *renderSbgn* function. Run `?"renderSbgn"` for more information. 
+
+# Try different layout for the same pathway{#tryDifferentLayout}
 If the default layout is not ideal, users have two options:
 
 * Modify the layout manually using tools like [newt editor](http://newteditor.org/)
@@ -548,23 +560,7 @@ SBGNview.obj + highlightNodes(node.set = c("tyrosine", "(+-)-epinephrine"),
 include_graphics("highlight.by.node.id_P00001.svg")
 ```
 
-
-
-
-
-## Modify *SBGNview* object directly
-More graph features can be controlled by directly modifing the *SBGNview* object.
-```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-result.one.sbgn <- SBGNview.obj$data[[1]]
-names(result.one.sbgn)
-glyphs <- result.one.sbgn$glyphs.list
-arcs <- result.one.sbgn$arcs.list
-str(glyphs[[1]])
-str(arcs[[1]])
-```
-
 ## SVG Editing Tool
-
 SBGNview provides extensive graphical control options for adjusting glyph/arc attributes such as line color/width and text size/color/wrapping/positioning. The SBGNview main function outputs SVG file format by default and other (png, pdf, ps) specified file formats. There might be cases where you would like to adjust specific graphical details more easily. In such cases, Inkscape can be used to modify the generated SVG file and save/export the SVG to other file formats provided by Inkscape. [Inkscape](https://inkscape.org/about/) is a free, open source, and easy to use vector graphics editor (like Illustrator) which is available on Linux, Windows and MacOS. Download Inkscape from [here](https://inkscape.org/release/inkscape-1.0.1/). 
 
 # ID mapping
