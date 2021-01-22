@@ -193,7 +193,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
       if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) &
          !any(c(input.type,output.type) %in% c("KO"))
       ){ # if input and output don't contain KO
-        print("here")
+        
         # load mapping table for mapping KO to glyph id
         ko.to.glyph.id = loadMappingTable(input.type = output.type,
                                           output.type = "KO",

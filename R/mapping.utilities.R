@@ -72,7 +72,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
   }
   
   result.list <- break.text.into.segments(label = node@label, w = node@w, glyph.class = glyph.class, 
-                                          global.parameters.list = global.parameters.list, max.x = max.x, glyph = node)
+                                          parameters.list = global.parameters.list, max.x = max.x, glyph = node)
   if.long.word <- result.list$if.long.word
   label.margin <- result.list$label.margin
   node@label.margin <- label.margin
@@ -90,7 +90,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
     node@label <- shorter.label
   }
   
-  node@global.parameters.list <- global.parameters.list
+  node@parameters.list <- global.parameters.list
   # handle clone markers
   
   ##### set node specific parameters
@@ -108,7 +108,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
     node.clone@x <- node@x
     node.clone@y <- node@y
     node.clone@glyph.class <- glyph.class
-    node.clone@global.parameters.list <- global.parameters.list
+    node.clone@parameters.list <- global.parameters.list
     node.clone@w <- node@w
     node.clone@h <- node@h
     node.clone@compartment <- glyph.info["compartmentRef"]

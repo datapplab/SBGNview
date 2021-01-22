@@ -37,7 +37,7 @@ highlight.edges <- function(node.set, arcs = NULL,
             arcs[[i]]@edge$line.stroke.color <- arc.highlight.stroke.color
             arcs[[i]]@edge$tip.stroke.color <- arc.highlight.stroke.color
             arcs[[i]]@edge$tip.fill.color <- arc.highlight.stroke.color
-            arcs[[i]]@global.parameters.list$edge.tip.size <- arc.highlight.tip.size
+            arcs[[i]]@parameters.list$edge.tip.size <- arc.highlight.tip.size
         }
     }
     return(arcs)
@@ -166,7 +166,7 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
                 }
                 glyphs[[i]]@text$color <- label.color
                 if (!is.null(label.spliting.string)) {
-                  glyphs[[i]]@global.parameters.list$label.spliting.string <- label.spliting.string
+                  glyphs[[i]]@parameters.list$label.spliting.string <- label.spliting.string
                 }
                 if (!is.null(labels)) {
                   glyphs[[i]]@label <- input.node.id.to.user.labels[glyph.id, "user.label"]
@@ -377,7 +377,7 @@ highlightArcs <- function(class = "all", color = "black", line.width = 2, tip.si
                   arcs[[i]]@edge$tip.fill.color <- color
                   arcs[[i]]@edge$line.width <- line.width
                   arcs[[i]]@edge$tip.stroke.width <- line.width
-                  arcs[[i]]@global.parameters.list$edge.tip.size <- tip.size
+                  arcs[[i]]@parameters.list$edge.tip.size <- tip.size
                 }
             }
             glyphs.arcs.list[[s]]$arcs.list <- arcs

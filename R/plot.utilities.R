@@ -26,7 +26,7 @@ fill=\"%s\"
 "
 
 plot.text <- function(x, y, h, w, label, id, label.location, color = "black", glyph.class = "", 
-                      stroke.opacity = 1, max.x = 0, if.generate.text.box = FALSE, global.parameters.list, 
+                      stroke.opacity = 1, max.x = 0, if.generate.text.box = FALSE, parameters.list, 
                       glyph) {
     if (length(glyph@text$color) > 0) {
         color <- glyph@text$color
@@ -44,15 +44,15 @@ plot.text <- function(x, y, h, w, label, id, label.location, color = "black", gl
         print("no label")
         return("")
     }
-    result.list <- break.text.into.segments(label, w, glyph.class, global.parameters.list = global.parameters.list, 
+    result.list <- break.text.into.segments(label, w, glyph.class, parameters.list = parameters.list, 
                                             max.x = max.x, glyph = glyph)
     label <- result.list$words.segments
     font.size <- result.list$font.size
-    global.parameters.list$complex.compartment.label.margin.use <- global.parameters.list$complex.compartment.label.margin
+    parameters.list$complex.compartment.label.margin.use <- parameters.list$complex.compartment.label.margin
     if (glyph.class == "compartment") {
         if (max.x > 0) {
             # if the graph is large, make label larger
-            global.parameters.list$complex.compartment.label.margin.use <- global.parameters.list$complex.compartment.label.margin.use * 
+            parameters.list$complex.compartment.label.margin.use <- parameters.list$complex.compartment.label.margin.use * 
                 max(1, max.x/2000)
         }
     }
@@ -114,7 +114,7 @@ plot.text <- function(x, y, h, w, label, id, label.location, color = "black", gl
             # alignment.baseline = 'hanging'
             if (glyph.class %in% c("complex", "compartment")) {
                 alignment.baseline <- "baseline"
-                svg <- sprintf(template.text, x, y + align.shift - h/2 - global.parameters.list$complex.compartment.label.margin.use, 
+                svg <- sprintf(template.text, x, y + align.shift - h/2 - parameters.list$complex.compartment.label.margin.use, 
                                id, font.size, text.anchor, alignment.baseline, stroke.opacity, 
                                alignment.baseline, color, label)
             } else {
@@ -122,7 +122,7 @@ plot.text <- function(x, y, h, w, label, id, label.location, color = "black", gl
                                text.anchor, alignment.baseline, stroke.opacity, alignment.baseline, 
                                color, label)
             }
-            y.label.box <- y - h/2 - global.parameters.list$complex.compartment.label.margin.use - 
+            y.label.box <- y - h/2 - parameters.list$complex.compartment.label.margin.use - 
                 h.label.box/3
         }
     }
@@ -130,15 +130,14 @@ plot.text <- function(x, y, h, w, label, id, label.location, color = "black", gl
 }
 
 #########################################################################################################
-break.text.into.segments <- function(label, w, glyph.class, global.parameters.list, 
-                                     max.x = 0, glyph) {
+break.text.into.segments <- function(label, w, glyph.class, parameters.list, max.x = 0, glyph) {
     
     if.long.word <- FALSE
-    text.length.factor <- global.parameters.list$text.length.factor.macromolecule
+    text.length.factor <- parameters.list$text.length.factor.macromolecule
     if (length(glyph@text$font.size) > 0) {
         font.size <- glyph@text$font.size
     } else {
-        font.size <- global.parameters.list$font.size
+        font.size <- parameters.list$font.size
         
         font.size0 <- font.size
         if (length(label) == 0) {
@@ -155,28 +154,28 @@ break.text.into.segments <- function(label, w, glyph.class, global.parameters.li
             w <- 70 * 2/3  # some nodes has no coordinates,
         }
         if (glyph.class == "compartment") {
-            if (global.parameters.list$if.scale.compartment.font.size) {
-                font.size <- max(glyph@shape$stroke.width * 3.5, font.size * global.parameters.list$node.width.adjust.factor.compartment * 
+            if (parameters.list$if.scale.compartment.font.size) {
+                font.size <- max(glyph@shape$stroke.width * 3.5, font.size * parameters.list$node.width.adjust.factor.compartment * 
                                      w)
             } else {
-                font.size <- font.size * global.parameters.list$node.width.adjust.factor
-                font.size <- font.size * global.parameters.list$font.size.scale.gene * 
-                    global.parameters.list$font.size.scale.compartment
+                font.size <- font.size * parameters.list$node.width.adjust.factor
+                font.size <- font.size * parameters.list$font.size.scale.gene * 
+                    parameters.list$font.size.scale.compartment
             }
             if (max.x > 0) {
                 # font.size = font.size * max(1,max.x/2000)
             }
-            text.length.factor <- global.parameters.list$text.length.factor.compartment
+            text.length.factor <- parameters.list$text.length.factor.compartment
         } else if (glyph.class == "complex") {
-            if (global.parameters.list$if.scale.complex.font.size) {
-                font.size <- font.size * global.parameters.list$node.width.adjust.factor.complex * 
+            if (parameters.list$if.scale.complex.font.size) {
+                font.size <- font.size * parameters.list$node.width.adjust.factor.complex * 
                     w
             } else {
-                font.size <- font.size * global.parameters.list$node.width.adjust.factor
-                font.size <- font.size * global.parameters.list$font.size.scale.gene * 
-                    global.parameters.list$font.size.scale.complex
+                font.size <- font.size * parameters.list$node.width.adjust.factor
+                font.size <- font.size * parameters.list$font.size.scale.gene * 
+                    parameters.list$font.size.scale.complex
             }
-            text.length.factor <- global.parameters.list$text.length.factor.complex
+            text.length.factor <- parameters.list$text.length.factor.complex
         } else if (glyph.class %in% c("omitted process", "uncertain process", "cardinality")) {
             # font.size = font.size * global.parameters.list$logic.node.font.scale
             font.size <- glyph@h
@@ -189,10 +188,10 @@ break.text.into.segments <- function(label, w, glyph.class, global.parameters.li
             return(list(words.segments = label, label.margin = font.size, font.size = font.size, 
                         if.long.word = FALSE, nline = 1))
         } else if (glyph.class %in% c("state variable", "unit of information")) {
-            font.size <- font.size * global.parameters.list$status.node.font.scale
+            font.size <- font.size * parameters.list$status.node.font.scale
         } else {
-            font.size <- font.size * 2 * glyph@h * global.parameters.list$node.width.adjust.factor/70
-            font.size <- font.size * global.parameters.list$font.size.scale.gene
+            font.size <- font.size * 2 * glyph@h * parameters.list$node.width.adjust.factor/70
+            font.size <- font.size * parameters.list$font.size.scale.gene
         }
     }
     # sometimes the input label is already splited, then we just need to return it
@@ -223,8 +222,8 @@ break.text.into.segments <- function(label, w, glyph.class, global.parameters.li
             current.line.to.be.length <- (nchar(current.line.to.be)) * font.size
             
             if (current.line.to.be.length > text.length.factor * w & (length(label.words) - 
-                                                                      i) > 2 & (word.previous %in% global.parameters.list$label.spliting.string | 
-                                                                                identical(global.parameters.list$label.spliting.string, c("any")))) {
+                                                                      i) > 2 & (word.previous %in% parameters.list$label.spliting.string | 
+                                                                                identical(parameters.list$label.spliting.string, c("any")))) {
                 # if there are less than 2 letters left ,merge them to the current line instead
                 # of creating a new line with just 2 letters
                 if (glyph.class == "complex") {
@@ -493,7 +492,7 @@ plot.LineWings <- function(x, y, w, h, orientation, id) {
 #' @slot orientation 
 #' A character string. One of 'left','right','up','down'. This only applies to glyphs of classes 'terminal' and 'tag'. It will change the orientation of the node. 
 #' 
-#' @slot global.parameters.list 
+#' @slot parameters.list 
 #' A list. This is a copy of parameters in '...' when running function \code{\link{SBGNview}}. 
 #'              
 #' @slot shape 
@@ -527,7 +526,7 @@ setClass("glyph", slots = c(compartment = "character", x = "numeric", y = "numer
             label_location = "character", svg.port = "character", orientation = "character", 
             user.data = "vector", clone = "list", fill.color = "character", stroke.width = "numeric", 
             stroke.color = "character", stroke.opacity = "numeric", fill.opacity = "numeric", 
-            global.parameters.list = "list", glyph.class = "character", text = "list", shape = "list"))
+            parameters.list = "list", glyph.class = "character", text = "list", shape = "list"))
 
 setClass("port", contains = "glyph")
 
@@ -543,7 +542,7 @@ setClass("port", contains = "glyph")
 #' @slot stroke.opacity 
 #' Numeric. Controls the line of an arc (not tip of the arc).
 #' 
-#' @slot global.parameters.list 
+#' @slot parameters.list 
 #' A list. This is a copy of parameters in '...' when running function SBGNview. See details for more information.
 #'              
 #' @slot edge 
@@ -564,11 +563,11 @@ setClass("port", contains = "glyph")
 
 setClass("arc", slots = c(target = "character", source = "character", id = "character", 
                           arc.class = "character", start.y = "numeric", start.x = "numeric", end.y = "numeric", 
-                          end.x = "numeric", stroke.opacity = "numeric", global.parameters.list = "list", 
+                          end.x = "numeric", stroke.opacity = "numeric", parameters.list = "list", 
                           edge = "list"))
 
 setClass("spline", slots = c(id = "character", spline.coords = "vector", edge = "list", 
-                                  global.parameters.list = "list"))
+                                  parameters.list = "list"))
 
 #########################################################################################################
 #' An object to store information of spline arcs.
@@ -585,7 +584,7 @@ setClass("spline", slots = c(id = "character", spline.coords = "vector", edge = 
 #' @slot components 
 #' A list of 'arc' and 'spline' objects. A spline arc is represented by several components: 1. The two ends of the arc are represented by straight line 'arc' objects. 2. splines connecting the ends are represented by 'spline' objects.
 #' 
-#' @slot global.parameters.list 
+#' @slot parameters.list 
 #' A list. This is a copy of parameters in '...' of SBGNview. 
 #'              
 #' @slot edge 
@@ -606,7 +605,7 @@ setClass("spline", slots = c(id = "character", spline.coords = "vector", edge = 
 #' @details Arc information comes from two sources:1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running \code{\link{SBGNview}}.  User can modify arc objects to change the way how it is rendered. 
 
 setClass("spline.arc", slots = c(id = "character", source = "character", target = "character", 
-        arc.class = "character", edge = "list", components = "list", global.parameters.list = "list"))
+        arc.class = "character", edge = "list", components = "list", parameters.list = "list"))
 
 #########################################################################################################
 # generic function to plot glyph and arc defined 
@@ -631,7 +630,7 @@ setMethod("plot.glyph", signature("macromolecule.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     fill.color <- "white"
@@ -661,7 +660,7 @@ setMethod("plot.glyph", signature("macromolecule.sbgn"), function(object) {
     if (object@compartment == "free.node.within.compartment") {
         stroke.width <- 3
     }
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     # svg = paste(svg.rect,sep='\n')
     svg <- ""
@@ -672,7 +671,7 @@ setMethod("plot.glyph", signature("macromolecule.sbgn"), function(object) {
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
-            fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+            fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                 gene.or.cpd = "gene")
             glyph.data.i <- object
             glyph.data.i@fill.color <- fill.color
@@ -704,7 +703,7 @@ setMethod("plot.glyph", signature("entity.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     fill.color <- "white"
@@ -729,7 +728,7 @@ setMethod("plot.glyph", signature("entity.sbgn"), function(object) {
     # svg.rect =
     # plot.rectangle(glyph=object,x=x-w/2,y=y-h/2,h=h,w=w,id=id,rx=rx,ry=ry,stroke.width
     # = stroke.width,stroke.opacity = stroke.opacity)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     # svg = paste(svg.rect,sep='\n')
     svg <- ""
@@ -737,7 +736,7 @@ setMethod("plot.glyph", signature("entity.sbgn"), function(object) {
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
-            fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+            fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                 gene.or.cpd = "gene")
             glyph.data.i <- object
             glyph.data.i@fill.color <- fill.color
@@ -764,7 +763,7 @@ setMethod("plot.glyph", signature("compartment.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -774,8 +773,8 @@ setMethod("plot.glyph", signature("compartment.sbgn"), function(object) {
     rx <- ry <- 20
     svg.rect <- plot.rectangle(glyph = object, x = x - w/2, y = y - h/2, id = id, 
         h = h, w = w, rx = rx, ry = ry, stroke.width = object@shape$stroke.width, 
-        fill.opacity = global.parameters.list$compartment.opacity)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+        fill.opacity = parameters.list$compartment.opacity)
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location, 
         max.x = max.x)
     svg <- paste(svg.rect, svg.text, sep = "\n")
@@ -790,7 +789,7 @@ setMethod("plot.glyph", signature("complex.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w/2
     y <- object@y - h/2
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -821,7 +820,7 @@ setMethod("plot.glyph", signature("complex.sbgn"), function(object) {
         stroke.width = stroke.width, stroke.color = "black")
     
     # label='complex' # try not to show complex name
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path1, svg.text, sep = "\n")
     return(svg)
@@ -834,14 +833,14 @@ setMethod("plot.glyph", signature("complex_multimer.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w/2
     y <- object@y - h/2
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
     label.location <- "center"
     rx <- min(h, w)/10
     ry <- min(h, w)/10
-    corner.r <- global.parameters.list$edge.tip.size * 3
+    corner.r <- parameters.list$edge.tip.size * 3
     stroke.width <- 1
     if (object@compartment == "free.node.within.compartment") {
         stroke.width <- 3
@@ -852,15 +851,15 @@ setMethod("plot.glyph", signature("complex_multimer.sbgn"), function(object) {
     svg.path1 <- plot.path(object = object, d = d1, id = id, fill.color = "white", 
         stroke.width = stroke.width, stroke.color = "black", fill.opacity = 1)
     
-    x <- x + global.parameters.list$edge.tip.size * 3/2
-    y <- y + global.parameters.list$edge.tip.size * 3/2
+    x <- x + parameters.list$edge.tip.size * 3/2
+    y <- y + parameters.list$edge.tip.size * 3/2
     d2 <- (paste("M", x, y + corner.r, x, y + h - corner.r, x + corner.r, y + h, 
         x + w - corner.r, y + h, x + w, y + h - corner.r, x + w, y + corner.r, x + 
             w - corner.r, y, x + corner.r, y, "Z", sep = " "))
     svg.path2 <- plot.path(object = object, d = d2, id = id, fill.color = "white", 
         stroke.width = stroke.width, stroke.color = "black")
     
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path2, svg.path1, svg.text, sep = "\n")
     return(svg)
@@ -873,7 +872,7 @@ setMethod("plot.glyph", signature("state_variable.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -886,8 +885,8 @@ setMethod("plot.glyph", signature("state_variable.sbgn"), function(object) {
         stroke.width <- 3
     }
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
-        fill.opacity = global.parameters.list$auxiliary.opacity)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+        fill.opacity = parameters.list$auxiliary.opacity)
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.ellipse, svg.text, sep = "\n")
     return(svg)
@@ -900,7 +899,7 @@ setMethod("plot.glyph", signature("unspecified_entity.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -926,14 +925,14 @@ setMethod("plot.glyph", signature("unspecified_entity.sbgn"), function(object) {
     
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
-        fill.color <- color.from.value(user.data[1], global.parameters.list = global.parameters.list, 
+        fill.color <- color.from.value(user.data[1], global.parameters.list = parameters.list, 
             gene.or.cpd = "gene")
         svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
             fill.color = fill.color, stroke.opacity = 0)
         svg <- paste(svg, svg.ellipse, sep = "\n")
         if (length(user.data) > 1) {
             for (i in 2:length(user.data)) {
-                fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+                fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                   gene.or.cpd = "gene")
                 glyph.data.i <- object
                 glyph.data.i@fill.color <- fill.color
@@ -973,7 +972,7 @@ setMethod("plot.glyph", signature("unspecified_entity.sbgn"), function(object) {
     }
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
         fill.opacity = fill.opacity)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg, svg.ellipse, svg.text, sep = "\n")
     return(svg)
@@ -986,7 +985,7 @@ setMethod("plot.glyph", signature("unit_of_information.sbgn"), function(object) 
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -999,8 +998,8 @@ setMethod("plot.glyph", signature("unit_of_information.sbgn"), function(object) 
         stroke.width <- 3
     }
     svg.rect <- plot.rectangle(glyph = object, x = x - w/2, y = y - h/2, h = h, w = w, 
-        id = id, stroke.width = stroke.width, fill.opacity = global.parameters.list$auxiliary.opacity)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+        id = id, stroke.width = stroke.width, fill.opacity = parameters.list$auxiliary.opacity)
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.rect, svg.text, sep = "\n")
     return(svg)
@@ -1013,7 +1012,7 @@ setMethod("plot.glyph", signature("stoichiometry.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1026,7 +1025,7 @@ setMethod("plot.glyph", signature("stoichiometry.sbgn"), function(object) {
     }
     svg.rect <- plot.rectangle(glyph = object, x = x - w/2, y = y - h/2, h = h, w = w, 
         id = id, stroke.width = stroke.width)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.rect, svg.text, sep = "\n")
     return(svg)
@@ -1039,7 +1038,7 @@ setMethod("plot.glyph", signature("cardinality.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1052,7 +1051,7 @@ setMethod("plot.glyph", signature("cardinality.sbgn"), function(object) {
     }
     svg.rect <- plot.rectangle(glyph = object, x = x - w/2, y = y - h/2, h = h, w = w, 
         id = id, stroke.width = stroke.width)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.rect, svg.text, sep = "\n")
     return(svg)
@@ -1065,7 +1064,7 @@ setMethod("plot.glyph", signature("biological_activity.sbgn"), function(object) 
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1078,7 +1077,7 @@ setMethod("plot.glyph", signature("biological_activity.sbgn"), function(object) 
     }
     svg.rect <- plot.rectangle(glyph = object, x = x - w/2, y = y - h/2, h = h, w = w, 
         id = id, stroke.width = stroke.width)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.rect, svg.text, sep = "\n")
     return(svg)
@@ -1091,7 +1090,7 @@ setMethod("plot.glyph", signature("submap.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1112,7 +1111,7 @@ setMethod("plot.glyph", signature("submap.sbgn"), function(object) {
     svg <- svg.rect
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     # svg = paste(svg.rect,svg.wings,sep='\n')
     svg <- paste(svg.rect, svg.wings, svg.text, sep = "\n")
@@ -1126,7 +1125,7 @@ setMethod("plot.glyph", signature("process.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (!object@if.show.label) {
@@ -1151,7 +1150,7 @@ setMethod("plot.glyph", signature("process.sbgn"), function(object) {
     svg <- svg.rect
     # svg.wings = plot.LineWings(x,y,w,h,orientation,id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.rect, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -1164,7 +1163,7 @@ setMethod("plot.glyph", signature("uncertain_process.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (!object@if.show.label) {
@@ -1188,7 +1187,7 @@ setMethod("plot.glyph", signature("uncertain_process.sbgn"), function(object) {
         id = id, stroke.width = stroke.width)
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.rect, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -1201,7 +1200,7 @@ setMethod("plot.glyph", signature("and.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- "AND"
@@ -1220,7 +1219,7 @@ setMethod("plot.glyph", signature("and.sbgn"), function(object) {
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width)
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.ellipse, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -1233,7 +1232,7 @@ setMethod("plot.glyph", signature("or.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- "OR"
@@ -1252,7 +1251,7 @@ setMethod("plot.glyph", signature("or.sbgn"), function(object) {
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width)
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.ellipse, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -1265,7 +1264,7 @@ setMethod("plot.glyph", signature("not.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- "NOT"
@@ -1284,7 +1283,7 @@ setMethod("plot.glyph", signature("not.sbgn"), function(object) {
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width)
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.ellipse, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -1297,7 +1296,7 @@ setMethod("plot.glyph", signature("tau.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- "t"
@@ -1316,7 +1315,7 @@ setMethod("plot.glyph", signature("tau.sbgn"), function(object) {
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width)
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.ellipse, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -1329,7 +1328,7 @@ setMethod("plot.glyph", signature("macromolecule_multimer.sbgn"), function(objec
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     fill.color <- "white"
@@ -1360,10 +1359,10 @@ setMethod("plot.glyph", signature("macromolecule_multimer.sbgn"), function(objec
     # svg.rect.up =
     # plot.rectangle(glyph=object,x=x-w/2,y=y-h/2,id=id,h=h,w=w,rx=rx,ry=ry,stroke.width
     # = stroke.width,fill.opacity = 1)
-    svg.rect.down <- plot.rectangle(glyph = object, x = x - w/2 + global.parameters.list$multimer.margin, 
-        y = y - h/2 + global.parameters.list$multimer.margin, id = id, h = h, w = w, 
+    svg.rect.down <- plot.rectangle(glyph = object, x = x - w/2 + parameters.list$multimer.margin, 
+        y = y - h/2 + parameters.list$multimer.margin, id = id, h = h, w = w, 
         rx = rx, ry = ry, stroke.width = stroke.width)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     # svg = paste(svg.rect.down,svg.rect.up,sep='\n')
     svg <- paste(svg.rect.down, sep = "\n")
@@ -1372,7 +1371,7 @@ setMethod("plot.glyph", signature("macromolecule_multimer.sbgn"), function(objec
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
-            fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+            fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                 gene.or.cpd = "gene")
             glyph.data.i <- new("macromolecule.sbgn")
             glyph.data.i@fill.color <- fill.color
@@ -1405,7 +1404,7 @@ setMethod("plot.glyph", signature("outcome.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (length(object@orientation) > 0) {
@@ -1434,7 +1433,7 @@ setMethod("plot.glyph", signature("simple_chemical_multimer.sbgn"), function(obj
     w <- h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1451,21 +1450,21 @@ setMethod("plot.glyph", signature("simple_chemical_multimer.sbgn"), function(obj
     }
     # svg.ellipse = plot.ellipse(glyph=object,x,y,h,w,id,stroke.width =
     # stroke.width,fill.opacity = 1)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg.ellipse2 <- plot.ellipse(glyph = object, x + 5, y + 5, h, w, id)
     svg <- paste(svg.ellipse2, sep = "\n")
     
     if (!identical(user.data[1], "no.user.data")) {
         # if(user.data[1] != 'no.user.data'){
-        fill.color <- color.from.value(user.data[1], global.parameters.list = global.parameters.list, 
+        fill.color <- color.from.value(user.data[1], global.parameters.list = parameters.list, 
             gene.or.cpd = "compond")
         svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
             fill.color = fill.color, fill.opacity = 1)
         svg <- paste(svg, svg.ellipse, sep = "\n")
         if (length(user.data) > 1) {
             for (i in 2:length(user.data)) {
-                fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+                fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                   gene.or.cpd = "compond")
                 glyph.data.i <- object
                 glyph.data.i@fill.color <- fill.color
@@ -1519,7 +1518,7 @@ setMethod("plot.glyph", signature("omitted_process.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (!object@if.show.label) {
@@ -1544,7 +1543,7 @@ setMethod("plot.glyph", signature("omitted_process.sbgn"), function(object) {
         id = id, stroke.width = stroke.width)
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.rect, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -1558,7 +1557,7 @@ setMethod("plot.glyph", signature("simple_chemical.sbgn"), function(object) {
     w <- h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     fill.color <- "white"
@@ -1580,14 +1579,14 @@ setMethod("plot.glyph", signature("simple_chemical.sbgn"), function(object) {
     }
     # svg.ellipse = plot.ellipse(glyph=object,x,y,h,w,id,stroke.width =
     # stroke.width,fill.color = fill.color)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     # svg = paste(svg.ellipse,sep='\n')
     svg <- ""
     
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
-        fill.color <- color.from.value(user.data[1], global.parameters.list = global.parameters.list, 
+        fill.color <- color.from.value(user.data[1], global.parameters.list = parameters.list, 
             gene.or.cpd = "compond")
         svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
             fill.color = fill.color, stroke.opacity = 0.5)
@@ -1595,7 +1594,7 @@ setMethod("plot.glyph", signature("simple_chemical.sbgn"), function(object) {
         if (length(user.data) > 1) {
             svg.sep.data.line <- ""
             for (i in 2:length(user.data)) {
-                fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+                fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                   gene.or.cpd = "compond")
                 glyph.data.i <- object
                 glyph.data.i@fill.color <- fill.color
@@ -1655,7 +1654,7 @@ setMethod("plot.glyph", signature("dissociation.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (length(object@orientation) > 0) {
@@ -1682,7 +1681,7 @@ setMethod("plot.glyph", signature("nucleic_acid_feature_multimer.sbgn"), functio
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1721,11 +1720,11 @@ setMethod("plot.glyph", signature("nucleic_acid_feature_multimer.sbgn"), functio
     # plot.path(object=object,d=d,id=id,fill.color='white',stroke.width=stroke.width,stroke.color
     # = 'black',fill.opacity = 1)
     
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     
-    d2 <- generate.d.for.partly.rounded.corner.rect(x = x - w/2 + global.parameters.list$multimer.margin, 
-        y = y - h/2 + global.parameters.list$multimer.margin, w = w, h = h, r1 = r1, 
+    d2 <- generate.d.for.partly.rounded.corner.rect(x = x - w/2 + parameters.list$multimer.margin, 
+        y = y - h/2 + parameters.list$multimer.margin, w = w, h = h, r1 = r1, 
         r2 = r2, r3 = r3, r4 = r4)
     svg.path2 <- plot.path(object = object, d = d2, id = id, fill.color = "white", 
         stroke.width = stroke.width, stroke.color = "black", stroke.opacity = 1)
@@ -1736,7 +1735,7 @@ setMethod("plot.glyph", signature("nucleic_acid_feature_multimer.sbgn"), functio
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
-            fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+            fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                 gene.or.cpd = "gene")
             glyph.data.i <- new("nucleic_acid_feature.sbgn")
             glyph.data.i@fill.color <- fill.color
@@ -1778,7 +1777,7 @@ setMethod("plot.glyph", signature("nucleic_acid_feature.sbgn"), function(object)
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     fill.color <- "white"
@@ -1817,7 +1816,7 @@ setMethod("plot.glyph", signature("nucleic_acid_feature.sbgn"), function(object)
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
-            fill.color <- color.from.value(user.data[i], global.parameters.list = global.parameters.list, 
+            fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
                 gene.or.cpd = "gene")
             glyph.data.i <- object
             glyph.data.i@fill.color <- fill.color
@@ -1845,7 +1844,7 @@ setMethod("plot.glyph", signature("nucleic_acid_feature.sbgn"), function(object)
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = fill.color, 
         stroke.width = stroke.width, stroke.color = "black", stroke.opacity = stroke.opacity, 
         fill.opacity = fill.opacity)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg, svg.path, svg.text, sep = "\n")
     return(svg)
@@ -1858,7 +1857,7 @@ setMethod("plot.glyph", signature("perturbation.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w/2
     y <- object@y - h/2
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1871,7 +1870,7 @@ setMethod("plot.glyph", signature("perturbation.sbgn"), function(object) {
     }
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = "white", 
         stroke.width = stroke.width, stroke.color = "black")
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path, svg.text, sep = "\n")
     return(svg)
@@ -1884,7 +1883,7 @@ setMethod("plot.glyph", signature("perturbing_agent.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w/2
     y <- object@y - h/2
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1897,7 +1896,7 @@ setMethod("plot.glyph", signature("perturbing_agent.sbgn"), function(object) {
     }
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = "white", 
         stroke.width = stroke.width, stroke.color = "black")
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location)
     # svg.ellipse = plot.ellipse(glyph=object,180,210,5,5,id,fill.color = 'red')
     svg <- paste(svg.path, svg.text, sep = "\n")
@@ -1912,7 +1911,7 @@ setMethod("plot.glyph", signature("annotation.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w
     y <- object@y - h
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1930,7 +1929,7 @@ setMethod("plot.glyph", signature("annotation.sbgn"), function(object) {
         sep = " "))
     svg.path2 <- plot.path(object = object, d = d2, id = id, fill.color = "black", 
         stroke.width = 1, stroke.color = "black", stroke.opacity = stroke.opacity)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location, 
         stroke.opacity = stroke.opacity)
     svg <- paste(svg.path1, svg.path2, svg.text, sep = "\n")
@@ -1944,7 +1943,7 @@ setMethod("plot.glyph", signature("existence.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -1971,7 +1970,7 @@ setMethod("plot.glyph", signature("clone_simple_chemical.sbgn"), function(object
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- "clone"
     label <- object@label
     label.location <- "center"
@@ -1996,7 +1995,7 @@ setMethod("plot.glyph", signature("clone.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- "clone"
     label <- object@label
     label.location <- "center"
@@ -2013,7 +2012,7 @@ setMethod("plot.glyph", signature("clone.sbgn"), function(object) {
     svg.path.bigbox <- plot.path(object = object, d = d1, id = id, fill.color = "black", 
         stroke.width = stroke.width, stroke.color = "black")
     
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y + h/2 - h/10, h = h, w = w, id = id, label = label, label.location = label.location, 
         color = "white")
     svg <- paste(svg.path.bigbox, svg.text, sep = "\n")
@@ -2027,7 +2026,7 @@ setMethod("plot.glyph", signature("clone_marker.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -2048,7 +2047,7 @@ setMethod("plot.glyph", signature("clone_marker.sbgn"), function(object) {
     }
     svg.path.innerbox <- plot.path(object = object, d = d2, id = id, fill.color = "gray", 
         stroke.width = stroke.width, stroke.color = "black")
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y - 1/5 * h, h = h, w = w, id = id, label = label, label.location = label.location)
     white.top.line.to.cover <- paste("M", x - w/2, y - h/2, x + w/2, y - h/2, sep = " ")
     svg.path.topWhiteLine <- plot.path(object = object, d = white.top.line.to.cover, 
@@ -2065,7 +2064,7 @@ setMethod("plot.glyph", signature("terminal.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w/2
     y <- object@y - h/2
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -2092,7 +2091,7 @@ setMethod("plot.glyph", signature("terminal.sbgn"), function(object) {
     }
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = "white", 
         stroke.width = stroke.width, stroke.color = "black")
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path, svg.text, sep = "\n")
     return(svg)
@@ -2105,7 +2104,7 @@ setMethod("plot.glyph", signature("tag.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w/2
     y <- object@y - h/2
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -2132,7 +2131,7 @@ setMethod("plot.glyph", signature("tag.sbgn"), function(object) {
     }
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = "white", 
         stroke.width = stroke.width, stroke.color = "black")
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path, svg.text, sep = "\n")
     return(svg)
@@ -2145,7 +2144,7 @@ setMethod("plot.glyph", signature("phenotype.sbgn"), function(object) {
     h <- object@h
     x <- object@x - w/2
     y <- object@y - h/2
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -2154,7 +2153,7 @@ setMethod("plot.glyph", signature("phenotype.sbgn"), function(object) {
         h, x + w - 5, y + h/2, x + w - h/3, y, "Z", sep = " "))
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = "white", 
         stroke.width = 1, stroke.color = "black")
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x + w/2, y = y + h/2, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path, svg.text, sep = "\n")
     return(svg)
@@ -2167,7 +2166,7 @@ setMethod("plot.glyph", signature("association.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (length(object@orientation) > 0) {
@@ -2194,7 +2193,7 @@ setMethod("plot.glyph", signature("interaction.sbgn.arc"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     stroke.width <- 1
@@ -2215,7 +2214,7 @@ setMethod("plot.glyph", signature("interaction.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (length(object@orientation) > 0) {
@@ -2242,7 +2241,7 @@ setMethod("plot.glyph", signature("delay.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- "t"
@@ -2261,7 +2260,7 @@ setMethod("plot.glyph", signature("delay.sbgn"), function(object) {
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width)
     svg.wings <- plot.LineWings(x, y, w, h, orientation, id)
     svg.wings <- ""
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.ellipse, svg.wings, svg.text, sep = "\n")
     return(svg)
@@ -2274,7 +2273,7 @@ setMethod("plot.glyph", signature("source_and_sink.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     if (length(object@orientation) > 0) {
@@ -2302,7 +2301,7 @@ setMethod("plot.glyph", signature("location.sbgn"), function(object) {
     h <- w
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id)
@@ -2325,7 +2324,7 @@ setMethod("plot.glyph", signature("state_variable.ER.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -2338,7 +2337,7 @@ setMethod("plot.glyph", signature("state_variable.ER.sbgn"), function(object) {
         h = h, r1 = r1, r2 = r2, r3 = r3, r4 = r4)
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = "white", 
         stroke.width = 1, stroke.color = "black", fill.opacity = 1)
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path, svg.text, sep = "\n")
     return(svg)
@@ -2351,7 +2350,7 @@ setMethod("plot.glyph", signature("variable_value.sbgn"), function(object) {
     h <- object@h
     x <- object@x
     y <- object@y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     user.data <- object@user.data
     label <- object@label
@@ -2364,7 +2363,7 @@ setMethod("plot.glyph", signature("variable_value.sbgn"), function(object) {
         h = h, r1 = r1, r2 = r2, r3 = r3, r4 = r4)
     svg.path <- plot.path(object = object, d = d, id = id, fill.color = "white", 
         stroke.width = 1, stroke.color = "black")
-    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, global.parameters.list = global.parameters.list, 
+    svg.text <- plot.text(glyph = object, glyph.class = object@glyph.class, parameters.list = parameters.list, 
         x = x, y = y, h = h, w = w, id = id, label = label, label.location = label.location)
     svg <- paste(svg.path, svg.text, sep = "\n")
     return(svg)
@@ -2380,7 +2379,7 @@ setMethod("plot.arc", signature("spline.arc"), function(object) {
     for (i in seq_len(length.out = length(components))) {
         component <- components[[i]]
         component@edge <- object@edge
-        component@global.parameters.list <- object@global.parameters.list
+        component@parameters.list <- object@parameters.list
         if (!is(component, "spline")) {
             component@edge$line.stroke.opacity <- 0
         }
@@ -2405,18 +2404,18 @@ setMethod("plot.arc", signature("absolute_stimulation.sbgn.arc"), function(objec
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    points <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y - global.parameters.list$edge.tip.size, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y + global.parameters.list$edge.tip.size, sep = "")
-    points2 <- paste(end.x - global.parameters.list$edge.tip.size * 3, ",", end.y, 
-        " ", end.x - global.parameters.list$edge.tip.size * 6, ",", end.y - global.parameters.list$edge.tip.size, 
-        " ", end.x - global.parameters.list$edge.tip.size * 6, ",", end.y + global.parameters.list$edge.tip.size, 
+    points <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y - parameters.list$edge.tip.size, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y + parameters.list$edge.tip.size, sep = "")
+    points2 <- paste(end.x - parameters.list$edge.tip.size * 3, ",", end.y, 
+        " ", end.x - parameters.list$edge.tip.size * 6, ",", end.y - parameters.list$edge.tip.size, 
+        " ", end.x - parameters.list$edge.tip.size * 6, ",", end.y + parameters.list$edge.tip.size, 
         sep = "")
     if (start.x < end.x) {
         svg.triangle <- plot.polygon(object = object, points, fill.color = "white", 
@@ -2440,29 +2439,29 @@ setMethod("plot.arc", signature("absolute_inhibition.sbgn.arc"), function(object
     start.y <- object@start.y
     end.x <- object@end.x
     end.y <- object@end.y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    d <- (paste("M", end.x - 1, end.y - global.parameters.list$edge.tip.size * 3/2, 
-        end.x - 1, end.y + global.parameters.list$edge.tip.size * 3/2, sep = " "))
+    d <- (paste("M", end.x - 1, end.y - parameters.list$edge.tip.size * 3/2, 
+        end.x - 1, end.y + parameters.list$edge.tip.size * 3/2, sep = " "))
     svg.endLine <- plot.path(object = object, d = d, id = id, fill.color = "black", 
         stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
             end.x))/pi * 180, end.x, end.y)
     if (start.x < end.x) {
-        d1 <- (paste("M", end.x - global.parameters.list$edge.tip.size * 3/4, end.y - 
-            global.parameters.list$edge.tip.size * 3/2, end.x - global.parameters.list$edge.tip.size * 
-            3/4, end.y + global.parameters.list$edge.tip.size * 3/2, sep = " "))
+        d1 <- (paste("M", end.x - parameters.list$edge.tip.size * 3/4, end.y - 
+            parameters.list$edge.tip.size * 3/2, end.x - parameters.list$edge.tip.size * 
+            3/4, end.y + parameters.list$edge.tip.size * 3/2, sep = " "))
         svg.endLine1 <- plot.path(object = object, d = d1, id = id, fill.color = "black", 
             stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
                 end.x))/pi * 180, end.x, end.y)
     } else {
-        d1 <- (paste("M", end.x + global.parameters.list$edge.tip.size * 3/4, end.y - 
-            global.parameters.list$edge.tip.size * 3/2, end.x + global.parameters.list$edge.tip.size * 
-            3/4, end.y + global.parameters.list$edge.tip.size * 3/2, sep = " "))
+        d1 <- (paste("M", end.x + parameters.list$edge.tip.size * 3/4, end.y - 
+            parameters.list$edge.tip.size * 3/2, end.x + parameters.list$edge.tip.size * 
+            3/4, end.y + parameters.list$edge.tip.size * 3/2, sep = " "))
         svg.endLine1 <- plot.path(object = object, d = d1, id = id, fill.color = "black", 
             stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
                 end.x))/pi * 180, end.x, end.y)
@@ -2479,22 +2478,22 @@ setMethod("plot.arc", signature("necessary_stimulation.sbgn.arc"), function(obje
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
-    end.line.length <- global.parameters.list$edge.tip.size * 3/2
+    parameters.list <- object@parameters.list
+    end.line.length <- parameters.list$edge.tip.size * 3/2
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    points <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y - end.line.length, " ", end.x - global.parameters.list$edge.tip.size * 
+    points <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y - end.line.length, " ", end.x - parameters.list$edge.tip.size * 
         3, ",", end.y + end.line.length, sep = "")
     if (start.x < end.x) {
         svg.triangle <- plot.polygon(object = object, points, "white", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180, end.x, end.y)
-        d <- (paste("M", end.x - global.parameters.list$edge.tip.size * 4, end.y - 
-            end.line.length - global.parameters.list$edge.tip.size * 3/4, end.x - 
-            global.parameters.list$edge.tip.size * 4, end.y + end.line.length + global.parameters.list$edge.tip.size * 
+        d <- (paste("M", end.x - parameters.list$edge.tip.size * 4, end.y - 
+            end.line.length - parameters.list$edge.tip.size * 3/4, end.x - 
+            parameters.list$edge.tip.size * 4, end.y + end.line.length + parameters.list$edge.tip.size * 
             3/4, sep = " "))
         svg.endLine <- plot.path(object = object, d = d, id = id, fill.color = "black", 
             stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
@@ -2502,9 +2501,9 @@ setMethod("plot.arc", signature("necessary_stimulation.sbgn.arc"), function(obje
     } else {
         svg.triangle <- plot.polygon(object = object, points, "white", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180 + 180, end.x, end.y)
-        d <- (paste("M", end.x + global.parameters.list$edge.tip.size * 4, end.y - 
-            end.line.length - global.parameters.list$edge.tip.size * 3/4, end.x + 
-            global.parameters.list$edge.tip.size * 4, end.y + end.line.length + global.parameters.list$edge.tip.size * 
+        d <- (paste("M", end.x + parameters.list$edge.tip.size * 4, end.y - 
+            end.line.length - parameters.list$edge.tip.size * 3/4, end.x + 
+            parameters.list$edge.tip.size * 4, end.y + end.line.length + parameters.list$edge.tip.size * 
             3/4, sep = " "))
         svg.endLine <- plot.path(object = object, d = d, id = id, fill.color = "black", 
             stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
@@ -2573,13 +2572,13 @@ setMethod("plot.arc", signature("production.sbgn.arc"), function(object) {
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    end.size <- global.parameters.list$edge.tip.size * 2
+    end.size <- parameters.list$edge.tip.size * 2
     points <- paste(end.x, ",", end.y, " ", end.x - end.size, ",", end.y - end.size/2, 
         " ", end.x - end.size, ",", end.y + end.size/2, sep = "")
     if (start.x < end.x) {
@@ -2601,21 +2600,21 @@ setMethod("plot.arc", signature("interaction.sbgn.arc"), function(object) {
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
     
-    points.end <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y - global.parameters.list$edge.tip.size, " ", end.x - global.parameters.list$edge.tip.size * 
-        2, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 3, ",", 
-        end.y + global.parameters.list$edge.tip.size, sep = "")
-    points.start <- paste(start.x, ",", start.y, " ", start.x + global.parameters.list$edge.tip.size * 
-        3, ",", start.y - global.parameters.list$edge.tip.size, " ", start.x + global.parameters.list$edge.tip.size * 
-        2, ",", start.y, " ", start.x + global.parameters.list$edge.tip.size * 3, 
-        ",", start.y + global.parameters.list$edge.tip.size, sep = "")
+    points.end <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y - parameters.list$edge.tip.size, " ", end.x - parameters.list$edge.tip.size * 
+        2, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 3, ",", 
+        end.y + parameters.list$edge.tip.size, sep = "")
+    points.start <- paste(start.x, ",", start.y, " ", start.x + parameters.list$edge.tip.size * 
+        3, ",", start.y - parameters.list$edge.tip.size, " ", start.x + parameters.list$edge.tip.size * 
+        2, ",", start.y, " ", start.x + parameters.list$edge.tip.size * 3, 
+        ",", start.y + parameters.list$edge.tip.size, sep = "")
     if (start.x < end.x) {
         svg.triangle.end <- plot.polygon(object = object, points.end, "black", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180, end.x, end.y)
@@ -2639,16 +2638,16 @@ setMethod("plot.arc", signature("assignment.sbgn.arc"), function(object) {
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    points <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y - global.parameters.list$edge.tip.size, " ", end.x - global.parameters.list$edge.tip.size * 
-        2, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 3, ",", 
-        end.y + global.parameters.list$edge.tip.size, sep = "")
+    points <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y - parameters.list$edge.tip.size, " ", end.x - parameters.list$edge.tip.size * 
+        2, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 3, ",", 
+        end.y + parameters.list$edge.tip.size, sep = "")
     if (start.x < end.x) {
         svg.triangle <- plot.polygon(object = object, points, "black", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180, end.x, end.y)
@@ -2667,7 +2666,7 @@ setMethod("plot.arc", signature("catalysis.sbgn.arc"), function(object) {
     start.y <- object@start.y
     end.x <- object@end.x
     end.y <- object@end.y
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     id <- object@id
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
@@ -2675,7 +2674,7 @@ setMethod("plot.arc", signature("catalysis.sbgn.arc"), function(object) {
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
     angle <- atan((start.y - end.y)/(start.x - end.x))
-    circle.r <- global.parameters.list$edge.tip.size
+    circle.r <- parameters.list$edge.tip.size
     if (start.x < end.x) {
         circle.center.x <- end.x - circle.r * cos(angle)
         circle.center.y <- end.y - circle.r * sin(angle)
@@ -2697,15 +2696,15 @@ setMethod("plot.arc", signature("positive_influence.sbgn.arc"), function(object)
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    points <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y - global.parameters.list$edge.tip.size, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y + global.parameters.list$edge.tip.size, sep = "")
+    points <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y - parameters.list$edge.tip.size, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y + parameters.list$edge.tip.size, sep = "")
     if (start.x < end.x) {
         svg.triangle <- plot.polygon(object = object, points, "white", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180, end.x, end.y)
@@ -2725,15 +2724,15 @@ setMethod("plot.arc", signature("stimulation.sbgn.arc"), function(object) {
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    points <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y - global.parameters.list$edge.tip.size, " ", end.x - global.parameters.list$edge.tip.size * 
-        3, ",", end.y + global.parameters.list$edge.tip.size, sep = "")
+    points <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y - parameters.list$edge.tip.size, " ", end.x - parameters.list$edge.tip.size * 
+        3, ",", end.y + parameters.list$edge.tip.size, sep = "")
     if (start.x < end.x) {
         svg.triangle <- plot.polygon(object = object, points, "white", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180, end.x, end.y)
@@ -2753,23 +2752,23 @@ setMethod("plot.arc", signature("negative_influence.sbgn.arc"), function(object)
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
     if (start.x < end.x) {
-        d <- (paste("M", end.x - global.parameters.list$inhibition.edge.end.shift, 
-            end.y - global.parameters.list$edge.tip.size * 3/2, end.x - global.parameters.list$inhibition.edge.end.shift, 
-            end.y + global.parameters.list$edge.tip.size * 3/2, sep = " "))
+        d <- (paste("M", end.x - parameters.list$inhibition.edge.end.shift, 
+            end.y - parameters.list$edge.tip.size * 3/2, end.x - parameters.list$inhibition.edge.end.shift, 
+            end.y + parameters.list$edge.tip.size * 3/2, sep = " "))
         svg.endLine <- plot.path(object = object, d = d, id = id, fill.color = "black", 
             stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
                 end.x))/pi * 180, end.x, end.y)
     } else {
-        d <- (paste("M", end.x + global.parameters.list$inhibition.edge.end.shift, 
-            end.y - global.parameters.list$edge.tip.size * 3/2, end.x + global.parameters.list$inhibition.edge.end.shift, 
-            end.y + global.parameters.list$edge.tip.size * 3/2, sep = " "))
+        d <- (paste("M", end.x + parameters.list$inhibition.edge.end.shift, 
+            end.y - parameters.list$edge.tip.size * 3/2, end.x + parameters.list$inhibition.edge.end.shift, 
+            end.y + parameters.list$edge.tip.size * 3/2, sep = " "))
         svg.endLine <- plot.path(object = object, d = d, id = id, fill.color = "black", 
             stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
                 end.x))/pi * 180, end.x, end.y)
@@ -2786,11 +2785,11 @@ setMethod("plot.arc", signature("inhibition.sbgn.arc"), function(object) {
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     
-    inhibition.edge.end.shift <- global.parameters.list$inhibition.edge.end.shift
+    inhibition.edge.end.shift <- parameters.list$inhibition.edge.end.shift
     if (start.x < end.x) {
         d1 <- (paste("M", start.x, end.y, end.x - inhibition.edge.end.shift, end.y, 
             sep = " "))
@@ -2798,8 +2797,8 @@ setMethod("plot.arc", signature("inhibition.sbgn.arc"), function(object) {
             stroke.color = "white", stroke.width = 1, atan((start.y - end.y)/(start.x - 
                 end.x))/pi * 180, end.x, end.y)
         
-        d <- (paste("M", end.x - inhibition.edge.end.shift, end.y - global.parameters.list$edge.tip.size * 
-            3/2, end.x - inhibition.edge.end.shift, end.y + global.parameters.list$edge.tip.size * 
+        d <- (paste("M", end.x - inhibition.edge.end.shift, end.y - parameters.list$edge.tip.size * 
+            3/2, end.x - inhibition.edge.end.shift, end.y + parameters.list$edge.tip.size * 
             3/2, sep = " "))
         svg.endLine <- plot.path(object = object, d = d, id = id, fill.color = "black", 
             stroke.width = 1, stroke.color = "black", atan((start.y - end.y)/(start.x - 
@@ -2811,8 +2810,8 @@ setMethod("plot.arc", signature("inhibition.sbgn.arc"), function(object) {
             stroke.color = "white", stroke.width = 1, atan((start.y - end.y)/(start.x - 
                 end.x))/pi * 180, end.x, end.y)
         
-        d <- (paste("M", end.x + inhibition.edge.end.shift, end.y - global.parameters.list$edge.tip.size * 
-            3/2, end.x + inhibition.edge.end.shift, end.y + global.parameters.list$edge.tip.size * 
+        d <- (paste("M", end.x + inhibition.edge.end.shift, end.y - parameters.list$edge.tip.size * 
+            3/2, end.x + inhibition.edge.end.shift, end.y + parameters.list$edge.tip.size * 
             3/2, sep = " "))
         # object@edge$tip.stroke.color = 'purple'
         svg.endLine <- plot.path(object = object, d = d, id = id, fill.color = "black", 
@@ -2831,16 +2830,16 @@ setMethod("plot.arc", signature("unknown_influence.sbgn.arc"), function(object) 
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    points <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3/2, ",", end.y - global.parameters.list$edge.tip.size * 3/2, " ", end.x - 
-        global.parameters.list$edge.tip.size * 3, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3/2, ",", end.y + global.parameters.list$edge.tip.size * 3/2, sep = "")
+    points <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3/2, ",", end.y - parameters.list$edge.tip.size * 3/2, " ", end.x - 
+        parameters.list$edge.tip.size * 3, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3/2, ",", end.y + parameters.list$edge.tip.size * 3/2, sep = "")
     if (start.x < end.x) {
         svg.triangle <- plot.polygon(object = object, points, "white", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180, end.x, end.y)
@@ -2860,16 +2859,16 @@ setMethod("plot.arc", signature("modulation.sbgn.arc"), function(object) {
     end.x <- object@end.x
     end.y <- object@end.y
     id <- object@id
-    global.parameters.list <- object@global.parameters.list
+    parameters.list <- object@parameters.list
     if (length(object@stroke.opacity) != 0) 
         stroke.opacity <- object@stroke.opacity else stroke.opacity <- 1
     LineCoordinates <- paste("x1=", start.x, " y1=", start.y, " x2=", end.x, " y2=", 
         end.y, "", sep = "\"")
     svg.line <- plot.line(object = object, LineCoordinates, id, stroke.opacity = stroke.opacity)
-    points <- paste(end.x, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3/2, ",", end.y - global.parameters.list$edge.tip.size * 3/2, " ", end.x - 
-        global.parameters.list$edge.tip.size * 3, ",", end.y, " ", end.x - global.parameters.list$edge.tip.size * 
-        3/2, ",", end.y + global.parameters.list$edge.tip.size * 3/2, sep = "")
+    points <- paste(end.x, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3/2, ",", end.y - parameters.list$edge.tip.size * 3/2, " ", end.x - 
+        parameters.list$edge.tip.size * 3, ",", end.y, " ", end.x - parameters.list$edge.tip.size * 
+        3/2, ",", end.y + parameters.list$edge.tip.size * 3/2, sep = "")
     if (start.x < end.x) {
         svg.triangle <- plot.polygon(object = object, points, "white", atan((start.y - 
             end.y)/(start.x - end.x))/pi * 180, end.x, end.y)
