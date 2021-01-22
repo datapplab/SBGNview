@@ -126,7 +126,7 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 #' @param input.type A character string. Gene or compound ID type
 #' @param output.type A character string. Gene or compound ID type
 #' @param species A character string. Three letter KEGG species code.
-#' @param cpd.or.gene A character string. Either 'gene' or 'compound'
+#' @param cpd.or.gene A character string. Either 'gene' or 'compound'. This argument is required. 
 #' @param limit.to.ids Vector. Molecule IDs of 'input.type'.
 #' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @return A list containing the mapping table. 
@@ -140,17 +140,21 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 #'                              
 #' @export
 
-loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene, 
+loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene = NULL, 
                              limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") { 
   
   input.type = gsub("entrez","ENTREZID",input.type)
   output.type = gsub("entrez","ENTREZID",output.type)
-  if(input.type == output.type){
+  if(input.type == output.type) {
     stop("Input type and output types are the same!")
   }
   species = gsub("Hs","hsa",species)
 
-  if(!file.exists(SBGNview.data.folder)){
+  if(is.null(cpd.or.gene)) {
+    stop("argument \"cpd.or.gene\" is required. Can be either 'gene' or 'compound'")
+  }
+  
+  if(!file.exists(SBGNview.data.folder)) {
     dir.create(SBGNview.data.folder)
   }
   
@@ -189,14 +193,14 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
       if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) &
          !any(c(input.type,output.type) %in% c("KO"))
       ){ # if input and output don't contain KO
-        
+        print("here")
         # load mapping table for mapping KO to glyph id
         ko.to.glyph.id = loadMappingTable(input.type = output.type,
                                           output.type = "KO",
                                           cpd.or.gene = "gene",
                                           species = species,
                                           SBGNview.data.folder = SBGNview.data.folder)
-        ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
+        #ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
         
         # load mapping table for mapping user input to KO id
         input.to.ko = loadMappingTable(input.type = input.type,
@@ -205,8 +209,8 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                        limit.to.ids = limit.to.ids,
                                        species = species,
                                        SBGNview.data.folder = SBGNview.data.folder)
-        input.to.ko = input.to.ko$gene[[1]]
-        input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
+        #input.to.ko = input.to.ko$gene[[1]]
+        input.to.glyph.id = merge(input.to.ko, ko.to.glyph.id, all= FALSE)
         id.map = input.to.glyph.id[,c(input.type,output.type)]
       } else {
         message("\nID mapping not pre-generated")
@@ -237,9 +241,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
       message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
       stop("ID mapping table not provided")
     }
-    
     mapping.list <- id.map
-    
   }
   
   #### if mapping.list contains a species column, filter by value of 'species' argument
@@ -269,21 +271,22 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     
   } # end if: filter 'species' column
   
-  # convert to mapping.list: many functions which call loadMappingTable expect a list 
-  #                          and extract the mapping table from the returned list
-  type.pair.name <- paste(sort(c(input.type,output.type), method = "radix", 
-                               decreasing = TRUE), collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-  id.map <- mapping.list
-  mapping.list <- list()
-  if(is.vector(id.map)){
-    id.map <- as.matrix(t(id.map))
-  }
-  id.map[,1] <- as.character(id.map[,1])
-  id.map[,2] <- as.character(id.map[,2])
-  id.map <- as.matrix(id.map)
-  mapping.list[[cpd.or.gene]] <- list()
-  mapping.list[[cpd.or.gene]][[type.pair.name]] <- id.map
-  
+  ## convert to mapping.list: many functions which call loadMappingTable expect a list 
+  ##                         and extract the mapping table from the returned list
+  # type.pair.name <- paste(sort(c(input.type,output.type), method = "radix",
+  #                              decreasing = TRUE), collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
+  # id.map <- mapping.list
+  # mapping.list <- list()
+  # if(is.vector(id.map)){
+  #   id.map <- as.matrix(t(id.map))
+  # }
+  # id.map[,1] <- as.character(id.map[,1])
+  # id.map[,2] <- as.character(id.map[,2])
+  # id.map <- as.matrix(id.map)
+  # mapping.list[[cpd.or.gene]] <- list()
+  # mapping.list[[cpd.or.gene]][[type.pair.name]] <- id.map
+
+  mapping.list <- as.matrix(mapping.list)
   return(mapping.list)
 }
 
@@ -599,18 +602,36 @@ load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gen
   if (!is.null(output.cpd.id.type)) {
     if (SBGN.file.cpd.id.type != output.cpd.id.type) {
       input.cpd.type <- SBGN.file.cpd.id.type
-      cpd.id.mapping.list <- loadMappingTable(output.type = output.cpd.id.type, 
-                                              input.type = input.cpd.type, cpd.or.gene = "compound", species = species, 
-                                              SBGNview.data.folder = SBGNview.data.folder)
+      ## original
+      # cpd.id.mapping.list <- loadMappingTable(output.type = output.cpd.id.type, 
+      #                                         input.type = input.cpd.type, cpd.or.gene = "compound", species = species, 
+      #                                         SBGNview.data.folder = SBGNview.data.folder)
+      ### package the matrix into a list
+      cpd.mapping.table <-  loadMappingTable(output.type = output.cpd.id.type, 
+                                             input.type = input.cpd.type, cpd.or.gene = "compound", species = species, 
+                                             SBGNview.data.folder = SBGNview.data.folder)
+      type.pair.name <- paste(sort(c(input.cpd.type, output.cpd.id.type), method = "radix",
+                                   decreasing = TRUE), collapse="_")
+      cpd.id.mapping.list[["compound"]] <- list()
+      cpd.id.mapping.list[["compound"]][[type.pair.name]] <- cpd.mapping.table
     }
   }
   
   if (!is.null(output.gene.id.type)) {
     if (SBGN.file.gene.id.type != output.gene.id.type) {
       input.gene.type <- SBGN.file.gene.id.type
-      gene.id.mapping.list <- loadMappingTable(output.type = output.gene.id.type, 
-                                               input.type = input.gene.type, cpd.or.gene = "gene", species = species, 
-                                               SBGNview.data.folder = SBGNview.data.folder)
+      ## original
+      # gene.id.mapping.list <- loadMappingTable(output.type = output.gene.id.type, 
+      #                                          input.type = input.gene.type, cpd.or.gene = "gene", species = species, 
+      #                                          SBGNview.data.folder = SBGNview.data.folder)
+      ### package the matrix into a list
+      gene.mapping.table <- loadMappingTable(output.type = output.gene.id.type, 
+                                             input.type = input.gene.type, cpd.or.gene = "gene", species = species, 
+                                             SBGNview.data.folder = SBGNview.data.folder)
+      type.pair.name <- paste(sort(c(input.gene.type, output.gene.id.type), method = "radix",
+                                   decreasing = TRUE), collapse="_")
+      gene.id.mapping.list[["gene"]] <- list()
+      gene.id.mapping.list[["gene"]][[type.pair.name]] <- gene.mapping.table
     }
   }
   id.mapping.all.list <- c(cpd.id.mapping.list, gene.id.mapping.list)
@@ -702,7 +723,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
   # metacrop initial list is using enzyme
   mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
                                    cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
-  ref.to.pathway <- mapping.list[[1]][[1]]
+  ref.to.pathway <- mapping.list #[[1]][[1]]
   
   if (mol.list.ID.type == id.in.pathway) {
     out.id.to.pathway <- ref.to.pathway
@@ -714,7 +735,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
                                            cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
                                            species = org, SBGNview.data.folder = SBGNview.data.folder)
     
-    out.id.type.to.ref <- out.id.type.to.ref[[1]][[1]]
+    out.id.type.to.ref <- out.id.type.to.ref #[[1]][[1]]
     # merge KO to pathway and KO to output id
     out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
     out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
@@ -852,9 +873,9 @@ find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mo
     } else if (keyword.type %in% mapped.ids$cpd) {
       cpd.or.gene <- "compound"
     }
-    mapping.list <- loadMappingTable(input.type = keyword.type, output.type = "pathway.id", 
+    mapping.table <- loadMappingTable(input.type = keyword.type, output.type = "pathway.id", 
                                      species = NULL, SBGNview.data.folder = SBGNview.data.folder, cpd.or.gene = cpd.or.gene)
-    mapping.table <- mapping.list[[1]][[1]]
+    #mapping.table <- mapping.list[[1]][[1]]
     if (keyword.type == "CompoundName") {
       if (keywords.logic == "and") {
         keywords.logic <- "or"

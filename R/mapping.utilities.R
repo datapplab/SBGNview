@@ -219,11 +219,12 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 #' 
 #' @examples 
 #' data(mapped.ids)
-#' mapping = changeIds(
-#'   input.ids = c(100048912),
+#' mapping <- changeIds(
+#'   input.ids = c(10327, 6652),
 #'   input.type = 'ENTREZID',
 #'   output.type = 'pathwayCommons',
 #'   cpd.or.gene = 'gene',
+#'   org = "hsa"
 #' )
 #' 
 #' @export
@@ -369,12 +370,12 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
     } else {
       input.ids <- row.names(data.input.id)
     }
-    mapping.list <- loadMappingTable(output.type = output.type, input.type = input.type, 
+    id.map <- loadMappingTable(output.type = output.type, input.type = input.type, 
                                      species = org, cpd.or.gene = cpd.or.gene, 
                                      limit.to.ids = input.ids, 
                                      SBGNview.data.folder = SBGNview.data.folder)
     
-    id.map <- mapping.list[[1]][[1]]
+    #id.map <- mapping.list[[1]][[1]]
     #id.map <- as.matrix(id.map[, c(input.type, output.type)])
   } else {
     if (!all(c(input.type) %in% colnames(id.mapping.table))) {
@@ -405,7 +406,14 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
 change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping.all.list, 
                       show.ids.for.multiHit = NULL) {
   
-  mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]]
+  #mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]] 
+  
+  if(is.matrix(id.mapping.all.list)){
+    mapping.table <- id.mapping.all.list
+  } else { # if list
+    mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]]
+  }
+  
   output.ids <- as.character(mapping.table[mapping.table[, input.type] == input.id, 
                                            output.type])
   if (any(is.na(output.ids))) {
