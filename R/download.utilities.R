@@ -4,7 +4,7 @@
 ### check local directory for any mapping files, if not found then check SBGNView.data, then SBGNhub
 download.mapping.file <- function(input.type, output.type, species = NULL, 
                                   SBGNview.data.folder = "./SBGNview.tmp.data") { 
-  options(warn = -1)
+  
   # R CMD check will give different sort result if you didn't specify 'method': the
   # default sort method depends on the locale of your system. And R CMD check uses
   # a different locale than my interactive session.  The issue resided in this: R
@@ -31,141 +31,88 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
     try.file.names <- c(type.pair.name.1.org, type.pair.name.2.org)
   }
   
-  location <- "local"
+  location <- ""
+  mapping.file.name <- ""
   
-  # check if mapping file exits in SBGNview.data.folder
-  if(location == "local"){ 
-    # find.mapping.files.in.folder defined below
-    # if local files found. IF true, no need to check SBGNview.data, and SBGNhub
-    message("Checking local folder: ", SBGNview.data.folder)
-    # mapping.file.name has .RData extension
-    mapping.file.name <- find.mapping.files.in.folder(try.file.names, SBGNview.data.folder) 
+  for(try.file.name in try.file.names) { # for each try.file.name -> check local, data, hub if not exists()
     
-    if(!is.null(mapping.file.name)){
-      print(paste("Local mapping file found: ", mapping.file.name, sep = ""))
-    } else {
+    # try.file.name already exists in environment
+    if(exists(try.file.name)) {
+      message("\n", try.file.name, " mapping table already loaded from SBGNview.data")
       location <- "SBGNview.data"
-    }
-  }
-  
-  # check SBGNview.data for mapping file
-  if(location == "SBGNview.data"){
-    message("\nChecking SBGNview.data")
-    if.online.mapping.avai <- FALSE
-    if.mapping.in.data.package <- FALSE
-    for (i in seq_len(length(try.file.names))) {
-      type.pair.name.try <- try.file.names[i]
-      if.data.exists <- tryCatch(data(list = type.pair.name.try), warning = function(w) "no such data")
-      if (if.data.exists %in% c(type.pair.name.try, "mapping.list", "mapping.table")) {
-        mapping.file.name <- type.pair.name.try
-        print(paste(type.pair.name.try, " ID mapping included in SBGNview.data package", sep = ""))
-        if.mapping.in.data.package <- TRUE
+      mapping.file.name <- try.file.name
+      break
+      
+    } else { # check local, SBGNview.data, or hub
+      
+      file.name.rdata <- paste(try.file.name, ".RData", sep = "")
+      # check local
+      if(file.exists(paste(SBGNview.data.folder, file.name.rdata, sep = "/"))) {
+        location <- "local"
+        mapping.file.name <- file.name.rdata
+        message("\nLocal mapping table file found: ", mapping.file.name)
         (break)()
-      } 
-    }
-    
-    if (!if.mapping.in.data.package) {
-      print("ID mapping not found for this pair in SBGNview.data")
-      location <- "SBGNhub"
-    } 
-    options(warn = 1)
-  } 
+      }
+      
+      # check SBGNview.data
+      if.exists.SBGNview.data <- tryCatch(data(list = try.file.name), warning = function(w) "none")
+      if(if.exists.SBGNview.data != "none") { # found in SBGNview.data
+        location <- "SBGNview.data"
+        mapping.file.name <- try.file.name
+        message("\n", if.exists.SBGNview.data, " mapping table loaded from SBGNview.data")
+        break
+      }
+      
+      # check SBGNhub for .RData file
+      if(location == "") {
+        mapping.file.name <- search.sbgnhub.id.mapping(try.file.name = file.name.rdata, SBGNview.data.folder)
+        if(!is.null(mapping.file.name)) { # found in SBGNhub
+          location <- "SBGNhub"
+          message(mapping.file.name, " downloaded from SBGNhub")
+          break
+        } 
+      }
+      
+    } # end else block
+  } # end for loop
   
-  # check SBGNhub
-  if(location == "SBGNhub"){
-    message("\nChecking SBGNhub for mapping file")
-    # mapping.file.name with .RData extension
-    mapping.file.name <- search.sbgnhub.id.mapping(try.file.names = try.file.names,
-                                                   file.destination = SBGNview.data.folder)
-    
-    if(!is.null(mapping.file.name)){
-      message(mapping.file.name, " download complete")
-    } else { 
-      # if not in sbgnhub, use pathview
-      message("\nNo mapping file found in SBGNhub. Generating mapping using Pathview.")
-      location <- "pathview"
-      mapping.file.name <- "'needs to be generated'"
-    }
+  if(location == "" & is.null(mapping.file.name)) { # mapping table not found in local, SBGNview.data, SBGNhub
+    location <- "pathview"
+    mapping.file.name <- ""
   }
   
   mapping.file.info <- list(location = location, mapping.file.name = mapping.file.name)
-  
   return(mapping.file.info)
-}
-
-#########################################################################################################
-### used by download.mapping.file function to find mapping files .RData in given directory
-find.mapping.files.in.folder <- function(try.file.names, SBGNview.data.folder){
-  # read .RData files in given direcotry
-  files.in.exist.data.folder <-  list.files(path = SBGNview.data.folder, pattern = "*.RData")
-  mapping.file.name <- NULL
-  
-  if(length(files.in.exist.data.folder) == 0){ # no matching files found
-    print("No .RData files found")
-  } else {
-    file.names.in.folder <- sapply(files.in.exist.data.folder, 
-                                   function(x){ strsplit(x, split = ".RData")[[1]] })
-    file.names.in.folder <- cbind(names(file.names.in.folder), file.names.in.folder)
-    row.names(file.names.in.folder) <- NULL # cols = file+extension, file.name
-    
-    # check if try.file.names exist in files.in.exist.data.folder
-    for(try.file.name in try.file.names){
-      if(try.file.name %in% file.names.in.folder[, 2]){ # file exits in given folder
-        print(paste(try.file.name, " found in given folder", sep = ""))
-        # get file name with extension
-        mapping.file.name <- file.names.in.folder[file.names.in.folder[, 2] == try.file.name, ][1] 
-      } 
-    }
-    if(is.null(mapping.file.name)){
-      print("No matching mapping file found")
-    }
-  }
-  return(mapping.file.name)
 }
 
 #########################################################################################################
 ### used by download.mapping.file function
 ### search SBGNhub data/id.mapping.unique.pair directory for mapping file and download it if exits
-search.sbgnhub.id.mapping <- function(try.file.names, file.destination) {
+search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
   
   mapping.file.name <- NULL
+  github.api <- paste("https://api.github.com/search/code?q=filename:", 
+                      try.file.name, "+repo:datapplab/SBGNhub/tree/master/data/id.mapping.unique.pair.name", sep = "")
+  request <- httr::GET(github.api) # get the information from the api
+  httr::warn_for_status(request) # warning if bad request from GET()
   
-  for(fi in try.file.names){
-    github.api <- paste("https://api.github.com/search/code?q=filename:", 
-                        fi, "+repo:datapplab/SBGNhub/tree/master/data/id.mapping.unique.pair.name", sep = "")
-    request <- httr::GET(github.api) # get the information from the api
-    httr::warn_for_status(request) # warning if bad request from GET()
-    
-    json.info <- httr::content(request) # the content from request is as list structure
-    json.items <- json.info$items # $items element contains information of any files found with file path
-    
-    if(length(json.items) == 0){ # if 0, no matching files found
-      next
-    } else { # check if file matches
-      
-      found.files <- c() # store the path to file for matching files found in hub
-      for(i in seq_len(length(json.items))){
-        found.files <- append(found.files, json.items[[i]][["path"]])
-      }
-      # if file in data/id.mapping.unique.pair.name directory
-      check.file.path <- paste("data/id.mapping.unique.pair.name/", fi, ".RData", sep = "")
-      
-      if(check.file.path %in% found.files){ # if file in data/id.mapping, then download file
-        
-        print(paste(fi, " found in SBGNhub. Dowloading it.", sep = ""))
-        mapping.file.name <- paste(fi, ".RData", sep = "")
-        
-        # url to download raw file
-        file.url <- paste("https://raw.githubusercontent.com/datapplab/SBGNhub/master/", 
-                          check.file.path, sep = "")
-
-        file.destination <- paste(file.destination, "/", fi, ".RData", sep = "")
-        # download.file
-        download.file(file.url, destfile = file.destination, method = "auto", mode = "wb")
-      } 
-      
-    } # end else (file match) 
-  } # end main for loop
+  json.info <- httr::content(request) # the content from request is as list structure
+  json.items <- json.info$items # $items element contains information of any files found with file path
+  
+  found.files <- c()
+  for(i in seq_len(length(json.items))){
+    found.files <- append(found.files, json.items[[i]][["path"]]) 
+  }
+  
+  check.file.path <- paste("data/id.mapping.unique.pair.name/", try.file.name, sep = "")
+  if(check.file.path %in% found.files) {
+    message("\n", try.file.name, " found in SBGNhub")
+    mapping.file.name <- try.file.name
+    file.url <- paste("https://raw.githubusercontent.com/datapplab/SBGNhub/master/", 
+                      check.file.path, sep = "")
+    file.destination <- paste(SBGNview.data.folder, try.file.name, sep = "/")
+    download.file(file.url, destfile = file.destination, method = "auto", mode = "wb")
+  }
   
   return(mapping.file.name)
 }
@@ -229,15 +176,11 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   } else if (mapping.file.info$location == "SBGNview.data"){
     
     ##### file in SBGNview.data
-    # mapping.file.info$mapping.file.name is name of data
-    mapping.list <- data(list = c(mapping.file.info$mapping.file.name))
-    # get data from loaded mapping table object
-    mapping.list <- get(mapping.list)
-    message(mapping.file.info$mapping.file.name, " loaded from SBGNview.data")
+    mapping.list <- get(mapping.file.info$mapping.file.name)
 
   } else {  ##### Use pathview
     # mapping.file.info$location == "pathview". mapping.file.info$mapping.file.name == ""
-    
+    message("\nGenerating mapping using Pathview")
     if(cpd.or.gene == "gene"){
       # pathway.id used for heterogeneous purposes and mapping gene to pathway
       # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
@@ -266,7 +209,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
         input.to.glyph.id = merge(input.to.ko,ko.to.glyph.id,all= FALSE)
         id.map = input.to.glyph.id[,c(input.type,output.type)]
       } else {
-        message("\nID mapping not pre-generated. Using Pathview!")
+        message("\nID mapping not pre-generated")
         # if(is.null(limit.to.ids)){
         #   stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
         # }
