@@ -30,3 +30,9 @@
 "SBGNview.obj"
 
 #########################################################################################################
+#' Mapping tables available in SBGNhub
+#' @details A collection of ID mapping table files available in SBGNhub. 
+#' If a matching mapping table is available, it will be downloaded from \href{https://github.com/datapplab/SBGNhub/tree/master/data/id.mapping.unique.pair.name}{SBGNhub} github page.
+#' @format A matrix
+
+#########################################################################################################

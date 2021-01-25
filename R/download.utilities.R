@@ -87,33 +87,19 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
 
 #########################################################################################################
 ### used by download.mapping.file function
-### search SBGNhub data/id.mapping.unique.pair directory for mapping file and download it if exits
+### search SBGNhub.id.mapping.tables, if file exits download from SBGNhub
 search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
   
   mapping.file.name <- NULL
-  github.api <- paste("https://api.github.com/search/code?q=filename:", 
-                      try.file.name, "+repo:datapplab/SBGNhub/tree/master/data/id.mapping.unique.pair.name", sep = "")
-  request <- httr::GET(github.api) # get the information from the api
-  httr::warn_for_status(request) # warning if bad request from GET()
-  
-  json.info <- httr::content(request) # the content from request is as list structure
-  json.items <- json.info$items # $items element contains information of any files found with file path
-  
-  found.files <- c()
-  for(i in seq_len(length(json.items))){
-    found.files <- append(found.files, json.items[[i]][["path"]]) 
-  }
-  
-  check.file.path <- paste("data/id.mapping.unique.pair.name/", try.file.name, sep = "")
-  if(check.file.path %in% found.files) {
+  if(!exists("SBGNhub.id.mapping.tables")) data(SBGNhub.id.mapping.tables, package="SBGNview")
+  if(try.file.name %in% SBGNhub.id.mapping.tables) {
     message("\n", try.file.name, " found in SBGNhub")
-    mapping.file.name <- try.file.name
-    file.url <- paste("https://raw.githubusercontent.com/datapplab/SBGNhub/master/", 
-                      check.file.path, sep = "")
+    file.url <- paste("https://raw.githubusercontent.com/datapplab/SBGNhub/master/data/id.mapping.unique.pair.name/", 
+                      try.file.name, sep = "")
     file.destination <- paste(SBGNview.data.folder, try.file.name, sep = "/")
     download.file(file.url, destfile = file.destination, method = "auto", mode = "wb")
+    mapping.file.name <- try.file.name
   }
-  
   return(mapping.file.name)
 }
 
@@ -126,7 +112,7 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 #' @param input.type A character string. Gene or compound ID type
 #' @param output.type A character string. Gene or compound ID type
 #' @param species A character string. Three letter KEGG species code.
-#' @param cpd.or.gene A character string. Either 'gene' or 'compound'. This argument is required. 
+#' @param cpd.or.gene A character string. Either 'gene' or 'compound'.
 #' @param limit.to.ids Vector. Molecule IDs of 'input.type'.
 #' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @return A list containing the mapping table. 
@@ -143,19 +129,21 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene = NULL, 
                              limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") { 
   
-  input.type = gsub("entrez","ENTREZID",input.type)
-  output.type = gsub("entrez","ENTREZID",output.type)
+  # input.type = gsub("entrez","ENTREZID",input.type)
+  # output.type = gsub("entrez","ENTREZID",output.type)
+  if(input.type %in% c("entrez", "eg", "entrezid")) input.type = "ENTREZID"
+  if(output.type %in% c("entrez", "eg", "entrezid")) output.type = "ENTREZID"
+  
   if(input.type == output.type) {
     stop("Input type and output types are the same!")
   }
   species = gsub("Hs","hsa",species)
-
-  if(is.null(cpd.or.gene)) {
-    stop("argument \"cpd.or.gene\" is required. Can be either 'gene' or 'compound'")
-  }
   
-  if(!file.exists(SBGNview.data.folder)) {
-    dir.create(SBGNview.data.folder)
+  if(is.null(cpd.or.gene)) { 
+    message("argument \"cpd.or.gene\" is not specified") 
+  }
+  if(!file.exists(SBGNview.data.folder)) { 
+    dir.create(SBGNview.data.folder) 
   }
   
   ### 'download.mapping.file checks' local, SBGNview.data, SBGNhub for mapping file
@@ -245,47 +233,32 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   }
   
   #### if mapping.list contains a species column, filter by value of 'species' argument
-  if("species" %in% colnames(mapping.list) & !is.null(mapping.list)) { 
-    
-    message("Filtering mapping list by species: '", species, "'")
-    if(!exists("korg")) data(korg, package="pathview")
-    
-    # species value is KEGG code based on 'species' argument documentation
-    if(tolower(species) %in% korg[,3]) { 
-      message("Species kegg code in 'korg' dataset")
-      ridx <- match(species, korg[, 3]) %% nrow(korg)
-      species.sci.name <- tolower(korg[ridx, 4])   # get scientific.name for input species
+  if(!identical(species, character(0))) {
+    if("species" %in% colnames(mapping.list) & !is.null(mapping.list)) { 
       
-      if(any(mapping.list[,"species"] %in% species) ) { # check kegg code in species column
-        mapping.list <- mapping.list[mapping.list[,"species"] %in% species, c(input.type,output.type)]
-      } else if (any(tolower(mapping.list[,"species"]) %in% species.sci.name) ) {
-        mapping.list <- mapping.list[tolower(mapping.list[,"species"]) %in% species.sci.name, c(input.type,output.type)]
-        message("Filtered mapping list by '", species.sci.name, "'")
+      message("Filtering mapping list by species: '", species, "'")
+      if(!exists("korg")) data(korg, package="pathview")
+      # species value is KEGG code based on 'species' argument documentation
+      if(tolower(species) %in% korg[,3]) { 
+        message("Species kegg code in 'korg' dataset")
+        ridx <- match(species, korg[, 3]) %% nrow(korg)
+        species.sci.name <- tolower(korg[ridx, 4])   # get scientific.name for input species
+        
+        if(any(mapping.list[,"species"] %in% species) ) { # check kegg code in species column
+          mapping.list <- mapping.list[mapping.list[,"species"] %in% species, c(input.type,output.type)]
+        } else if (any(tolower(mapping.list[,"species"]) %in% species.sci.name) ) {
+          mapping.list <- mapping.list[tolower(mapping.list[,"species"]) %in% species.sci.name, c(input.type,output.type)]
+          message("Filtered mapping list by '", species.sci.name, "'")
+        } else {
+          message("Was not able to filter mapping.list by ", species,  " or ", species.sci.name, ".")
+        }
       } else {
-        message("Was not able to filter mapping.list by ", species,  " or ", species.sci.name, ".")
+        stop(species, " kegg code not in 'korg' dataset or incorrect kegg code.")
       }
       
-    } else {
-      stop(species, " kegg code not in 'korg' dataset or incorrect kegg code.")
-    }
-    
-  } # end if: filter 'species' column
+    } # end if: filter 'species' column
+  } # end if !is.null(species)
   
-  ## convert to mapping.list: many functions which call loadMappingTable expect a list 
-  ##                         and extract the mapping table from the returned list
-  # type.pair.name <- paste(sort(c(input.type,output.type), method = "radix",
-  #                              decreasing = TRUE), collapse="_") # R CMD check will give different sort result if we didn't specify "method":  the default sort method depends on the locale of your system. And R CMD check uses a different locale to R interactive session. The issue resided in this: R interactively used:LC_COLLATE=en_US.UTF-8; R CMD check used: LC_COLLATE=C; https://stackoverflow.com/questions/42272119/r-cmd-check-fails-devtoolstest-works-fine
-  # id.map <- mapping.list
-  # mapping.list <- list()
-  # if(is.vector(id.map)){
-  #   id.map <- as.matrix(t(id.map))
-  # }
-  # id.map[,1] <- as.character(id.map[,1])
-  # id.map[,2] <- as.character(id.map[,2])
-  # id.map <- as.matrix(id.map)
-  # mapping.list[[cpd.or.gene]] <- list()
-  # mapping.list[[cpd.or.gene]][[type.pair.name]] <- id.map
-
   mapping.list <- as.matrix(mapping.list)
   return(mapping.list)
 }
@@ -305,7 +278,7 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
   if (any(c(in.type, out.type) %in% c("KO", "ko"))) {
     # if input/output KO/ENTREZID combo, set out.type to KO and in.type to ENTREZ
     # otherwise in.type and out.type order matter. if in.type = KO, generate.ko.mapping.list calls mapping.ko.to.arbitrary.id.type
-    if(any(c(in.type, out.type) %in% c("entrez", "eg", "entrezid", "ENTREZID"))) {
+    if(any(c(in.type, out.type) %in% c("ENTREZID"))) {
       in.type <- "ENTREZID"
       out.type <- "KO" 
     }

@@ -355,8 +355,12 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
   # function: change input data matrix with input/uniprot ID to data matrix with
   # pathwaycommons id if there are multiple input IDs mapped to a node, collapse
   # their values using user specified function(sum.method)
-  input.type <- gsub("entrez", "ENTREZID", input.type)
-  output.type <- gsub("entrez", "ENTREZID", output.type)
+  
+  #input.type <- gsub("entrez", "ENTREZID", input.type)
+  #output.type <- gsub("entrez", "ENTREZID", output.type)
+  if(input.type %in% c("entrez", "eg", "entrezid")) input.type = "ENTREZID"
+  if(output.type %in% c("entrez", "eg", "entrezid")) output.type = "ENTREZID"
+  
   if (is.null(id.mapping.table)) {
     # if user didn't provide mapping table, we try to download one.
     # mapping.list <- loadMappingTable(output.type = output.type, input.type = input.type, 
