@@ -8,7 +8,7 @@ loadMappingTable(
   input.type,
   output.type,
   species = NULL,
-  cpd.or.gene,
+  cpd.or.gene = NULL,
   limit.to.ids = NULL,
   SBGNview.data.folder = "./SBGNview.tmp.data"
 )
@@ -20,7 +20,7 @@ loadMappingTable(
 
 \item{species}{A character string. Three letter KEGG species code.}
 
-\item{cpd.or.gene}{A character string. Either 'gene' or 'compound'}
+\item{cpd.or.gene}{A character string. Either 'gene' or 'compound'.}
 
 \item{limit.to.ids}{Vector. Molecule IDs of 'input.type'.}
 

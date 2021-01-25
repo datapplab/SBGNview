@@ -33,7 +33,7 @@ User can modify glyph objects to change the way how it is rendered.
 
 \item{\code{orientation}}{A character string. One of 'left','right','up','down'. This only applies to glyphs of classes 'terminal' and 'tag'. It will change the orientation of the node.}
 
-\item{\code{global.parameters.list}}{A list. This is a copy of parameters in '...' when running function \code{\link{SBGNview}}.}
+\item{\code{parameters.list}}{A list. This is a copy of parameters in '...' when running function \code{\link{SBGNview}}.}
 
 \item{\code{shape}}{A list. Parameters controlling how the node is rendered. Available elements can be accessed as follow:
 glyph@shape$stroke.color\cr

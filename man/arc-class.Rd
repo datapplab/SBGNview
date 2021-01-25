@@ -19,7 +19,7 @@ Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' e
 
 \item{\code{stroke.opacity}}{Numeric. Controls the line of an arc (not tip of the arc).}
 
-\item{\code{global.parameters.list}}{A list. This is a copy of parameters in '...' when running function SBGNview. See details for more information.}
+\item{\code{parameters.list}}{A list. This is a copy of parameters in '...' when running function SBGNview. See details for more information.}
 
 \item{\code{edge}}{A list. An arc in SBGN map normally consists of a line and a tip at the end of the line. This list holds variables that controls arc properties. Available elements can be accessed as follow:
 The following three paremeters control the line:\cr
