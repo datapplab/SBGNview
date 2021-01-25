@@ -201,7 +201,7 @@ pathways.stats
 
 There are two common scenarios of using *SBGNview*
 
-* Using [our pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp)
+* Using our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp)
 
 In this scenario, the SBGN-ML file contents are stored in data **sbgn.xmls** (included in package *SBGNview.data*). SBGNview can automatically retrieve SBGN-ML contents from this dataset by pathway IDs. 
 
@@ -228,7 +228,7 @@ head(pathways)
 ```
 
 #### Different layout for the same pathway
-Researchers may have different tastes for a "good looking" layout. We have created differen layouts for each pathway. User can download them from [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) and [try](#tryDifferentLayout).
+Researchers may have different tastes for a "good looking" layout. We have created different layouts for each pathway. User can download them from [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) and [try](#tryDifferentLayout).
 
 
 ### User customized SBGN-ML file
@@ -263,7 +263,7 @@ head(cpd.data)
 Most of the SBGN-ML files from online resources have their unique ID types and it is different from the ID type in the omics data.
 If the ID types are different, we need to map the omics IDs to the node IDs in the SBGN-ML file.
 In the [quick start example](#quickStart) ("Adrenaline and noradrenaline biosynthesis" pathway), the SBGN-ML file uses pathwayCommons IDs for gene/protein nodes, whereas the omics dataset uses Entrez gene IDs.
-The function *SBGNview* can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN) as shown in the [quick start example](#quickStart). We can also do it manually using function *changeDataId*, which is called by *SBGNview* internally to do ID mapping. Supported ID type pairs can be found in *data(mapped.ids)*.  *changeDataId* uses [pre-generated mapping tables](https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping) or **pathview** to do the mapping.
+The function *SBGNview* can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) as shown in the [quick start example](#quickStart). We can also do it manually using function *changeDataId*, which is called by *SBGNview* internally to do ID mapping. Supported ID type pairs can be found in *data(mapped.ids)*.  *changeDataId* uses [pre-generated mapping tables](https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping) or **pathview** to do the mapping.
 If the input-output ID type pair is not in *data(mapped.ids)* or can't be mapped by **pathview**, user needs to provide the mapping table explicitly using the "id.mapping.table" argument.
 
 Let's change the IDs in the gene expression omics data.
@@ -385,18 +385,19 @@ If the default layout is not ideal, users have two options:
 
 * Modify the layout manually using tools like [newt editor](http://newteditor.org/)
 
-* Download pre-generated SBGN-ML files with a different layout.
-https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN
-Currently there limited pathways with multiple layout. More will be added in the future.
+* Download our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) SBGN-ML files with a different layout. Currently there limited pathways with multiple layout. More will be added in the future.
 
+A new layout for P00001 ("Adrenaline and noradrenaline biosynthesis") pathway ID is included as part of the *SBGNview* package. 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-download.file("https://raw.githubusercontent.com/datapplab/SBGNhub/master/data/SBGN.with.stamp/pathwayCommons/http___identifiers.org_panther.pathway_P00001.1.sbgn", destfile = "P00001.new.layout.sbgn")
+new.layout.file.path <- paste(path.package("SBGNview"), "extdata", sep = "/")
 SBGNview(gene.data = gse16873, 
          gene.id.type = "entrez",
          input.sbgn = "P00001.new.layout.sbgn",
+         sbgn.dir =  new.layout.file.path,
          sbgn.gene.id.type = "pathwayCommons",
          output.file = "test.different.layout",
          output.formats =  c("svg"))
+
 ```
 ```{r differentLayout, echo = FALSE,fig.cap="\\label{fig:differentLayoutFig}Graph with different layout."}
 include_graphics("test.different.layout_P00001.new.layout.sbgn.svg")
@@ -564,7 +565,7 @@ include_graphics("highlight.by.node.id_P00001.svg")
 SBGNview provides extensive graphical control options for adjusting glyph/arc attributes such as line color/width and text size/color/wrapping/positioning. The SBGNview main function outputs SVG file format by default and other (png, pdf, ps) specified file formats. There might be cases where you would like to adjust specific graphical details more easily. In such cases, Inkscape can be used to modify the generated SVG file and save/export the SVG to other file formats provided by Inkscape. [Inkscape](https://inkscape.org/about/) is a free, open source, and easy to use vector graphics editor (like Illustrator) which is available on Linux, Windows and MacOS. Download Inkscape from [here](https://inkscape.org/release/inkscape-1.0.1/). 
 
 # ID mapping
-SBGNview can automatically map common ID types to SBGN-ML glyphs in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN).  Supported ID types can be accessed as follow:
+SBGNview can automatically map common ID types to SBGN-ML glyphs in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp).  Supported ID types can be accessed as follow:
 ```{r , echo = TRUE, message = FALSE, warning = FALSE}
 data("mapped.ids")
 ```
