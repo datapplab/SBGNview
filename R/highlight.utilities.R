@@ -65,10 +65,11 @@ highlight.edges <- function(node.set, arcs = NULL,
 #' @param labels  A vector of character strings. The labels to display on the nodes of input molecules. The names of this vector should be the vector of 'node.set'. The values are the new labels to display.
 #' @return A SBGNview obj
 #' @examples 
-#' data(SBGNview.obj)
-#' obj.new = SBGNview.obj + 
-#'        highlightNodes(node.set = c('tyrosine', '(+-)-epinephrine'),
-#'                       stroke.width = 4, stroke.color = 'green') 
+#' \dontrun{
+#' obj.new <- SBGNview.obj + highlightNodes(node.set = c('tyrosine', '(+-)-epinephrine'),
+#'                                          stroke.width = 4, 
+#'                                          stroke.color = 'green') 
+#' }
 #' @export
  
 highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
@@ -206,15 +207,11 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 #' @param tip.size Integer. Default: 4. The size of arc tip in edges of the shortest paths.
 #' @return A SBGNview obj
 #' @examples 
-#'  data(SBGNview.obj)
 #' \dontrun{
-#' data('SBGNview.obj' )
-#' obj.new = SBGNview.obj + 
-#'               highlightPath(from.node = c('tyrosine')
-#'                  , to.node = c('dopamine')
-#'                 ,from.node.color = 'red'
-#'                 ,to.node.color = 'blue'
-#'   )
+#' obj.new <- SBGNview.obj + highlightPath(from.node = c('tyrosine'), 
+#'                                         to.node = c('dopamine'),
+#'                                         from.node.color = 'red',
+#'                                         to.node.color = 'blue')
 #'}
 #' @export
 
@@ -355,9 +352,9 @@ highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = N
 #' @param tip.size Numeric. Default: 6. Tip size. 
 #' @return A SBGNview object
 #' @examples
-#' data(SBGNview.obj)
-#' obj.new = SBGNview.obj + highlightArcs(class = 'production',color = 'red') 
-#'             
+#' \dontrun{
+#' obj.new <- SBGNview.obj + highlightArcs(class = 'production', color = 'red') 
+#' }
 #' @export
 
 highlightArcs <- function(class = "all", color = "black", line.width = 2, tip.size = 6) {

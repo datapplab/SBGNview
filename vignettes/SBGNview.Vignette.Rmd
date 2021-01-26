@@ -124,7 +124,7 @@ print(SBGNview.obj)
 ```
 Two image files (a .svg file by default and a .png file) will be created in the current working directory:
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-list.files( pattern = "quick.start", full.names = TRUE) 
+list.files(pattern = "quick.start", full.names = TRUE) 
 ```
 ```{r quickStartFig, echo = FALSE,fig.cap="\\label{fig:quickStartFig}Quick start example: Adrenaline and noradrenaline biosynthesis pathway. "}
 include_graphics("quick.start_P00001.svg")
@@ -673,7 +673,6 @@ SBGNview(key.pos = "none")
 ```
 
 # Session Info
-
 ```{r}
 sessionInfo()
 ```

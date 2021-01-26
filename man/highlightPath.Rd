@@ -60,14 +60,10 @@ A SBGNview obj
 Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.
 }
 \examples{
- data(SBGNview.obj)
 \dontrun{
-data('SBGNview.obj' )
-obj.new = SBGNview.obj + 
-              highlightPath(from.node = c('tyrosine')
-                 , to.node = c('dopamine')
-                ,from.node.color = 'red'
-                ,to.node.color = 'blue'
-  )
+obj.new <- SBGNview.obj + highlightPath(from.node = c('tyrosine'), 
+                                        to.node = c('dopamine'),
+                                        from.node.color = 'red',
+                                        to.node.color = 'blue')
 }
 }

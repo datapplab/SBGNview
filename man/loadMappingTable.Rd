@@ -35,10 +35,9 @@ This function will check if a mapping table exists in local folder ('SBGNview.da
 }
 \examples{
  data(mapped.ids)
- entrez.to.pathwayCommons <- loadMappingTable(
-                                input.type = 'ENTREZID',
-                                output.type = 'pathwayCommons',
-                                species = 'hsa',
-                                cpd.or.gene = 'gene')
+ entrez.to.pathwayCommons <- loadMappingTable(input.type = 'ENTREZID',
+                                              output.type = 'pathwayCommons',
+                                              species = 'hsa',
+                                              cpd.or.gene = 'gene')
                              
 }

@@ -58,19 +58,15 @@
 #' @param space.between.color.panel.and.entity Numeric. Default: 100. The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph. This parameter controls how close it can reach a glyph.
 #' @return A list of three elements: glyphs.list, arcs.list, global.parameters.list
 #' @examples
-#'  data(pathways.info)
 #' \dontrun{
-#' SBGNview.obj = SBGNview(
-#'               simulate.data = TRUE
-#'               ,sbgn.dir = './'
-#'               ,input.sbgn = 'P00001'
-#'               
-#'               ,output.file = './test.local.file' 
-#'               ,output.formats = c('pdf')
-#'               
-#'               ,min.gene.value = -1
-#'               ,max.gene.value = 1
-#'             )
+#' data(pathways.info)
+#' SBGNview.obj <- SBGNview(simulate.data = TRUE,
+#'                          sbgn.dir = './',
+#'                          input.sbgn = 'P00001',
+#'                          output.file = './test.local.file',
+#'                          output.formats = c('pdf'),
+#'                          min.gene.value = -1,
+#'                          max.gene.value = 1)
 #'  }
 #' 
 #' @export

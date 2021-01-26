@@ -7,7 +7,7 @@
 outputFile(obj) <- value
 }
 \arguments{
-\item{obj}{No need to provide}
+\item{obj}{A SBGNview class object}
 
 \item{value}{No need to provide}
 }
@@ -21,6 +21,7 @@ Set output file information for a SBGNview object
 This function sets the output file path recorded in a SBGNview object.
 }
 \examples{
-data('SBGNview.obj' )
-outputFile(SBGNview.obj) = './test.output'
+\dontrun{
+outputFile(SBGNview.obj) <- "test.output.file"
+}
 }

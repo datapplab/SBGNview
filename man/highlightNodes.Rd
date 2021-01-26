@@ -60,8 +60,9 @@ A SBGNview obj
 Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function \code{\link{+.SBGNview}}.
 }
 \examples{
-data(SBGNview.obj)
-obj.new = SBGNview.obj + 
-       highlightNodes(node.set = c('tyrosine', '(+-)-epinephrine'),
-                      stroke.width = 4, stroke.color = 'green') 
+\dontrun{
+obj.new <- SBGNview.obj + highlightNodes(node.set = c('tyrosine', '(+-)-epinephrine'),
+                                         stroke.width = 4, 
+                                         stroke.color = 'green') 
+}
 }

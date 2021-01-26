@@ -18,8 +18,8 @@ The returned value of *fn*
 This binary operator ('+') modifies a SBGNview object(first argument) using a function (second argument)
 }
 \examples{
-data(SBGNview.obj)
-obj.new = SBGNview.obj + 
-            highlightArcs(class = 'production',color = 'red') 
-
+\dontrun{
+obj.new <- SBGNview.obj + highlightArcs(class = 'production',
+                                        color = 'red') 
+}
 }

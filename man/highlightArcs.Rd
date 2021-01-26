@@ -22,7 +22,7 @@ A SBGNview object
 This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
 }
 \examples{
-data(SBGNview.obj)
-obj.new = SBGNview.obj + highlightArcs(class = 'production',color = 'red') 
-            
+\dontrun{
+obj.new <- SBGNview.obj + highlightArcs(class = 'production', color = 'red') 
+}
 }

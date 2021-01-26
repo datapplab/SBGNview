@@ -99,19 +99,24 @@
 #'          For user's convinience, pathview can generate such tables for several ID types (functions 'geneannot.map' and 'cpdidmap'). But column names need to be changed to the values of 'gene.id.type' and 'sbgn.gene.id.type'.
 #' 
 #' @examples 
-#' ### use simulated data. Please see vignettes for more examples
-#' data('pathways.info','sbgn.xmls')
-#' SBGNview.obj = SBGNview(
-#'               simulate.data = TRUE
-#'               ,sbgn.dir = './'
-#'               ,input.sbgn = 'P00001'
-#'               
-#'               ,output.file = './test.local.file' 
-#'               ,output.formats = c('pdf')
-#'               
-#'               ,min.gene.value = -1
-#'               ,max.gene.value = 1
-#'             )
+#' ### Use simulated data. Please see vignettes for more examples.
+#' ### Run `browseVignettes(package = "SBGNview")` 
+#' 
+#' # load demo dataset and pathway information of built-in collection of SBGN-ML files
+#' # we use a cancer microarray dataset 'gse16837.d' from package 'pathview'
+#' data("gse16873.d", "pathways.info", "sbgn.xmls")
+#' 
+#' # search for pathways with user defined keywords
+#' input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
+#' 
+#' # render SBGN pathway graph and output image files
+#' SBGNview.obj <- SBGNview(gene.data = gse16873.d[,1:3],
+#'                          gene.id.type = "entrez",
+#'                          input.sbgn = input.pathways$pathway.id,
+#'                          output.file = "quick.start",
+#'                          output.formats = c("png", "pdf"),
+#'                          min.gene.value = -1,
+#'                          max.gene.value = 1) 
 #'  SBGNview.obj           
 #' 
 #' @export

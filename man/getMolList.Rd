@@ -40,9 +40,8 @@ Retrieve gene list or compound list from collected databases
 }
 \examples{
 data(pathways.info)
-mol.list <- getMolList(
-                 database = 'pathwayCommons',
-                 mol.list.ID.type = 'ENTREZID',
-                 org = 'hsa')
+mol.list <- getMolList(database = 'pathwayCommons',
+                       mol.list.ID.type = 'ENTREZID',
+                       org = 'hsa')
   
 }

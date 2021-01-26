@@ -8,10 +8,10 @@
 #' @param fn A character string. The name of any funtion that modifies and returns a SBGNview object. Some functions are available in SBGNview package: \code{\link{highlightPath}}, \code{\link{highlightNodes}}.
 #' @return The returned value of *fn*
 #' @examples 
-#' data(SBGNview.obj)
-#' obj.new = SBGNview.obj + 
-#'             highlightArcs(class = 'production',color = 'red') 
-#' 
+#' \dontrun{
+#' obj.new <- SBGNview.obj + highlightArcs(class = 'production',
+#'                                         color = 'red') 
+#' }
 #' @export
 
 "+.SBGNview" <- function(SBGNview.obj, fn) {
@@ -24,19 +24,16 @@
 #' @param ... Other parameters passed to print.
 #' @return None
 #' @examples 
-#' ### use simulated data. Please see vignettes for more examples.
+#' ### Use simulated data. Please see vignettes for more examples.
+#' ### Run `browseVignettes(package = "SBGNview")`
 #' data('pathways.info','sbgn.xmls')
-#' SBGNview.obj = SBGNview(
-#'               simulate.data = TRUE
-#'               ,sbgn.dir = './'
-#'               ,input.sbgn = 'P00001'
-#'               
-#'               ,output.file = './test.local.file' 
-#'               ,output.formats = c('pdf')
-#'               
-#'               ,min.gene.value = -1
-#'               ,max.gene.value = 1
-#'             )
+#' SBGNview.obj = SBGNview(simulate.data = TRUE,
+#'                         sbgn.dir = './',
+#'                         input.sbgn = 'P00001',
+#'                         output.file = './test.local.file',
+#'                         output.formats = c('pdf'),
+#'                         min.gene.value = -1,
+#'                         max.gene.value = 1)
 #'  print(SBGNview.obj)
 #' @export
 
@@ -70,8 +67,9 @@
 #' @details This function prints the output file path recorded in a SBGNview object. 
 #' @return A string. The output file information. 
 #' @examples 
-#' data('SBGNview.obj' )
+#' \dontrun{
 #' fileOutput(SBGNview.obj) 
+#' }
 #' @export
 
 # changed name of outputFile function to fileOutput
@@ -79,20 +77,16 @@ fileOutput <- function(obj) {
     obj$output.file
 }
 
-### old version of function
-# outputFile <- function(obj) {
-#     obj$outputFile
-# }
-
 #########################################################################################################
 #' Set output file information for a SBGNview object
-#' @param obj No need to provide
+#' @param obj A SBGNview class object
 #' @param value No need to provide 
 #' @details This function sets the output file path recorded in a SBGNview object.
 #' @return A SBGNview class object
 #' @examples 
-#' data('SBGNview.obj' )
-#' outputFile(SBGNview.obj) = './test.output'
+#' \dontrun{
+#' outputFile(SBGNview.obj) <- "test.output.file"
+#' }
 #' @export
 "outputFile<-" <- function(obj, value) {
     glyphs.arcs.list <- obj$data

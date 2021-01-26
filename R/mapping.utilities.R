@@ -222,13 +222,11 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 #' 
 #' @examples 
 #' data(mapped.ids)
-#' mapping <- changeIds(
-#'   input.ids = c(10327, 6652),
-#'   input.type = 'ENTREZID',
-#'   output.type = 'pathwayCommons',
-#'   cpd.or.gene = 'gene',
-#'   org = "hsa"
-#' )
+#' mapping <- changeIds(input.ids = c(10327, 6652),
+#'                      input.type = 'ENTREZID',
+#'                      output.type = 'pathwayCommons',
+#'                      cpd.or.gene = 'gene',
+#'                      org = "hsa")
 #' 
 #' @export
 
@@ -336,20 +334,15 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
 #' library(pathview)
 #' data('gse16873.d')
 #' gene.data = gse16873.d[c('7157','1032'),]
-#' mapping.table = data.frame(
-#'                    ENTREZID = c('7157','1032')
-#'                    ,SYMBOL = c('TP53','CDKN2D')
-#'                    ,stringsAsFactors=FALSE
-#' )
-#' new.dt = changeDataId(
-#'       data.input.id = gene.data,
-#'       output.type='SYMBOL',
-#'       input.type='ENTREZID',
-#'       cpd.or.gene = 'gene',
-#'       id.mapping.table = mapping.table
-#'       )
+#' mapping.table = data.frame(ENTREZID = c('7157','1032'),
+#'                            SYMBOL = c('TP53','CDKN2D'),
+#'                            stringsAsFactors = FALSE)
+#' new.dt = changeDataId(data.input.id = gene.data,
+#'                       output.type = 'SYMBOL',
+#'                       input.type = 'ENTREZID',
+#'                       cpd.or.gene = 'gene',
+#'                       id.mapping.table = mapping.table)
 #'       
-#' 
 #' @export    
 
 changeDataId <- function(data.input.id, input.type, output.type, sum.method = "sum", 

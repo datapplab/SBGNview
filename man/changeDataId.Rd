@@ -60,18 +60,13 @@ data(mapped.ids)
 library(pathview)
 data('gse16873.d')
 gene.data = gse16873.d[c('7157','1032'),]
-mapping.table = data.frame(
-                   ENTREZID = c('7157','1032')
-                   ,SYMBOL = c('TP53','CDKN2D')
-                   ,stringsAsFactors=FALSE
-)
-new.dt = changeDataId(
-      data.input.id = gene.data,
-      output.type='SYMBOL',
-      input.type='ENTREZID',
-      cpd.or.gene = 'gene',
-      id.mapping.table = mapping.table
-      )
+mapping.table = data.frame(ENTREZID = c('7157','1032'),
+                           SYMBOL = c('TP53','CDKN2D'),
+                           stringsAsFactors = FALSE)
+new.dt = changeDataId(data.input.id = gene.data,
+                      output.type = 'SYMBOL',
+                      input.type = 'ENTREZID',
+                      cpd.or.gene = 'gene',
+                      id.mapping.table = mapping.table)
       
-
 }

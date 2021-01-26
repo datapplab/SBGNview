@@ -18,9 +18,8 @@ A vector of character strings. The path to the created SBGN-ML files.
 This function will download a SBGN-ML file from our pre-collected SBGN-ML files given the 'pathway.id' argument.
 }
 \examples{
-data('pathways.info')
-data(sbgn.xmls)
-input.sbgn = downloadSbgnFile(
-                  pathway.id = pathways.info[1,'pathway.id'],
-                  download.folder = './')
+data("pathways.info")
+data("sbgn.xmls")
+input.sbgn <- downloadSbgnFile(pathway.id = pathways.info[1,'pathway.id'],
+                              download.folder = './')
 }

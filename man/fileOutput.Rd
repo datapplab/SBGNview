@@ -19,6 +19,7 @@ Retrieve output file information from a SBGNview object
 This function prints the output file path recorded in a SBGNview object.
 }
 \examples{
-data('SBGNview.obj' )
+\dontrun{
 fileOutput(SBGNview.obj) 
+}
 }

@@ -7,6 +7,8 @@ output:
       fig_caption: yes
       number_sections: yes
       toc: yes
+      toc_float: 
+        collapsed: false
 editor_options: 
   chunk_output_type: console
 bibliography: REFERENCES.bib
@@ -66,7 +68,7 @@ install.packages("devtools")
 devtools::install_github("datapplab/SBGNview")
 ```
 
-# Complete pathway analysis + visaulization workflow
+# Complete pathway analysis + visualization workflow
 
 In this example, we analyze a RNA-SEQ dataset of wild type mice and IFNg KO mice. It contains normalized RNA-seq gene expression data described in  Greer, Renee L., Xiaoxi Dong, et al, 2016.
 
@@ -196,7 +198,6 @@ include_graphics("demo.SummarizedExperiment_R-HSA-877300_Interferon gamma signal
 
 
 # Session Info
-R session info to help replicate session in case any issues occur. 
 ```{r}
 sessionInfo()
 ```

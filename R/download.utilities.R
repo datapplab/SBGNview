@@ -118,11 +118,10 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 #' @return A list containing the mapping table. 
 #' @examples 
 #'  data(mapped.ids)
-#'  entrez.to.pathwayCommons <- loadMappingTable(
-#'                                 input.type = 'ENTREZID',
-#'                                 output.type = 'pathwayCommons',
-#'                                 species = 'hsa',
-#'                                 cpd.or.gene = 'gene')
+#'  entrez.to.pathwayCommons <- loadMappingTable(input.type = 'ENTREZID',
+#'                                               output.type = 'pathwayCommons',
+#'                                               species = 'hsa',
+#'                                               cpd.or.gene = 'gene')
 #'                              
 #' @export
 
@@ -666,10 +665,9 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #' @return A list. Each element is a genelist of a pathway.
 #' @examples 
 #' data(pathways.info)
-#' mol.list <- getMolList(
-#'                  database = 'pathwayCommons',
-#'                  mol.list.ID.type = 'ENTREZID',
-#'                  org = 'hsa')
+#' mol.list <- getMolList(database = 'pathwayCommons',
+#'                        mol.list.ID.type = 'ENTREZID',
+#'                        org = 'hsa')
 #'   
 #' @export
 
@@ -764,11 +762,10 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
 #' @param download.folder A character string. Default: "./". The output folder to store created SBGN-ML files.
 #' @return A vector of character strings. The path to the created SBGN-ML files.
 #' @examples 
-#' data('pathways.info')
-#' data(sbgn.xmls)
-#' input.sbgn = downloadSbgnFile(
-#'                   pathway.id = pathways.info[1,'pathway.id'],
-#'                   download.folder = './')
+#' data("pathways.info")
+#' data("sbgn.xmls")
+#' input.sbgn <- downloadSbgnFile(pathway.id = pathways.info[1,'pathway.id'],
+#'                               download.folder = './')
 #' @export
 
 downloadSbgnFile <- function(pathway.id, download.folder = "./") {

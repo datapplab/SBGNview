@@ -176,19 +176,15 @@ A list of three elements: glyphs.list, arcs.list, global.parameters.list
 This function is not intended to be used directly. Use SBGNview instead. Some input arguments can be better prepared by \code{\link{SBGNview}}.
 }
 \examples{
- data(pathways.info)
 \dontrun{
-SBGNview.obj = SBGNview(
-              simulate.data = TRUE
-              ,sbgn.dir = './'
-              ,input.sbgn = 'P00001'
-              
-              ,output.file = './test.local.file' 
-              ,output.formats = c('pdf')
-              
-              ,min.gene.value = -1
-              ,max.gene.value = 1
-            )
+data(pathways.info)
+SBGNview.obj <- SBGNview(simulate.data = TRUE,
+                         sbgn.dir = './',
+                         input.sbgn = 'P00001',
+                         output.file = './test.local.file',
+                         output.formats = c('pdf'),
+                         min.gene.value = -1,
+                         max.gene.value = 1)
  }
 
 }

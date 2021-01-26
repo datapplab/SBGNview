@@ -762,15 +762,13 @@ plot.arc.ports <- function(glyph.port.info, node) {
 #' @return A list containing extracted glyph information.
 #' @details  The following glyph information is extracted: complex members, compartment members,submap members, node class, nodes with state variables, class of state variables, edges with cardinality, nodes with ports, 'source and sink' nodes, process nodes.\cr When trying to output other ID types, sometimes multiple output IDs are mapped to one glyph. In this situation, the IDs are concatenated by '; ' to represent the glyph.
 #' @examples 
-#'  data(mapped.ids)
-#'  data(sbgn.xmls)
-#'  data(pathways.info)
-#' node.list = sbgnNodes(
-#'                        input.sbgn = 'P00001',
+#' data(mapped.ids)
+#' data(sbgn.xmls)
+#' data(pathways.info)
+#' node.list <- sbgnNodes(input.sbgn = 'P00001',
 #'                        output.gene.id.type = 'ENTREZID',
 #'                        output.cpd.id.type = 'CompoundName',
-#'                        species = 'hsa'
-#'                     )
+#'                        species = 'hsa')
 #' @export
 
 sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type = NA,

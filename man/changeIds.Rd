@@ -37,12 +37,10 @@ This function changes a vector of input IDs to another ID type. It returns a lis
 }
 \examples{
 data(mapped.ids)
-mapping <- changeIds(
-  input.ids = c(10327, 6652),
-  input.type = 'ENTREZID',
-  output.type = 'pathwayCommons',
-  cpd.or.gene = 'gene',
-  org = "hsa"
-)
+mapping <- changeIds(input.ids = c(10327, 6652),
+                     input.type = 'ENTREZID',
+                     output.type = 'pathwayCommons',
+                     cpd.or.gene = 'gene',
+                     org = "hsa")
 
 }
