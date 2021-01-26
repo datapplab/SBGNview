@@ -211,7 +211,8 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, gl
             spline.arc@source <- spline.info["source"]
             spline.arc@target <- spline.info["target"]
             spline.arc@arc.class <- spline.info["class"]
-            spline.arc@parameters.list <- global.parameters.list
+            #spline.arc@parameters.list <- global.parameters.list
+            spline.arc@parameters.list <- get.object.parameters.list(spline.arc, global.parameters.list)
             spline.arc@edge <- list(line.stroke.color = "black", line.stroke.opacity = 1, 
                                     line.width = 2, tip.stroke.opacity = 1, tip.stroke.color = "black", 
                                     tip.stroke.width = 1, tip.fill.color = "black", tip.fill.opacity = 1)
@@ -348,7 +349,8 @@ get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge
             arc <- new("next.sbgn.arc", id = paste(arc.line["id"], arc.line["start.x"], 
                                                    sep = "_"), start.x = as.numeric(arc.line["start.x"]), start.y = as.numeric(arc.line["start.y"]), 
                        end.x = as.numeric(arc.line["end.x"]), end.y = as.numeric(arc.line["end.y"]))
-            arc@parameters.list <- global.parameters.list
+            #arc@parameters.list <- global.parameters.list
+            arc@parameters.list <- get.object.parameters.list(arc, global.parameters.list)
             arc@arc.class <- "next"
             arc@edge <- edge.paras
             
@@ -374,7 +376,8 @@ get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge
             arc@arc.class <- arc.class
             arc@source <- arc.info["source"]
             arc@target <- arc.info["target"]
-            arc@parameters.list <- global.parameters.list
+            #arc@parameters.list <- global.parameters.list
+            arc@parameters.list <- get.object.parameters.list(arc, global.parameters.list)
             arc@edge <- edge.paras
             arcs.list[[arc@id]] <- arc
             svg.arc <- paste(svg.arc, plot.arc(arc), sep = "\n")

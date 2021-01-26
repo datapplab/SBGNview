@@ -619,7 +619,24 @@ setGeneric("plot.arc", function(object) {
     standardGeneric("plot.arc")
 })
 
-
+#########################################################################################################
+# class objects (glyphs, arcs, spline, spline.arc) have a slot called parameters.list
+# if the object@parameters.list is empty, set to global.parameters.list 
+# else parameters.list has partial parameters set, merge with global parameters.list
+# return new parameters list and assign to object@parameters.list
+# this function is used in mapping.utilities.R and parsing.utilities.R
+get.object.parameters.list <- function(object, global.parameters.list) {
+    new.parameters.list <- list()
+    if(length(object@parameters.list) == 0) {
+        new.parameters.list <- global.parameters.list
+    } else {
+        partial.params.list <- object@parameters.list
+        diff.list.names <- c(setdiff(names(global.parameters.list), names(partial.params.list)))
+        diff.parameters <- global.parameters.list[diff.list.names]
+        new.parameters.list <- c(partial.params.list, diff.parameters)
+    }
+    return(new.parameters.list)
+}
 
 #########################################################################################################
 ###### Classes implementing the glyph class and defining plot.glyph generic function
