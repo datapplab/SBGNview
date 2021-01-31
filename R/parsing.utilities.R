@@ -211,8 +211,8 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, gl
             spline.arc@source <- spline.info["source"]
             spline.arc@target <- spline.info["target"]
             spline.arc@arc.class <- spline.info["class"]
-            #spline.arc@parameters.list <- global.parameters.list
-            spline.arc@parameters.list <- get.object.parameters.list(spline.arc, global.parameters.list)
+            spline.arc@parameters.list <- global.parameters.list
+            #spline.arc@parameters.list <- get.object.parameters.list(spline.arc, global.parameters.list)
             spline.arc@edge <- list(line.stroke.color = "black", line.stroke.opacity = 1, 
                                     line.width = 2, tip.stroke.opacity = 1, tip.stroke.color = "black", 
                                     tip.stroke.width = 1, tip.fill.color = "black", tip.fill.opacity = 1)
@@ -234,6 +234,8 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, gl
         svg.splines <- ""
         splines.list <- arcs.user
         for (i in seq_len(length.out = length(arcs.user))) {
+            # set parameters.list for arcs.user
+            arcs.user[[i]]@parameters.list <- get.object.parameters.list(arcs.user[[i]], global.parameters.list)
             spline.arc <- arcs.user[[i]]
             if (if.plot.svg) {
                 spline.arc.svg <- plot.arc(spline.arc)
@@ -315,6 +317,8 @@ parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, globa
         arcs.list <- arcs.user
         svg.arc <- ""
         for (i in seq_len(length.out = length(arcs.list))) {
+            # set parameter.list for arcs.user
+            arcs.list[[i]]@parameters.list <- get.object.parameters.list(arcs.list[[i]], global.parameters.list)
             svg.arc <- paste(svg.arc, plot.arc(arcs.list[[i]]), sep = "\n")
         }
     }
@@ -349,8 +353,8 @@ get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge
             arc <- new("next.sbgn.arc", id = paste(arc.line["id"], arc.line["start.x"], 
                                                    sep = "_"), start.x = as.numeric(arc.line["start.x"]), start.y = as.numeric(arc.line["start.y"]), 
                        end.x = as.numeric(arc.line["end.x"]), end.y = as.numeric(arc.line["end.y"]))
-            #arc@parameters.list <- global.parameters.list
-            arc@parameters.list <- get.object.parameters.list(arc, global.parameters.list)
+            arc@parameters.list <- global.parameters.list
+            #arc@parameters.list <- get.object.parameters.list(arc, global.parameters.list)
             arc@arc.class <- "next"
             arc@edge <- edge.paras
             
@@ -506,6 +510,8 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
         if (node@id %in% user.defined.glyphs) {  
             node <- glyphs.user[[node@id]]
             label.margin <- node@label.margin
+            # set parameters.list for glyphs.user
+            node@parameters.list <- get.object.parameters.list(node, global.parameters.list)
             svg.port <- node@svg.port
             if (length(node@clone) > 0) {
                 node.clone <- node@clone[[1]]

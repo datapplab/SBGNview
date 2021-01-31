@@ -365,7 +365,7 @@ highlightArcs <- function(class = "all", color = "black", line.width = 2, tip.si
         for (s in seq_len(length.out = length(glyphs.arcs.list))) {
             # for each sbgn file
             arcs <- glyphs.arcs.list[[s]]$arcs.list
-            message("\n Setting edge color for", sbgns[s], "\n")
+            message("\nSetting edge color for ", sbgns[s], "\n")
             a <- 0
             for (i in seq_len(length.out = length(arcs))) {
                 if (arcs[[i]]@arc.class %in% class | class == "all") {

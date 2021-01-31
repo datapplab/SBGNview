@@ -25,12 +25,12 @@ Arc information comes from two sources:1. SBGN-ML file's 'arc' element ('source'
 
 \item{\code{edge}}{A list. An arc in SBGN map normally consists of a line and a tip shape at the end of the line. This list holds variables that controls arc properties. Available elements can be accessed as follow:
 
-         The following three paremeters control the line:\cr
+         The following three parameters control the line:\cr
             arc@edge$line.stroke.color\cr
             arc@edge$line.stroke.opacity\cr
             arc@edge$line.width\cr
                     
-         The following five paremeters control the tip:\cr
+         The following five parameters control the tip:\cr
             arc@edge$tip.stroke.opacity\cr
             arc@edge$tip.stroke.color\cr
             arc@edge$tip.stroke.width\cr
