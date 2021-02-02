@@ -110,8 +110,8 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
     node.clone@x <- node@x
     node.clone@y <- node@y
     node.clone@glyph.class <- glyph.class
-    #node.clone@parameters.list <- global.parameters.list
-    node.clone@parameters.list <- list()
+    node.clone@parameters.list <- global.parameters.list
+    #node.clone@parameters.list <- list()
     node.clone@w <- node@w
     node.clone@h <- node@h
     node.clone@compartment <- glyph.info["compartmentRef"]
