@@ -3,12 +3,12 @@
 \docType{class}
 \name{spline.arc-class}
 \alias{spline.arc-class}
-\title{An object to store information of spline arcs.}
+\title{An object to store information of spline arcs}
 \description{
-An object to store information of spline arcs.
+An object to store information of spline arcs
 }
 \details{
-Arc information comes from two sources:1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running \code{\link{SBGNview}}.  User can modify arc objects to change the way how it is rendered.
+Arc information comes from two sources:1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running \code{\link{SBGNview}}.  User can modify arc objects to change the way how they are rendered. See the "arcs.user" argument in \code{\link{renderSbgn}}.
 }
 \section{Slots}{
 
@@ -21,7 +21,7 @@ Arc information comes from two sources:1. SBGN-ML file's 'arc' element ('source'
 
 \item{\code{components}}{A list of 'arc' and 'spline' objects. A spline arc is represented by several components: 1. The two ends of the arc are represented by straight line 'arc' objects. 2. splines connecting the ends are represented by 'spline' objects.}
 
-\item{\code{parameters.list}}{A list. This is a copy of parameters in '...' of SBGNview.}
+\item{\code{parameters.list}}{A list. The parameters.list slot is a copy of the global.parameters.list. The global.parameters.list contains the '...' parameters passed into \code{\link{SBGNview}} which will be used by \code{\link{renderSbgn}}. By default this slot for all spline.arc objects in the output SBGNview object will be an empty list. You can add named elements to this slot to customize each individual spline.arc. For information about which parameters can be set in the parameters.list slot, see the arguments in \code{\link{renderSbgn}}. A customized list of arc objects can be passed as input into SBGNview function using the ‘arcs.user’ argument (see \code{\link{renderSbgn}} for more information).}
 
 \item{\code{edge}}{A list. An arc in SBGN map normally consists of a line and a tip shape at the end of the line. This list holds variables that controls arc properties. Available elements can be accessed as follow:
 

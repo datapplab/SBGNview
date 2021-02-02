@@ -3,12 +3,12 @@
 \docType{class}
 \name{glyph-class}
 \alias{glyph-class}
-\title{An object to store glyph information.}
+\title{An object to store glyph information}
 \description{
-An object to store glyph information.
+An object to store glyph information
 }
 \details{
-User can modify glyph objects to change the way how it is rendered.
+User can modify glyph objects to change the way how they are rendered. See the "glyphs.user" argument in \code{\link{renderSbgn}}.
 }
 \section{Slots}{
 
@@ -33,7 +33,7 @@ User can modify glyph objects to change the way how it is rendered.
 
 \item{\code{orientation}}{A character string. One of 'left','right','up','down'. This only applies to glyphs of classes 'terminal' and 'tag'. It will change the orientation of the node.}
 
-\item{\code{parameters.list}}{A list. This is a copy of parameters in '...' when running function \code{\link{SBGNview}}.}
+\item{\code{parameters.list}}{A list. The parameters.list slot is a copy of the global.parameters.list. The global.parameters.list contains the '...' parameters passed into \code{\link{SBGNview}} which will be used by \code{\link{renderSbgn}}. By default this slot for all glyph objects in the output SBGNview object will be an empty list. You can add named elements to this slot to customize each individual glyph. For information about which parameters can be set in the parameters.list slot, see the arguments in \code{\link{renderSbgn}}. A customized list of glyph objects can be passed as input into SBGNview function using the ‘glyphs.user’ argument (see \code{\link{renderSbgn}} for more information).}
 
 \item{\code{shape}}{A list. Parameters controlling how the node is rendered. Available elements can be accessed as follow:
 glyph@shape$stroke.color\cr

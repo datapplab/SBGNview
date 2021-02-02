@@ -39,7 +39,8 @@
 
 "print.SBGNview" <- function(x, ...) {
     output.file <- NULL
-    SBGNview.obj <- x
+    #SBGNview.obj <- x
+    SBGNview.obj <- merge.entity.specific.parameters.list(x)
     glyphs.arcs.list <- SBGNview.obj$data
     sbgns <- names(glyphs.arcs.list)
     for (s in seq_len(length.out = length(glyphs.arcs.list))) {
@@ -59,6 +60,37 @@
         message("Image files written: ", sbgn.parameters.list$output.file, "\n")
     }
     return(invisible())
+}
+
+#########################################################################################################
+### function takes an SBGNview object and check the glyph objects parameters.list slot.
+### The entity specific parameters.list can be empty or partial if user has customized the glyph 
+### The function below will return a SBGNview object where the glyph and arc objects' parameters.list slot
+### will be merged with global.parameters.list to create a full list to be used by downstream functions
+merge.entity.specific.parameters.list <- function(obj) {
+    
+    for(i in seq_along(obj$data)) { # for multiple input.sbgn IDs
+        
+        global.parameters.list <- obj$data[[i]]$global.parameters.list
+        glyphs.list <- obj$data[[i]]$glyphs.list
+        #arcs.list <- obj$data[[i]]$arcs.list 
+        
+        for(j in seq_along(glyphs.list)) { # check each glyph's parameter.list slot
+            if(length(glyphs.list[[j]]@parameters.list) == 0) {
+                glyphs.list[[j]]@parameters.list <- global.parameters.list
+            } else {
+                partial.params.list <- glyphs.list[[j]]@parameters.list
+                diff.list.names <- c(setdiff(names(global.parameters.list), names(partial.params.list)))
+                # merged parameters.list
+                glyphs.list[[j]]@parameters.list <- c(partial.params.list, global.parameters.list[diff.list.names]) 
+            }
+        } # end for loop for glyphs.list
+        
+        obj$data[[i]]$glyphs.list <- glyphs.list
+        
+    } # end main for loop
+    
+    return(obj)
 }
 
 #########################################################################################################

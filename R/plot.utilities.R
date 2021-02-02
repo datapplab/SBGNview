@@ -131,21 +131,21 @@ plot.text <- function(x, y, h, w, label, id, label.location, color = "black", gl
 
 #########################################################################################################
 break.text.into.segments <- function(label, w, glyph.class, parameters.list, max.x = 0, glyph) {
-    
+
     if.long.word <- FALSE
     text.length.factor <- parameters.list$text.length.factor.macromolecule
     if (length(glyph@text$font.size) > 0) {
         font.size <- glyph@text$font.size
     } else {
         font.size <- parameters.list$font.size
-        
+
         font.size0 <- font.size
         if (length(label) == 0) {
-            return(list(words.segments = "", label.margin = 2, font.size = font.size, 
+            return(list(words.segments = "", label.margin = 2, font.size = font.size,
                         if.long.word = if.long.word, nline = 0))
-        } else if (nchar(label) == 0) 
+        } else if (nchar(label) == 0)
         {
-            return(list(words.segments = "", label.margin = 2, font.size = font.size, 
+            return(list(words.segments = "", label.margin = 2, font.size = font.size,
                         if.long.word = if.long.word, nline = 0))
         }  # when the label is empty, don't plot it
         if (length(w) == 0) {
@@ -155,11 +155,11 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
         }
         if (glyph.class == "compartment") {
             if (parameters.list$if.scale.compartment.font.size) {
-                font.size <- max(glyph@shape$stroke.width * 3.5, font.size * parameters.list$node.width.adjust.factor.compartment * 
+                font.size <- max(glyph@shape$stroke.width * 3.5, font.size * parameters.list$node.width.adjust.factor.compartment *
                                      w)
             } else {
                 font.size <- font.size * parameters.list$node.width.adjust.factor
-                font.size <- font.size * parameters.list$font.size.scale.gene * 
+                font.size <- font.size * parameters.list$font.size.scale.gene *
                     parameters.list$font.size.scale.compartment
             }
             if (max.x > 0) {
@@ -168,11 +168,11 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
             text.length.factor <- parameters.list$text.length.factor.compartment
         } else if (glyph.class == "complex") {
             if (parameters.list$if.scale.complex.font.size) {
-                font.size <- font.size * parameters.list$node.width.adjust.factor.complex * 
+                font.size <- font.size * parameters.list$node.width.adjust.factor.complex *
                     w
             } else {
                 font.size <- font.size * parameters.list$node.width.adjust.factor
-                font.size <- font.size * parameters.list$font.size.scale.gene * 
+                font.size <- font.size * parameters.list$font.size.scale.gene *
                     parameters.list$font.size.scale.complex
             }
             text.length.factor <- parameters.list$text.length.factor.complex
@@ -185,7 +185,7 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
         } else if (label == "SBGNhub Pathway Collection") {
             # font.size = font.size * global.parameters.list$logic.node.font.scale
             font.size <- glyph@h * 0.6
-            return(list(words.segments = label, label.margin = font.size, font.size = font.size, 
+            return(list(words.segments = label, label.margin = font.size, font.size = font.size,
                         if.long.word = FALSE, nline = 1))
         } else if (glyph.class %in% c("state variable", "unit of information")) {
             font.size <- font.size * parameters.list$status.node.font.scale
@@ -207,7 +207,7 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
             words.segments <- label
             label.margin <- font.size
             label.length <- (nchar(words.segments)) * font.size
-            return(list(words.segments = words.segments, label.margin = label.margin, 
+            return(list(words.segments = words.segments, label.margin = label.margin,
                         font.size = font.size, if.long.word = if.long.word, nline = 1))
         }
         current.line <- ""
@@ -220,9 +220,9 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
             }
             current.line.to.be <- paste(current.line, word.current, sep = "")
             current.line.to.be.length <- (nchar(current.line.to.be)) * font.size
-            
-            if (current.line.to.be.length > text.length.factor * w & (length(label.words) - 
-                                                                      i) > 2 & (word.previous %in% parameters.list$label.spliting.string | 
+
+            if (current.line.to.be.length > text.length.factor * w & (length(label.words) -
+                                                                      i) > 2 & (word.previous %in% parameters.list$label.spliting.string |
                                                                                 identical(parameters.list$label.spliting.string, c("any")))) {
                 # if there are less than 2 letters left ,merge them to the current line instead
                 # of creating a new line with just 2 letters
@@ -235,12 +235,12 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
                 if (words.segments != "") {
                     nline <- nline + 1
                 }
-                if (word.current %in% c(" ") | word.previous == "-" | length(grep("[a-zA-Z]", 
+                if (word.current %in% c(" ") | word.previous == "-" | length(grep("[a-zA-Z]",
                                                                                   word.previous)) == 0) {
                     # if this is the beginning or end of the word, don't insert '-'
                     words.segments <- paste(words.segments, word.current, sep = "\n")
                 } else {
-                    words.segments <- paste(paste(words.segments, "", sep = ""), word.current, 
+                    words.segments <- paste(paste(words.segments, "", sep = ""), word.current,
                                             sep = "\n")
                 }
                 current.line <- word.current
@@ -256,7 +256,7 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
         if.long.word <- TRUE
         label.margin <- (font.size)
     }
-    return(list(words.segments = words.segments, label.margin = label.margin, font.size = font.size, 
+    return(list(words.segments = words.segments, label.margin = label.margin, font.size = font.size,
                 if.long.word = if.long.word, nline = nline))
 }
 
@@ -460,7 +460,7 @@ plot.LineWings <- function(x, y, w, h, orientation, id) {
 }
 
 #########################################################################################################
-#' An object to store glyph information.
+#' An object to store glyph information
 #' 
 #' @slot compartment 
 #' A character string. The compartment this glyph belongs to.
@@ -493,7 +493,7 @@ plot.LineWings <- function(x, y, w, h, orientation, id) {
 #' A character string. One of 'left','right','up','down'. This only applies to glyphs of classes 'terminal' and 'tag'. It will change the orientation of the node. 
 #' 
 #' @slot parameters.list 
-#' A list. This is a copy of parameters in '...' when running function \code{\link{SBGNview}}. 
+#' A list. The parameters.list slot is a copy of the global.parameters.list. The global.parameters.list contains the '...' parameters passed into \code{\link{SBGNview}} which will be used by \code{\link{renderSbgn}}. By default this slot for all glyph objects in the output SBGNview object will be an empty list. You can add named elements to this slot to customize each individual glyph. For information about which parameters can be set in the parameters.list slot, see the arguments in \code{\link{renderSbgn}}. A customized list of glyph objects can be passed as input into SBGNview function using the ‘glyphs.user’ argument (see \code{\link{renderSbgn}} for more information).  
 #'              
 #' @slot shape 
 #' A list. Parameters controlling how the node is rendered. Available elements can be accessed as follow:
@@ -519,7 +519,7 @@ plot.LineWings <- function(x, y, w, h, orientation, id) {
 #'              glyph@@text$font.size\cr
 #'                      -A character string. The font size of glyph label.\cr
 #'                      
-#' @details User can modify glyph objects to change the way how it is rendered. 
+#' @details User can modify glyph objects to change the way how they are rendered. See the "glyphs.user" argument in \code{\link{renderSbgn}}. 
 
 setClass("glyph", slots = c(compartment = "character", x = "numeric", y = "numeric", 
             h = "numeric", w = "numeric", id = "character", label = "character", label.margin = "numeric", 
@@ -531,7 +531,7 @@ setClass("glyph", slots = c(compartment = "character", x = "numeric", y = "numer
 setClass("port", contains = "glyph")
 
 #########################################################################################################
-#' An object to store arc information.
+#' An object to store arc information
 #' 
 #' @slot target,source,id,arc.class 
 #' A character string. Information extracted from element 'arc'.
@@ -543,7 +543,7 @@ setClass("port", contains = "glyph")
 #' Numeric. Controls the line of an arc (not tip of the arc).
 #' 
 #' @slot parameters.list 
-#' A list. This is a copy of parameters in '...' when running function SBGNview. See details for more information.
+#' A list. The parameters.list slot is a copy of the global.parameters.list. The global.parameters.list contains the '...' parameters passed into \code{\link{SBGNview}} which will be used by \code{\link{renderSbgn}}. By default this slot for all arc objects in the output SBGNview object will be an empty list. You can add named elements to this slot to customize each individual arc. For information about which parameters can be set in the parameters.list slot, see the arguments in \code{\link{renderSbgn}}. A customized list of arc objects can be passed as input into SBGNview function using the ‘arcs.user’ argument (see \code{\link{renderSbgn}} for more information). 
 #'              
 #' @slot edge 
 #' A list. An arc in SBGN map normally consists of a line and a tip at the end of the line. This list holds variables that controls arc properties. Available elements can be accessed as follow:
@@ -559,7 +559,7 @@ setClass("port", contains = "glyph")
 #'              arc@@edge$tip.fill.color\cr
 #'              arc@@edge$tip.fill.opacity\cr
 #'              
-#' @details Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running function \code{\link{SBGNview}}.  User can modify arc objects to change the way how it is rendered. 
+#' @details Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running function \code{\link{SBGNview}}.  User can modify arc objects to change the way how they are rendered. See the "arcs.user" argument in \code{\link{renderSbgn}}.
 
 setClass("arc", slots = c(target = "character", source = "character", id = "character", 
                           arc.class = "character", start.y = "numeric", start.x = "numeric", end.y = "numeric", 
@@ -570,7 +570,7 @@ setClass("spline", slots = c(id = "character", spline.coords = "vector", edge = 
                                   parameters.list = "list"))
 
 #########################################################################################################
-#' An object to store information of spline arcs.
+#' An object to store information of spline arcs
 #' 
 #' @slot target,source,id,arc.class 
 #' A character string. Information extracted from element 'arc.spline'.
@@ -585,7 +585,7 @@ setClass("spline", slots = c(id = "character", spline.coords = "vector", edge = 
 #' A list of 'arc' and 'spline' objects. A spline arc is represented by several components: 1. The two ends of the arc are represented by straight line 'arc' objects. 2. splines connecting the ends are represented by 'spline' objects.
 #' 
 #' @slot parameters.list 
-#' A list. This is a copy of parameters in '...' of SBGNview. 
+#' A list. The parameters.list slot is a copy of the global.parameters.list. The global.parameters.list contains the '...' parameters passed into \code{\link{SBGNview}} which will be used by \code{\link{renderSbgn}}. By default this slot for all spline.arc objects in the output SBGNview object will be an empty list. You can add named elements to this slot to customize each individual spline.arc. For information about which parameters can be set in the parameters.list slot, see the arguments in \code{\link{renderSbgn}}. A customized list of arc objects can be passed as input into SBGNview function using the ‘arcs.user’ argument (see \code{\link{renderSbgn}} for more information).
 #'              
 #' @slot edge 
 #' A list. An arc in SBGN map normally consists of a line and a tip shape at the end of the line. This list holds variables that controls arc properties. Available elements can be accessed as follow:
@@ -602,7 +602,7 @@ setClass("spline", slots = c(id = "character", spline.coords = "vector", edge = 
 #'              arc@@edge$tip.fill.color\cr
 #'              arc@@edge$tip.fill.opacity\cr
 #'              
-#' @details Arc information comes from two sources:1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running \code{\link{SBGNview}}.  User can modify arc objects to change the way how it is rendered. 
+#' @details Arc information comes from two sources:1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running \code{\link{SBGNview}}.  User can modify arc objects to change the way how they are rendered. See the "arcs.user" argument in \code{\link{renderSbgn}}.
 
 setClass("spline.arc", slots = c(id = "character", source = "character", target = "character", 
         arc.class = "character", edge = "list", components = "list", parameters.list = "list"))
@@ -618,25 +618,6 @@ setGeneric("plot.glyph", function(object) {
 setGeneric("plot.arc", function(object) {
     standardGeneric("plot.arc")
 })
-
-#########################################################################################################
-# class objects (glyphs, arcs, spline, spline.arc) have a slot called parameters.list
-# if the object@parameters.list is empty, set to global.parameters.list 
-# else parameters.list has partial parameters set, merge with global parameters.list
-# return new parameters list and assign to object@parameters.list
-# this function is used in mapping.utilities.R and parsing.utilities.R
-get.object.parameters.list <- function(object, global.parameters.list) {
-    new.parameters.list <- list()
-    if(length(object@parameters.list) == 0) {
-        new.parameters.list <- global.parameters.list
-    } else {
-        partial.params.list <- object@parameters.list
-        diff.list.names <- c(setdiff(names(global.parameters.list), names(partial.params.list)))
-        diff.parameters <- global.parameters.list[diff.list.names]
-        new.parameters.list <- c(partial.params.list, diff.parameters)
-    }
-    return(new.parameters.list)
-}
 
 #########################################################################################################
 ###### Classes implementing the glyph class and defining plot.glyph generic function

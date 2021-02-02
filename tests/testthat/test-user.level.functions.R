@@ -40,16 +40,16 @@ test_that("getMolList", {
 })
 
 ###################################################
-test_that("changeIds", {
-  
-  gdata.bta <- sim.mol.data(mol.type = "gene", id.type = "ENSEMBLPROT", 
-                            species = "bta", nmol = 2000)
-  ci.bta <- changeIds(input.ids = names(gdata.bta),
-                      input.type = "ENSEMBLPROT",
-                      output.type = "KO",
-                      cpd.or.gene = "gene", 
-                      org = "bta")
-  
-  expect_true(class(ci.bta) == "list")
-  expect_true(length(ci.bta) == 2000)
-})
+# test_that("changeIds", {
+# 
+#   gdata.bta <- sim.mol.data(mol.type = "gene", id.type = "ENSEMBLPROT",
+#                             species = "bta", nmol = 2000)
+#   ci.bta <- changeIds(input.ids = names(gdata.bta),
+#                       input.type = "ENSEMBLPROT",
+#                       output.type = "KO",
+#                       cpd.or.gene = "gene",
+#                       org = "bta")
+# 
+#   expect_true(class(ci.bta) == "list")
+#   expect_true(length(ci.bta) == 2000)
+# })

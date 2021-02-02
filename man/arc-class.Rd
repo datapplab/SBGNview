@@ -3,12 +3,12 @@
 \docType{class}
 \name{arc-class}
 \alias{arc-class}
-\title{An object to store arc information.}
+\title{An object to store arc information}
 \description{
-An object to store arc information.
+An object to store arc information
 }
 \details{
-Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running function \code{\link{SBGNview}}.  User can modify arc objects to change the way how it is rendered.
+Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' element ('source', 'target', coordinates etc.). 2. Parameters specified when running function \code{\link{SBGNview}}.  User can modify arc objects to change the way how they are rendered. See the "arcs.user" argument in \code{\link{renderSbgn}}.
 }
 \section{Slots}{
 
@@ -19,7 +19,7 @@ Information in an 'arc' object comes from two sources: 1. SBGN-ML file's 'arc' e
 
 \item{\code{stroke.opacity}}{Numeric. Controls the line of an arc (not tip of the arc).}
 
-\item{\code{parameters.list}}{A list. This is a copy of parameters in '...' when running function SBGNview. See details for more information.}
+\item{\code{parameters.list}}{A list. The parameters.list slot is a copy of the global.parameters.list. The global.parameters.list contains the '...' parameters passed into \code{\link{SBGNview}} which will be used by \code{\link{renderSbgn}}. By default this slot for all arc objects in the output SBGNview object will be an empty list. You can add named elements to this slot to customize each individual arc. For information about which parameters can be set in the parameters.list slot, see the arguments in \code{\link{renderSbgn}}. A customized list of arc objects can be passed as input into SBGNview function using the ‘arcs.user’ argument (see \code{\link{renderSbgn}} for more information).}
 
 \item{\code{edge}}{A list. An arc in SBGN map normally consists of a line and a tip at the end of the line. This list holds variables that controls arc properties. Available elements can be accessed as follow:
 The following three parameters control the line:\cr
