@@ -201,8 +201,7 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
       if(length(x)==1) return(x)
       else return(x[which.min(abs(vars[x]-sum.method(vars[x], na.rm=T)))])
     })
-#    browser()
-#    if(is.list(sel.rn)) sel.rn=unlist(sel.rn)
+
     if(length(sel.rn)>1) mapped.data=cbind(mol.data[sel.rn,])
     else mapped.data=rbind(mol.data[sel.rn,])
     rownames(mapped.data)=names(sel.rn)
