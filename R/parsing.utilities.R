@@ -22,6 +22,8 @@ utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls",
 #' @import KEGGREST
 
 #########################################################################################################
+# Parse input SBGN-ML file from local or download the file
+# get pathway database, and SBGN gene and compound ID type
 parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.dir, 
                              sbgn.gene.id.type, sbgn.cpd.id.type, sbgn.id.attr, 
                              SBGNview.data.folder = "./SBGNview.tmp.data") {
@@ -91,6 +93,8 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
 }
 
 #########################################################################################################
+# parse input user data by changing ID tpype to SBGN ID type for gene and compound data
+# keeps record of data ID that are already converted 
 parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
                              user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, 
                              id.mapping.cpd, node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, 
@@ -110,8 +114,7 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
         cpd.data <- SummarizedExperiment::assays(cpd.data)$counts
     }
     if (simulate.data) {
-        gene.data.converted <- simulate.user.data(sbgn.file = input.sbgn.full.path, 
-            n.samples = 3)
+        gene.data.converted <- simulate.user.data(sbgn.file = input.sbgn.full.path, n.samples = 3)
         gene.data.converted <- as.list(as.data.frame(t(gene.data.converted)))
         gene.data.converted[["max.gene"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
         gene.data.converted[["min.gene"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
@@ -151,10 +154,8 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
                   }
                 }
                 gene.data.converted <- as.list(as.data.frame(t(gene.data.converted)))
-                gene.data.converted[["max.gene"]] <- max(unlist(gene.data.converted), 
-                  na.rm = TRUE)
-                gene.data.converted[["min.gene"]] <- min(unlist(gene.data.converted), 
-                  na.rm = TRUE)
+                gene.data.converted[["max.gene"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
+                gene.data.converted[["min.gene"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
             }
             
             cpd.data.converted <- cpd.data
@@ -194,6 +195,8 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
 }
 
 #########################################################################################################
+# Use users input arcs list or get spline information from sbgn file, and create objects of spline.arc class. 
+# generate svg code for plotting splines
 parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, 
                           global.parameters.list, arcs.user = list()) {
     
@@ -249,6 +252,7 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0,
 }
 
 #########################################################################################################
+# get child attributes of arc splines
 get.spline.compo <- function(arc.spline, spline.info, y.margin) {
     
     children <- xml2::xml_children(arc.spline)
@@ -265,8 +269,8 @@ get.spline.compo <- function(arc.spline, spline.info, y.margin) {
             if (spline.info["class"] == "interaction") {
                 child.attrs["class"] <- "assignment"
             }
-            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), id = paste(spline.info["id"], 
-                                                                                      "source.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
+            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), 
+                       id = paste(spline.info["id"], "source.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
                        start.y = as.numeric(child.attrs["start.y"]) + y.margin, end.x = as.numeric(child.attrs["end.x"]), 
                        end.y = as.numeric(child.attrs["end.y"]) + y.margin, stroke.opacity = 0)
         } else if (xml2::xml_name(child) == "target.arc") {
@@ -277,8 +281,8 @@ get.spline.compo <- function(arc.spline, spline.info, y.margin) {
             if (spline.info["class"] == "interaction") {
                 child.attrs["class"] <- "assignment"
             }
-            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), id = paste(spline.info["id"], 
-                                                                                      "target.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
+            arc <- new(paste(child.attrs["class"], ".sbgn.arc", sep = ""), 
+                       id = paste(spline.info["id"], "target.arc", sep = ":"), start.x = as.numeric(child.attrs["start.x"]), 
                        start.y = as.numeric(child.attrs["start.y"]) + y.margin, end.x = as.numeric(child.attrs["end.x"]), 
                        end.y = as.numeric(child.attrs["end.y"]) + y.margin, stroke.opacity = 0)
         } else if (xml2::xml_name(child) == "spline") {
@@ -294,6 +298,8 @@ get.spline.compo <- function(arc.spline, spline.info, y.margin) {
 }
 
 #########################################################################################################
+# Use users input arcs list or get arcs information from sbgn file, and create objects of arc class. 
+# generate svg code for plotting arcs
 parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, 
                        global.parameters.list, arcs.user = list()) {
     
@@ -326,6 +332,7 @@ parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0,
 }
 
 #########################################################################################################
+# get child attributes of arcs
 get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge.paras, 
                              global.parameters.list, glyphs) {
     
@@ -451,6 +458,7 @@ find.arc.coordinates <- function(arc.line, glyphs) {
 }
 
 #########################################################################################################
+# Use user input list of glyphs or generate glyph objects. Generate svg code for plotting glyph objects
 parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, max.x, 
                         global.parameters.list, sbgn.id.attr, glyphs.user = list(), 
                         compartment.layer.info, if.plot.cardinality) {
@@ -507,7 +515,7 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
         node.set.list <- parsed.ids.record$node.set.list
         no.id.node.count.list <- parsed.ids.record$no.id.node.count.list
         
-        ##### use user glyph if found
+        # use user glyph if found
         if (node@id %in% user.defined.glyphs) {  
             node <- glyphs.user[[node@id]]
             label.margin <- node@label.margin
@@ -524,6 +532,7 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
                 print(node)
             }
         } else {
+            # create glyph object
             parse.result <- generate.node.obj(glyph, glyph.class, glyph.info, node, if.plot.svg, y.margin, 
                                               sbgn.id.attr, user.data, max.x, global.parameters.list, 
                                               if.use.number.for.long.label, if.plot.annotation.nodes, 
@@ -589,6 +598,7 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
 }
 
 #########################################################################################################
+# generate IDs for glyphs for ones with no IDs
 generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id.node.count.list) {
     
     if (is.na(glyph.id)) {
@@ -620,6 +630,7 @@ generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id
 
 #########################################################################################################
 # used in generate.node.obj function from mapping.utilities.R
+# generate children glyph objects
 parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, 
                                  node, if.plot.svg, y.margin) {
     
@@ -646,8 +657,7 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info,
                 # sometimes there is no variable name, in this case we just show the value
                 node@label <- glyph.label["value"]
             } else {
-                node@label <- paste(glyph.label["value"], "@", glyph.label["variable"], 
-                                    sep = "")
+                node@label <- paste(glyph.label["value"], "@", glyph.label["variable"], sep = "")
             }
         } else if (xml2::xml_name(child) == "clone") {
             # if this parent node has a clone marker
@@ -666,10 +676,10 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info,
             }
         } else if (xml2::xml_name(child) == "label") {
             glyph.label <- xml2::xml_attrs(child)  # find the label information for this glyph
-            
             node.label <- glyph.label["text"]
             node@label <- glyph.label["text"]
             glyph.info["label"] <- glyph.label
+            
         } else if (xml2::xml_name(child) == "entity") {
             glyph.entity <- xml2::xml_attrs(child)  # find the label information for this glyph
             if (map.language == "activity flow" & glyph.class == "unit_of_information") {
@@ -683,8 +693,7 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info,
             }
         } else if (xml2::xml_name(child) == "bbox") {
             glyph.box.information <- xml2::xml_attrs(child)  # find the box information for this glyph
-            glyph.box.information["y"] <- as.numeric(glyph.box.information["y"]) + 
-                y.margin
+            glyph.box.information["y"] <- as.numeric(glyph.box.information["y"]) + y.margin
             node@x <- as.numeric(glyph.box.information["x"])
             node@y <- as.numeric(glyph.box.information["y"])
             node@h <- as.numeric(glyph.box.information["h"])
@@ -696,14 +705,12 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info,
             glyph.port.info <- xml2::xml_attrs(child)  # find the box information for this glyph
             glyph.port.info["y"] <- as.numeric(glyph.port.info["y"]) + y.margin
             # if port has coordinates, plot it
-            if (as.numeric(glyph.port.info["x"]) + as.numeric(glyph.port.info["y"]) != 
-                0) {
-                svg.port <- paste(svg.port, plot.arc.ports(glyph.port.info, node), 
-                                  sep = "\n")
+            if (as.numeric(glyph.port.info["x"]) + as.numeric(glyph.port.info["y"]) !=  0) {
+                svg.port <- paste(svg.port, plot.arc.ports(glyph.port.info, node), sep = "\n")
             }
             node@svg.port <- svg.port
-        } else if (xml2::xml_name(child) == "glyph" & xml2::xml_attr(child, "class") != 
-                   "annotation") {
+        } else if (xml2::xml_name(child) == "glyph" & 
+                   xml2::xml_attr(child, "class") != "annotation") {
             if.complex.empty <- FALSE
         }
     }
@@ -714,6 +721,7 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info,
 }
 
 #########################################################################################################
+# plot arcs for ports of a glyph
 plot.arc.ports <- function(glyph.port.info, node) {
     
     port.x <- as.numeric(glyph.port.info["x"])
@@ -800,15 +808,13 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
             input.sbgn.full.path <- paste(sbgn.dir, input.sbgn, sep = "/")
             if (!file.exists(input.sbgn.full.path[i])) {
                 message("\n", input.sbgn, " does not look like an existing local file.\n Using it as pathway ID in 'pathways.info'\n\n ")
-                database <- pathways.info[pathways.info[, "pathway.id"] == input.sbgn, 
-                  "database"]
+                database <- pathways.info[pathways.info[, "pathway.id"] == input.sbgn, "database"]
                 input.sbgn <- downloadSbgnFile(pathway.id = input.sbgn, download.folder = sbgn.dir)
                 message("SBGN-ML files downloaded to: ", input.sbgn.full.path)
             } else {
-                message("\n", input.sbgn, "looks like an existing local file. Using it directly. \n\n ")
+                message("\n", input.sbgn, "looks like an existing local file. Using it directly.\n")
                 if (input.sbgn %in% pathways.info[, "file.name"]) {
-                  database <- pathways.info[pathways.info[, "file.name"] == input.sbgn, 
-                    "database"]
+                  database <- pathways.info[pathways.info[, "file.name"] == input.sbgn, "database"]
                 }
                 input.sbgn <- input.sbgn.full.path
             }
@@ -817,7 +823,8 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
         if.other.id.types.available <- database %in% c("MetaCrop", "MetaCyc", "pathwayCommons")
         if (if.other.id.types.available) {
             all.id.mapping.result <- load.all.ids.mapping(database, all.pairs.id.mapping.list, 
-            species, output.gene.id.type, output.cpd.id.type, SBGNview.data.folder = SBGNview.data.folder)
+                                                          species, output.gene.id.type, output.cpd.id.type, 
+                                                          SBGNview.data.folder = SBGNview.data.folder)
             id.mapping.all.list <- all.id.mapping.result$id.mapping.all.list
             all.pairs.id.mapping.list <- all.id.mapping.result$all.pairs.id.mapping.list
             output.cpd.id.type.use <- all.id.mapping.result$output.cpd.id.type.use
@@ -830,14 +837,15 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
         sbgn <- xml2::read_xml(input.sbgn)
         xml2::xml_attrs(sbgn) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
         node.set.list <- get.all.nodes.info(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
-            output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
-            id.mapping.all.list, show.ids.for.multiHit)
+                                            output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
+                                            id.mapping.all.list, show.ids.for.multiHit)
         result.list[[input.sbgn.original]] <- node.set.list[["all.nodes"]]
     }
     return(result.list)
 }
 
 #########################################################################################################
+# get node information (id, class, compartmentRef, etc...) from sbgn file
 get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
                                output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
                                id.mapping.all.list, show.ids.for.multiHit) {
@@ -908,6 +916,7 @@ get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.
 }
 
 #########################################################################################################
+# generate data using the glyphs ids from sbgn file
 simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
     
     all.nodes <- node.ids.from.sbgn(sbgn.file, ...)
@@ -916,13 +925,14 @@ simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
     }
     user.data <- runif(length(all.nodes), -11, 11)
     user.data <- as.data.frame(matrix(runif(length(all.nodes) * n.samples, -1, 1), 
-        ncol = n.samples))
+                                      ncol = n.samples))
     row.names(user.data) <- all.nodes
     user.data <- generate.user.data(user.data)
     return(user.data)
 }
 
 #########################################################################################################
+# find unique glyphs in sbgn file
 node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule", "simple chemical"), 
                                if.include.complex.member = FALSE) {
     
@@ -973,14 +983,14 @@ generate.user.data <- function(user.data) {
                 normalized <- (i - mean.x)/abs(mean.x - max.x.user.data)
                 return(normalized)
             }
-        }, numeric(1))
+        }, numeric(1) )
     })
     return(user.data)
 }
 
 #########################################################################################################
-## parse ports
-## used by renderSbgn function
+# find ports in sbgn file and return objects of class port
+# used by renderSbgn function
 xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
     
     ports <- list()
@@ -997,7 +1007,8 @@ xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
 }
 
 #########################################################################################################
-## used in SBGNview function
+# get arc infromation from sbgn file
+# used in SBGNview function
 get.arcs.info <- function(sbgn) {
     
     # Retrieve edge information
@@ -1014,7 +1025,8 @@ get.arcs.info <- function(sbgn) {
 }
 
 #########################################################################################################
-## used in SBGNview function
+# find compartments to check if any overlap
+# used in SBGNview function
 get.compartment.layer <- function(sbgn) {
     
     compartment.layer.info <- xml2::xml_find_all(sbgn, ".//compartment.layer.info")
@@ -1028,9 +1040,9 @@ get.compartment.layer <- function(sbgn) {
 }
 
 #########################################################################################################
-## used in renderSbgn function
-### new version of function. removed max.xw when assigning y.margin
-### incrementally increase/adjust y.margin based on other parameters that affect height of output image
+# used in renderSbgn function
+# new version of function. removed max.xw when assigning y.margin
+# incrementally increase/adjust y.margin (top margin) based on other parameters that affect overall svg height
 find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale, global.parameters.list) {
     
     box.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//bbox")))

@@ -1,8 +1,8 @@
 
 #########################################################################################################
-### searches for different id mapping file name combinations in local, SBGNview.data, SBGNhub locations
-### check local directory for any mapping files, if not found then check SBGNView.data, then SBGNhub
-### returns list containing the mapping file name and the location where its found
+# searches for different id mapping file name combinations in local, SBGNview.data, SBGNhub locations
+# check local directory for any mapping files, if not found then check SBGNView.data, then SBGNhub
+# returns list containing the mapping file name and the location where its found
 download.mapping.file <- function(input.type, output.type, species = NULL, 
                                   SBGNview.data.folder = "./SBGNview.tmp.data") { 
   
@@ -87,8 +87,8 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
 }
 
 #########################################################################################################
-### used by download.mapping.file function
-### search SBGNhub.id.mapping.tables, if file exits download from SBGNhub
+# used by download.mapping.file function
+# search SBGNhub.id.mapping.tables, if file exits download from SBGNhub
 search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
   
   mapping.file.name <- NULL
@@ -255,8 +255,8 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
 }
 
 #########################################################################################################
-### uses generate.ko.mapping.list to generate mapping table from scratch using KEGGREST
-### otherwise will use pathview
+# uses generate.ko.mapping.list to generate mapping table from scratch using KEGGREST
+# otherwise will use pathview
 geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", unique.map, 
                              SBGNview.data.folder = "./SBGNview.tmp.data") {
   # pathview's geneannot.map can't map KO, so here included KO mapping
@@ -483,8 +483,8 @@ generate.ko.mapping.list <- function(in.type, out.type, species, in.ids = NULL) 
 }
 
 #########################################################################################################
-### mapping from input type KO to output tpye (in gene.idtype.list) for species in bods dataset
-### using keggrest and pathview::eg2id. Need input of KO ids vector
+# mapping from input type KO to output tpye (in gene.idtype.list) for species in bods dataset
+# using keggrest and pathview::eg2id. Need vector of input of KO ids
 mapping.ko.to.arbitrary.id.type <- function(input.ko.ids = NULL, output.type, species, ridx) {
   
   if(is.null(input.ko.ids)){
@@ -518,7 +518,6 @@ mapping.ko.to.arbitrary.id.type <- function(input.ko.ids = NULL, output.type, sp
   
   # match input KO ids with entrez IDS in generated mapping table
   input.ko.ids <- unique(input.ko.ids)
-  #### KO_pathway.id contains multiple KO ids mapped to d
   ko.to.entrez <- as.matrix(ko.to.entrez)
   filterd.ko.to.entrez <- subset(ko.to.entrez, ko.to.entrez[,1] %in% input.ko.ids)
   
@@ -534,7 +533,7 @@ mapping.ko.to.arbitrary.id.type <- function(input.ko.ids = NULL, output.type, sp
 }
 
 #########################################################################################################
-### use keggLink and keggConv to get mapping data and format to a list for generate.ko.mapping.list
+# get data using keggLink and keggConv to get mapping data and format to a list for generate.ko.mapping.list
 get.keggrest.data <- function(tar, src, link.or.conv, tar.is.species = F, src.is.species = F) {
   # tar and src should be lower case
   if(link.or.conv == "link"){ # keggLink
@@ -558,6 +557,7 @@ get.keggrest.data <- function(tar, src, link.or.conv, tar.is.species = F, src.is
 }
 
 #########################################################################################################
+# find all mapping tables for gene and compound id types and combine into a list
 load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gene.id.type = NULL, 
                                      output.gene.id.type = NULL, output.cpd.id.type = NULL, species = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") {
   idmapping.all.list <- list()
@@ -593,8 +593,10 @@ load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gen
 }
 
 #########################################################################################################
+# get all ID mapping tables for gene and compound ID types
 load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, output.gene.id.type, 
                                  output.cpd.id.type, SBGNview.data.folder = "./SBGNview.tmp.data") {
+  
   if (database == "MetaCrop") {
     sbgn.id.attr <- "label"
     SBGN.file.gene.id.type <- "ENZYME"
@@ -791,6 +793,7 @@ downloadSbgnFile <- function(pathway.id, download.folder = "./") {
 }
 
 #########################################################################################################
+# find pathways in pathways.info based on input keywords and keyword matching logic
 find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mol.name.match, 
                                       SBGNview.data.folder = "./SBGNview.tmp.data/") {
   if (is.null(keywords)) {
@@ -910,18 +913,17 @@ match.names <- function(input.names, output.names, output.file = NULL) {
 }
 
 #########################################################################################################
+# find pathways based on organism and pathway completeness in a species
 filter.pathways.by.org <- function(pathways, org, pathway.completeness, 
                                    pathways.info.file.folder = "./SBGNview.tmp.data") {
   
   org <- tolower(org)
-  data("pathway.species.pct_Mapped")
+  if(!exists("pathway.species.pct_Mapped")) data("pathway.species.pct_Mapped")
   if (org == "all") {
     org <- unique(pathway.species.pct_Mapped$species)
   }
-  pathway.species.pct_Mapped[, "species"] <- as.character(pathway.species.pct_Mapped[, 
-                                                                                     "species"])
-  pathway.species.pct_Mapped[, "pathway"] <- as.character(pathway.species.pct_Mapped[, 
-                                                                                     "pathway"])
+  pathway.species.pct_Mapped[, "species"] <- as.character(pathway.species.pct_Mapped[, "species"])
+  pathway.species.pct_Mapped[, "pathway"] <- as.character(pathway.species.pct_Mapped[,  "pathway"])
   
   if (!is.null(pathway.completeness)) {
     message("Using user provided pathway completeness cutoff: the same cutoff for different pathways!\n")

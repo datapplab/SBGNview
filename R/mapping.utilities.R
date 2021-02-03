@@ -1,5 +1,6 @@
 
 #########################################################################################################
+# add input user data to glyph
 add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
   
   node.omics.data.id <- glyph.info[sbgn.id.attr]
@@ -36,6 +37,7 @@ add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.
 }
 
 #########################################################################################################
+# generate glyph objects for glyphs found in sbgn file
 generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg, y.margin, 
                               sbgn.id.attr, user.data, max.x, global.parameters.list, 
                               if.use.number.for.long.label, if.plot.annotation.nodes, map.language, 
@@ -61,8 +63,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
   }
   
   # add omics data to node object, and record mapping result
-  mapping.result <- add.omics.data.to.glyph(glyph.info, glyph, node, sbgn.id.attr, 
-                                            user.data)
+  mapping.result <- add.omics.data.to.glyph(glyph.info, glyph, node, sbgn.id.attr, user.data)
   node <- mapping.result$node
   
   if (glyph.class == "compartment") {
@@ -74,7 +75,8 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
   }
   
   result.list <- break.text.into.segments(label = node@label, w = node@w, glyph.class = glyph.class, 
-                                          parameters.list = global.parameters.list, max.x = max.x, glyph = node)
+                                          parameters.list = global.parameters.list, 
+                                          max.x = max.x, glyph = node)
   if.long.word <- result.list$if.long.word
   label.margin <- result.list$label.margin
   node@label.margin <- label.margin
@@ -87,8 +89,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
     }
     index.long.words <- long.words.count.list[[glyph.class]]
     shorter.label <- paste(glyph.class, index.long.words, sep = "_")
-    shorter.label.mapping.list <- rbind(shorter.label.mapping.list, c(shorter.label, 
-                                                                      node@label))
+    shorter.label.mapping.list <- rbind(shorter.label.mapping.list, c(shorter.label, node@label))
     node@label <- shorter.label
   }
   
@@ -96,8 +97,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
   node@parameters.list <- list()
   
   # handle clone markers
-  
-  ##### set node specific parameters
+  # set node specific parameters
   node@shape$stroke.width <- min(1, max.x/900)
   if (glyph.class == "annotation" & !if.plot.annotation.nodes) {
     node@stroke.opacity <- 0
@@ -357,10 +357,6 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
   if(output.type %in% c("entrez", "eg", "entrezid")) output.type = "ENTREZID"
   
   if (is.null(id.mapping.table)) {
-    # if user didn't provide mapping table, we try to download one.
-    # mapping.list <- loadMappingTable(output.type = output.type, input.type = input.type, 
-    #                                  species = org, cpd.or.gene = cpd.or.gene, limit.to.ids = row.names(data.input.id), 
-    #                                  SBGNview.data.folder = SBGNview.data.folder)
     
     # dim(obj) = NULL then vector (names), else the matrix or data.frame (row.names)
     input.ids <- NULL
@@ -369,6 +365,7 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
     } else {
       input.ids <- row.names(data.input.id)
     }
+    # get mapping table is user didn't provide one
     id.map <- loadMappingTable(output.type = output.type, input.type = input.type, 
                                species = org, cpd.or.gene = cpd.or.gene, 
                                limit.to.ids = input.ids, SBGNview.data.folder = SBGNview.data.folder)
@@ -398,6 +395,7 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
 }
 
 #########################################################################################################
+# change input id type to output type 
 change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping.all.list, 
                       show.ids.for.multiHit = NULL) {
   
@@ -427,6 +425,8 @@ change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping
 }
 
 #########################################################################################################
+# change glyph ID if other id types are available
+# used by get.all.nodes.info in parsing.utilities.R
 change.glyph.id <- function(glyph.id, glyph.class, id.mapping.all.list, output.gene.id.type = NA, 
                             output.cpd.id.type = NA, SBGN.file.cpd.id.type, 
                             SBGN.file.gene.id.type, show.ids.for.multiHit = NULL) {

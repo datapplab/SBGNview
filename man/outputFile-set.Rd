@@ -2,7 +2,7 @@
 % Please edit documentation in R/SBGNview.obj.fun.R
 \name{outputFile<-}
 \alias{outputFile<-}
-\title{Set output file information for a SBGNview object}
+\title{Set or change output file information for a SBGNview object}
 \usage{
 outputFile(obj) <- value
 }
@@ -15,7 +15,7 @@ outputFile(obj) <- value
 A SBGNview class object
 }
 \description{
-Set output file information for a SBGNview object
+Set or change output file information for a SBGNview object
 }
 \details{
 This function sets the output file path recorded in a SBGNview object.

@@ -19,7 +19,10 @@
 }
 
 #########################################################################################################
+#' Generate image files
+#' 
 #' A wrapper to run function \code{\link{renderSbgn}} for all pathways in a SBGNview object and generate image files.
+#' 
 #' @param x A SBGNview class object. 
 #' @param ... Other parameters passed to print.
 #' @return None
@@ -64,10 +67,10 @@
 }
 
 #########################################################################################################
-### function takes an SBGNview object and check the glyph objects parameters.list slot.
-### The entity specific parameters.list can be empty or partial if user has customized the glyph 
-### The function below will return a SBGNview object where the glyph and arc objects' parameters.list slot
-### will be merged with global.parameters.list to create a full list to be used by downstream functions
+# function takes an SBGNview object and check the glyph objects parameters.list slot.
+# The entity specific parameters.list can be empty or partial if user has customized the glyph 
+# The function below will return a SBGNview object where the glyph and arc objects' parameters.list slot
+# will be merged with global.parameters.list to create a full list to be used by downstream functions
 merge.entity.specific.parameters.list <- function(obj) {
     
     for(i in seq_along(obj$data)) { # for multiple input.sbgn IDs
@@ -96,6 +99,7 @@ merge.entity.specific.parameters.list <- function(obj) {
 
 #########################################################################################################
 #' Retrieve output file information from a SBGNview object
+#' 
 #' @param obj An SBGNview class object.
 #' @details This function prints the output file path recorded in a SBGNview object. 
 #' @return A string. The output file information. 
@@ -105,13 +109,13 @@ merge.entity.specific.parameters.list <- function(obj) {
 #' }
 #' @export
 
-# changed name of outputFile function to fileOutput
 fileOutput <- function(obj) {
     obj$output.file
 }
 
 #########################################################################################################
-#' Set output file information for a SBGNview object
+#' Set or change output file information for a SBGNview object
+#' 
 #' @param obj A SBGNview class object
 #' @param value No need to provide 
 #' @details This function sets the output file path recorded in a SBGNview object.

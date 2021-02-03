@@ -189,10 +189,12 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         ports <- xml.to.port.glyphs(sbgn.xml, y.margin = y.margin)  # The output 'ports' is a list of port glphs
         
         message("parsing glyphs")
-        parse.glyph.out.list <- parse.glyph(sbgn.xml, user.data, y.margin = y.margin, 
-            max.x = max.x, global.parameters.list = global.parameters.list, sbgn.id.attr = sbgn.id.attr, 
-            if.plot.svg = if.plot.svg, glyphs.user = glyphs.user, compartment.layer.info = compartment.layer.info, 
-            if.plot.cardinality = if.plot.cardinality)
+        parse.glyph.out.list <- parse.glyph(sbgn.xml, user.data, y.margin = y.margin, max.x = max.x, 
+                                            global.parameters.list = global.parameters.list, 
+                                            sbgn.id.attr = sbgn.id.attr, if.plot.svg = if.plot.svg, 
+                                            glyphs.user = glyphs.user, 
+                                            compartment.layer.info = compartment.layer.info, 
+                                            if.plot.cardinality = if.plot.cardinality)
         glyphs <- parse.glyph.out.list$glyphs
         # find plot parameters
         min.w <- parse.glyph.out.list$min.w  # find the minimum h to set the text size
@@ -204,6 +206,7 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         svg.nodes.compartment <- parse.glyph.out.list$svg.nodes.compartment
         svg.cardinality <- parse.glyph.out.list$svg.cardinality  # the cadinality node are supposed to be in front of the arcs, so need to print it again at the end of the svg file
         shorter.label.mapping.list <- parse.glyph.out.list$shorter.label.mapping.list
+        
         if (if.write.shorter.label.mapping & if.use.number.for.long.label & !is.vector(shorter.label.mapping.list)) {
             write.table(shorter.label.mapping.list, paste(output.file, ".shorter.label.mapping.tsv", 
                 sep = ""), row.names = FALSE, col.names = FALSE, sep = "\t")
@@ -212,15 +215,16 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         glyphs <- c(glyphs, ports)
         
         message("parsing arcs")
-        arcs.result <- get.arcs(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.parameters.list, 
-            arcs.user)
+        arcs.result <- get.arcs(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, 
+                                global.parameters.list, arcs.user)
         svg.arc <- arcs.result$svg.arc
         arcs.list <- arcs.result$arcs.list
         
         message("plotting color panel")
         col.panel.params <- find.col.panel.position.and.plot(y.margin, global.parameters.list, 
-            if.has.gene.data, if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, 
-            min.y)
+                                                             if.has.gene.data, if.has.cpd.data, 
+                                                             parse.glyph.out.list, max.x, max.y, 
+                                                             min.x, min.y)
         col.panel.svg <- col.panel.params$col.panel.svg
         col.panel.w <- col.panel.params$col.panel.w
         col.panel.y <- col.panel.params$col.panel.y
@@ -228,7 +232,8 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         
         # add pathway.name and stamp
         stamp.svg.list <- add.stamp(col.panel.w, col.panel.y, global.parameters.list, 
-            template.text, template.text.pathway.name, min.x, max.x, max.y, y.margin)
+                                    template.text, template.text.pathway.name, min.x, 
+                                    max.x, max.y, y.margin)
         pathway.name.svg <- stamp.svg.list$pathway.name.svg
         stamp.svg <- stamp.svg.list$stamp.svg
         
@@ -244,8 +249,8 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         svg.header = sprintf(svg.header, svg.dim.x, svg.dim.y)
         
         out <- paste(svg.header, svg.nodes.compartment, svg.nodes.complex, svg.nodes,
-            svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, stamp.svg,
-            svg.end, sep = "\n")
+                     svg.arc, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg, 
+                     stamp.svg, svg.end, sep = "\n")
         
         Encoding(out) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
         
@@ -321,6 +326,7 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
 
 
 #########################################################################################################
+# get information of arcs for plotting and list arc objects 
 get.arcs <- function(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, 
                      global.parameters.list, arcs.user) {
     

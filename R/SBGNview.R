@@ -147,10 +147,11 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
     # parse all SBGN-ML files
     for (i in seq_along(input.sbgn)) {
         input.sbgn.i <- input.sbgn[i]
-        message("\n\n\nProcessing pathway: ", input.sbgn.i, "\n")
+        message("\n\nProcessing pathway: ", input.sbgn.i, "\n")
         # Find related information according to input sbgn
         parse.sbgn.list <- parse.input.sbgn(input.sbgn.i, output.file, show.pathway.name, 
-            sbgn.dir, sbgn.gene.id.type, sbgn.cpd.id.type, sbgn.id.attr, SBGNview.data.folder)
+                                            sbgn.dir, sbgn.gene.id.type, sbgn.cpd.id.type, 
+                                            sbgn.id.attr, SBGNview.data.folder)
         input.sbgn.full.path <- parse.sbgn.list$input.sbgn.full.path
         output.file.sbgn <- parse.sbgn.list$output.file.sbgn
         sbgn.gene.id.type <- parse.sbgn.list$sbgn.gene.id.type
@@ -167,9 +168,9 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
         # 'user.data.recorded', then just reuse it next time we need the same glyph ID
         # type.
         parsed.data <- parse.omics.data(gene.data, cpd.data, input.sbgn.full.path, 
-            database, user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, 
-            id.mapping.cpd, node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, simulate.data, 
-            SBGNview.data.folder = SBGNview.data.folder)
+                                        database, user.data.recorded, gene.id.type, cpd.id.type, 
+                                        id.mapping.gene, id.mapping.cpd, node.sum, org, sbgn.gene.id.type, 
+                                        sbgn.cpd.id.type, simulate.data, SBGNview.data.folder = SBGNview.data.folder)
         user.data <- parsed.data$user.data  # A list holding both gene data and/or cpd data. The names of this list are glyph IDs (for 'macromolecule' and 'simple chemical') in 'input.sbgn'. Each element of 'user.data' is a vector containing omics data of the corresponding gene/macromolecule or compound/simple chemical. 
         user.data.recorded <- parsed.data$user.data.recorded  # Update user data list, recording data with different glyph ID types. The names of this list are glyph ID types. Each element is the list 'user.data'. It was updated if 'input.sbgn' has a new glyph ID type: a new 'user.data' with this new glyph ID type is added.
         
@@ -185,16 +186,17 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
         
         message("Rendering SBGN graph")
         sbgn.result.list <- renderSbgn(input.sbgn = input.sbgn.full.path, output.file = output.file.sbgn, 
-            arcs.info = arcs.info, compartment.layer.info = compartment.layer.info, 
-            user.data = user.data, output.formats = output.formats, sbgn.id.attr = sbgn.id.attr, 
-            if.write.files = FALSE, pathway.name = pathway.name.on.graph, if.plot.svg = FALSE, 
-            ...)
-        # record all parameters. They might be used again when we later modify the 
-        # 'SBGNview' object
+                                       arcs.info = arcs.info, compartment.layer.info = compartment.layer.info, 
+                                       user.data = user.data, output.formats = output.formats, 
+                                       sbgn.id.attr = sbgn.id.attr, if.write.files = FALSE, pathway.name = pathway.name.on.graph, 
+                                       if.plot.svg = FALSE, ...)
+        # record all parameters. They might be used again when we later modify the 'SBGNview' object
         sbgn.result.list[["render.sbgn.parameters.list"]] <- list(input.sbgn = input.sbgn.full.path, 
-                output.file = output.file.sbgn, arcs.info = arcs.info, compartment.layer.info = compartment.layer.info, 
-                user.data = user.data, sbgn.id.attr = sbgn.id.attr, 
-                pathway.name = pathway.name.on.graph)
+                                                                  output.file = output.file.sbgn,
+                                                                  arcs.info = arcs.info, 
+                                                                  compartment.layer.info = compartment.layer.info, 
+                                                                  user.data = user.data, sbgn.id.attr = sbgn.id.attr, 
+                                                                  pathway.name = pathway.name.on.graph)
         SBGNview.obj.data[[input.sbgn.i]] <- sbgn.result.list
     }
     

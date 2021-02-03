@@ -26,8 +26,9 @@ fill=\"%s\"
 "
 
 plot.text <- function(x, y, h, w, label, id, label.location, color = "black", glyph.class = "", 
-                      stroke.opacity = 1, max.x = 0, if.generate.text.box = FALSE, parameters.list, 
-                      glyph) {
+                      stroke.opacity = 1, max.x = 0, if.generate.text.box = FALSE, 
+                      parameters.list, glyph) {
+    
     if (length(glyph@text$color) > 0) {
         color <- glyph@text$color
     }
@@ -122,14 +123,14 @@ plot.text <- function(x, y, h, w, label, id, label.location, color = "black", gl
                                text.anchor, alignment.baseline, stroke.opacity, alignment.baseline, 
                                color, label)
             }
-            y.label.box <- y - h/2 - parameters.list$complex.compartment.label.margin.use - 
-                h.label.box/3
+            y.label.box <- y - h/2 - parameters.list$complex.compartment.label.margin.use - h.label.box/3
         }
     }
     return(svg)
 }
 
 #########################################################################################################
+# break long text into multiple segments
 break.text.into.segments <- function(label, w, glyph.class, parameters.list, max.x = 0, glyph) {
 
     if.long.word <- FALSE
@@ -357,14 +358,13 @@ plot.rectangle <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white",
 generate.d.for.partly.rounded.corner.rect <- function(x, y, w, h, r1, r2, r3, r4) {
     
     start.and.upperLeft <- paste("M", x, r1 + y, "Q", x, y, x + r1, y, sep = " ")
-    top.and.upperRight <- paste("L", x + w - r2, y, "Q", x + w, y, x + w, y + r2, 
-        sep = " ")
-    right.and.lowerRight <- paste("L", x + w, y + h - r3, "Q", x + w, y + h, x + 
-        w - r3, y + h, sep = " ")
+    top.and.upperRight <- paste("L", x + w - r2, y, "Q", x + w, y, x + w, y + r2, sep = " ")
+    right.and.lowerRight <- paste("L", x + w, y + h - r3, "Q", x + w, y + h, 
+                                  x + w - r3, y + h, sep = " ")
     bottom.and.lowerLeft <- paste("L", x + r4, y + h, "Q", x, y + h, x, y + h - r4, 
-        "Z", sep = " ")
+                                  "Z", sep = " ")
     d.content <- paste(start.and.upperLeft, top.and.upperRight, right.and.lowerRight, 
-        bottom.and.lowerLeft, sep = " ")
+                       bottom.and.lowerLeft, sep = " ")
     return(d.content)
 }
 
@@ -383,7 +383,7 @@ plot.polygon <- function(object, points, fill.color, rotate.a, rotate.x, rotate.
         fill.color <- object@edge$tip.fill.color  # if the edge has a filled tip(e.g. production), we can change it to user defined color. If the edge type has an empty tip, we can't change it.
     }
     sprintf(template.polygon, points, fill.color, object@edge$tip.stroke.color, object@edge$tip.stroke.opacity, 
-        object@edge$tip.stroke.width, rotate.a, rotate.x, rotate.y)
+            object@edge$tip.stroke.width, rotate.a, rotate.x, rotate.y)
 }
 
 #########################################################################################################
@@ -417,7 +417,7 @@ plot.ellipse <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white",
         stroke.color <- glyph@shape$stroke.color
     }
     svg <- sprintf(template.ellipse, w/2, h/2, x, y, id, fill.color, fill.opacity, 
-        stroke.color, stroke.width, stroke.opacity)
+                   stroke.color, stroke.width, stroke.opacity)
     return(svg)
 }
 
@@ -429,8 +429,9 @@ plot.ellipse.edge.tip <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "
     if (fill.color == "black") {
         fill.color <- object@edge$tip.fill.color  # if the edge has a filled tip(e.g. production), we can change it to user defined color. If the edge type has empty tip fill color, we can't change it.
     }
-    svg <- sprintf(template.ellipse, w/2, h/2, x, y, id, fill.color, object@edge$tip.fill.opacity, 
-        object@edge$tip.stroke.color, object@edge$tip.stroke.width, object@edge$tip.stroke.opacity)
+    svg <- sprintf(template.ellipse, w/2, h/2, x, y, id, fill.color, 
+                   object@edge$tip.fill.opacity, object@edge$tip.stroke.color, 
+                   object@edge$tip.stroke.width, object@edge$tip.stroke.opacity)
     return(svg)
 }
 
@@ -451,8 +452,7 @@ plot.line <- function(LineCoordinates, id, stroke.color = "black", stroke.opacit
     }
     stroke.width <- 2 * stroke.width
     svg <- template.line
-    svg <- sprintf(template.line, LineCoordinates, id, stroke.color, stroke.width, 
-        stroke.opacity)
+    svg <- sprintf(template.line, LineCoordinates, id, stroke.color, stroke.width, stroke.opacity)
     return(svg)
 }
 
@@ -460,14 +460,14 @@ plot.line <- function(LineCoordinates, id, stroke.color = "black", stroke.opacit
 plot.LineWings <- function(x, y, w, h, orientation, id) {
     
     leftLineCoordinates <- paste("x1=", x - w, " y1=", y, " x2=", x - w/2, " y2=", 
-        y, "", sep = "\"")
-    rightLineCoordinates <- paste("x1=", x + w/2, " y1=", y, " x2=", x + w, " y2=", 
-        y, "", sep = "\"")
+                                 y, "", sep = "\"")
+    rightLineCoordinates <- paste("x1=", x + w/2, " y1=", y, " x2=", x + w, " y2=",
+                                  y, "", sep = "\"")
     if (orientation == "vertical") {
-        leftLineCoordinates <- paste("x1=", x, " y1=", y - h, " x2=", x, " y2=", 
-            y - h/2, "", sep = "\"")
-        rightLineCoordinates <- paste("x1=", x, " y1=", y + h/2, " x2=", x, " y2=", 
-            y + h, "", sep = "\"")
+        leftLineCoordinates <- paste("x1=", x, " y1=", y - h, " x2=", x, " y2=",
+                                     y - h/2, "", sep = "\"")
+        rightLineCoordinates <- paste("x1=", x, " y1=", y + h/2, " x2=", x, " y2=",
+                                      y + h, "", sep = "\"")
     }
     svg.line.l <- plot.line(leftLineCoordinates, id)
     svg.line.r <- plot.line(rightLineCoordinates, id)

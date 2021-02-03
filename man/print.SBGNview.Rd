@@ -2,7 +2,7 @@
 % Please edit documentation in R/SBGNview.obj.fun.R
 \name{print.SBGNview}
 \alias{print.SBGNview}
-\title{A wrapper to run function \code{\link{renderSbgn}} for all pathways in a SBGNview object and generate image files.}
+\title{Generate image files}
 \usage{
 \method{print}{SBGNview}(x, ...)
 }
