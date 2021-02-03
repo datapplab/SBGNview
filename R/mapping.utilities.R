@@ -195,10 +195,14 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
     
 #    sel.rn=tapply(1:sum(eff.idx), mapped.ids, function(x){
 #    sel.rn=tapply(which(eff.idx), mapped.ids, function(x){
-    sel.rn=tapply(1:length(mapped.ids), mapped.ids, function(x){
+#    sel.rn=tapply(1:length(mapped.ids), mapped.ids, function(x){
+    map.idx=match(id.map1[,1], gd.names)
+    sel.rn=tapply(map.idx, mapped.ids, function(x){
       if(length(x)==1) return(x)
       else return(x[which.min(abs(vars[x]-sum.method(vars[x], na.rm=T)))])
     })
+#    browser()
+#    if(is.list(sel.rn)) sel.rn=unlist(sel.rn)
     if(length(sel.rn)>1) mapped.data=cbind(mol.data[sel.rn,])
     else mapped.data=rbind(mol.data[sel.rn,])
     rownames(mapped.data)=names(sel.rn)
