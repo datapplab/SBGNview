@@ -12,20 +12,19 @@ utils::globalVariables(c("pathways.info", "mapped.ids", "sbgn.xmls",
 #' @import rmarkdown
 #' @import knitr
 #' @import SBGNview.data
-
 #' @import grDevices
 #' @import methods
 #' @importFrom stats median runif var
 #' @importFrom AnnotationDbi select columns
 #' @importFrom SummarizedExperiment assays
 #' @import utils
-
 #' @import httr
 #' @import KEGGREST
 
 #########################################################################################################
 parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.dir, 
-    sbgn.gene.id.type, sbgn.cpd.id.type, sbgn.id.attr, SBGNview.data.folder = "./SBGNview.tmp.data") {
+                             sbgn.gene.id.type, sbgn.cpd.id.type, sbgn.id.attr, 
+                             SBGNview.data.folder = "./SBGNview.tmp.data") {
     database <- NULL
     output.file.sbgn <- paste(output.file, "_", input.sbgn, sep = "")
     input.sbgn.full.path <- paste(sbgn.dir, input.sbgn, sep = "/")
@@ -83,18 +82,20 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
     }
     if.file.in.collection <- "Rendered by SBGNview"
     pathway.name.on.graph <- list(pathway.name.on.graph = pathway.name.on.graph, 
-        if.file.in.collection = if.file.in.collection)
+                                  if.file.in.collection = if.file.in.collection)
     
     return(list(input.sbgn.full.path = input.sbgn.full.path, output.file.sbgn = output.file.sbgn, 
-        sbgn.gene.id.type = sbgn.gene.id.type, sbgn.cpd.id.type = sbgn.cpd.id.type, 
-        pathway.name.on.graph = pathway.name.on.graph, if.file.in.collection = if.file.in.collection, 
-        sbgn.id.attr = sbgn.id.attr, database = database))
+                sbgn.gene.id.type = sbgn.gene.id.type, sbgn.cpd.id.type = sbgn.cpd.id.type, 
+                pathway.name.on.graph = pathway.name.on.graph, if.file.in.collection = if.file.in.collection, 
+                sbgn.id.attr = sbgn.id.attr, database = database))
 }
 
 #########################################################################################################
 parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
-    user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, id.mapping.cpd, 
-    node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, simulate.data, SBGNview.data.folder = "./SBGNview.tmp.data") {
+                             user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, 
+                             id.mapping.cpd, node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, 
+                             simulate.data, SBGNview.data.folder = "./SBGNview.tmp.data") {
+    
     if (!is.null(gene.data) & is.null(sbgn.gene.id.type)) {
         stop("Must provide 'sbgn.gene.id.type'!")
     }
@@ -193,8 +194,9 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
 }
 
 #########################################################################################################
-parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
-                          arcs.user = list()) {
+parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, 
+                          global.parameters.list, arcs.user = list()) {
+    
     if (length(arcs.user) == 0) {
         svg.splines <- ""
         splines.list <- list()
@@ -248,6 +250,7 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, gl
 
 #########################################################################################################
 get.spline.compo <- function(arc.spline, spline.info, y.margin) {
+    
     children <- xml2::xml_children(arc.spline)
     components <- list()
     for (i in seq_len(length(children))) {
@@ -291,8 +294,9 @@ get.spline.compo <- function(arc.spline, spline.info, y.margin) {
 }
 
 #########################################################################################################
-parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, global.parameters.list, 
-                       arcs.user = list()) {
+parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, 
+                       global.parameters.list, arcs.user = list()) {
+    
     arcs.list <- list()
     if (length(arcs.user) == 0) {
         edge.paras <- list(line.stroke.color = "black", line.stroke.opacity = 1, 
@@ -324,6 +328,7 @@ parse.arcs <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0, globa
 #########################################################################################################
 get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge.paras, 
                              global.parameters.list, glyphs) {
+    
     svg.arc <- ""
     arc.line <- c(arc.info["source"], arc.info["target"], arc.info["id"], start.x = "", 
                   start.y = "", end.x = "", end.y = "")
@@ -346,8 +351,8 @@ get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge
                 arc.line["id"] <- paste("next", arc.info["source"], arc.info["target"], 
                                         sep = "->")
             }
-            arc <- new("next.sbgn.arc", id = paste(arc.line["id"], arc.line["start.x"], 
-                                                   sep = "_"), start.x = as.numeric(arc.line["start.x"]), start.y = as.numeric(arc.line["start.y"]), 
+            arc <- new("next.sbgn.arc", id = paste(arc.line["id"], arc.line["start.x"], sep = "_"), 
+                       start.x = as.numeric(arc.line["start.x"]), start.y = as.numeric(arc.line["start.y"]), 
                        end.x = as.numeric(arc.line["end.x"]), end.y = as.numeric(arc.line["end.y"]))
             #arc@parameters.list <- global.parameters.list
             arc@parameters.list <- list()
@@ -388,6 +393,7 @@ get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge
 
 #########################################################################################################
 find.arc.coordinates <- function(arc.line, glyphs) {
+    
     arc.source <- arc.line["source"]
     arc.target <- arc.line["target"]
     
@@ -446,8 +452,8 @@ find.arc.coordinates <- function(arc.line, glyphs) {
 
 #########################################################################################################
 parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, max.x, 
-                        global.parameters.list, sbgn.id.attr, glyphs.user = list(), compartment.layer.info, 
-                        if.plot.cardinality) {
+                        global.parameters.list, sbgn.id.attr, glyphs.user = list(), 
+                        compartment.layer.info, if.plot.cardinality) {
     
     if.plot.annotation.nodes <- global.parameters.list$if.plot.annotation.nodes
     if.use.number.for.long.label <- global.parameters.list$if.use.number.for.long.label
@@ -470,7 +476,6 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
     if.has.non.chemical.nodes <- FALSE
     glyph.coors <- list()
     user.defined.glyphs <- names(glyphs.user)
-    
     
     shorter.label.mapping.list <- c("shorter label", "original label")
     long.words.count.list <- list()
@@ -519,10 +524,10 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
                 print(node)
             }
         } else {
-            parse.result <- generate.node.obj(glyph, glyph.class, glyph.info, node, 
-                                              if.plot.svg, y.margin, sbgn.id.attr, user.data, max.x, global.parameters.list, 
-                                              if.use.number.for.long.label, if.plot.annotation.nodes, map.language, 
-                                              long.words.count.list, shorter.label.mapping.list)
+            parse.result <- generate.node.obj(glyph, glyph.class, glyph.info, node, if.plot.svg, y.margin, 
+                                              sbgn.id.attr, user.data, max.x, global.parameters.list, 
+                                              if.use.number.for.long.label, if.plot.annotation.nodes, 
+                                              map.language, long.words.count.list, shorter.label.mapping.list)
             node <- parse.result$node
             long.words.count.list <- parse.result$long.words.count.list
             shorter.label.mapping.list <- parse.result$shorter.label.mapping.list
@@ -585,6 +590,7 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
 
 #########################################################################################################
 generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id.node.count.list) {
+    
     if (is.na(glyph.id)) {
         if (glyph.class %in% c("unit of information", "state variable")) {
             glyph.parent <- xml2::xml_parent(glyph)
@@ -608,13 +614,14 @@ generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id
         index.id <- no.id.node.count.list[[glyph.class]]
         glyph.id <- paste(glyph.class, index.id, sep = ":")
     }
-    return(list(glyph.id = glyph.id, node.set.list = node.set.list, no.id.node.count.list = no.id.node.count.list))
+    return(list(glyph.id = glyph.id, node.set.list = node.set.list, 
+                no.id.node.count.list = no.id.node.count.list))
 }
 
 #########################################################################################################
 # used in generate.node.obj function from mapping.utilities.R
-parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, node, 
-                                 if.plot.svg, y.margin) {
+parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, 
+                                 node, if.plot.svg, y.margin) {
     
     if.complex.empty <- TRUE
     node.clone <- ""
@@ -702,11 +709,13 @@ parse.glyph.children <- function(map.language, glyph, glyph.class, glyph.info, n
     }
     
     return(list(node = node, node.clone = node.clone, glyph.port.info = glyph.port.info, 
-                svg.port = svg.port, node.label = node.label, glyph.info = glyph.info, if.complex.empty = if.complex.empty))
+                svg.port = svg.port, node.label = node.label, glyph.info = glyph.info, 
+                if.complex.empty = if.complex.empty))
 }
 
 #########################################################################################################
 plot.arc.ports <- function(glyph.port.info, node) {
+    
     port.x <- as.numeric(glyph.port.info["x"])
     port.y <- as.numeric(glyph.port.info["y"])
     node.x <- node@x
@@ -773,8 +782,8 @@ plot.arc.ports <- function(glyph.port.info, node) {
 
 sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type = NA,
                       database = NA, species = NA, show.ids.for.multiHit = NULL,
-                      SBGNview.data.folder = "./SBGNview.tmp.data",
-                      sbgn.dir = "./") {
+                      SBGNview.data.folder = "./SBGNview.tmp.data", sbgn.dir = "./") {
+    
     if (!file.exists(SBGNview.data.folder)) {
         dir.create(SBGNview.data.folder)
     }
@@ -830,8 +839,9 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
 
 #########################################################################################################
 get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
-                               output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, id.mapping.all.list, 
-                               show.ids.for.multiHit) {
+                               output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
+                               id.mapping.all.list, show.ids.for.multiHit) {
+    
     node.set.list <- list(all.nodes = matrix(ncol = 8, nrow = 0))
     all.glyphs <- xml2::xml_find_all(sbgn, ".//glyph")
     for (i in seq_len(length(all.glyphs))) {
@@ -899,6 +909,7 @@ get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.
 
 #########################################################################################################
 simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
+    
     all.nodes <- node.ids.from.sbgn(sbgn.file, ...)
     if (is.null(all.nodes)) {
         return("no.nodes")
@@ -914,6 +925,7 @@ simulate.user.data <- function(sbgn.file, n.samples = 3, ...) {
 #########################################################################################################
 node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule", "simple chemical"), 
                                if.include.complex.member = FALSE) {
+    
     message("reading SBGN-ML file for node ids: ", sbgn.file)
     sbgn <- xml2::read_xml(sbgn.file)
     xml2::xml_attrs(sbgn) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
@@ -936,6 +948,7 @@ node.ids.from.sbgn <- function(sbgn.file, output.glyph.class = c("macromolecule"
 
 #########################################################################################################
 generate.user.data <- function(user.data) {
+    
     for (j in seq_len(ncol(user.data))) {
         # if the variance is zero, scale will produce NaN and cause error
         print("simulate user data")
@@ -969,6 +982,7 @@ generate.user.data <- function(user.data) {
 ## parse ports
 ## used by renderSbgn function
 xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
+    
     ports <- list()
     ports.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//port")))
     if (!is.null(ports.info)) {
@@ -985,6 +999,7 @@ xml.to.port.glyphs <- function(sbgn.xml, y.margin = 0) {
 #########################################################################################################
 ## used in SBGNview function
 get.arcs.info <- function(sbgn) {
+    
     # Retrieve edge information
     edge.spline.info.node <- xml2::xml_find_all(sbgn, ".//edge.spline.info")
     # in the original design, the routed edges are in the format of svg. In updated
@@ -1001,6 +1016,7 @@ get.arcs.info <- function(sbgn) {
 #########################################################################################################
 ## used in SBGNview function
 get.compartment.layer <- function(sbgn) {
+    
     compartment.layer.info <- xml2::xml_find_all(sbgn, ".//compartment.layer.info")
     if (length(compartment.layer.info) > 0) {
         compartment.layer.info <- strsplit(xml2::xml_text(compartment.layer.info[1]), 
@@ -1016,6 +1032,7 @@ get.compartment.layer <- function(sbgn) {
 ### new version of function. removed max.xw when assigning y.margin
 ### incrementally increase/adjust y.margin based on other parameters that affect height of output image
 find.max.xy <- function(sbgn.xml, arcs.info, color.panel.scale, global.parameters.list) {
+    
     box.info <- do.call(rbind, xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//bbox")))
     x <- as.numeric(box.info[, "x"])
     w <- as.numeric(box.info[, "w"])

@@ -155,8 +155,8 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
         }
         if (glyph.class == "compartment") {
             if (parameters.list$if.scale.compartment.font.size) {
-                font.size <- max(glyph@shape$stroke.width * 3.5, font.size * parameters.list$node.width.adjust.factor.compartment *
-                                     w)
+                font.size <- max(glyph@shape$stroke.width * 3.5, 
+                                 font.size * parameters.list$node.width.adjust.factor.compartment * w)
             } else {
                 font.size <- font.size * parameters.list$node.width.adjust.factor
                 font.size <- font.size * parameters.list$font.size.scale.gene *
@@ -166,6 +166,7 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
                 # font.size = font.size * max(1,max.x/2000)
             }
             text.length.factor <- parameters.list$text.length.factor.compartment
+            
         } else if (glyph.class == "complex") {
             if (parameters.list$if.scale.complex.font.size) {
                 font.size <- font.size * parameters.list$node.width.adjust.factor.complex *
@@ -176,17 +177,21 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
                     parameters.list$font.size.scale.complex
             }
             text.length.factor <- parameters.list$text.length.factor.complex
+            
         } else if (glyph.class %in% c("omitted process", "uncertain process", "cardinality")) {
             # font.size = font.size * global.parameters.list$logic.node.font.scale
             font.size <- glyph@h
+            
         } else if (glyph.class %in% c("tau", "or", "and", "not", "delay", "tag", "terminal")) {
             # font.size = font.size * global.parameters.list$logic.node.font.scale
             font.size <- glyph@h/2
+            
         } else if (label == "SBGNhub Pathway Collection") {
             # font.size = font.size * global.parameters.list$logic.node.font.scale
             font.size <- glyph@h * 0.6
             return(list(words.segments = label, label.margin = font.size, font.size = font.size,
                         if.long.word = FALSE, nline = 1))
+            
         } else if (glyph.class %in% c("state variable", "unit of information")) {
             font.size <- font.size * parameters.list$status.node.font.scale
         } else {
@@ -221,9 +226,10 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
             current.line.to.be <- paste(current.line, word.current, sep = "")
             current.line.to.be.length <- (nchar(current.line.to.be)) * font.size
 
-            if (current.line.to.be.length > text.length.factor * w & (length(label.words) -
-                                                                      i) > 2 & (word.previous %in% parameters.list$label.spliting.string |
-                                                                                identical(parameters.list$label.spliting.string, c("any")))) {
+            if (current.line.to.be.length > text.length.factor * w & 
+                (length(label.words) - i) > 2 & 
+                (word.previous %in% parameters.list$label.spliting.string | identical(parameters.list$label.spliting.string, c("any"))) ) {
+                
                 # if there are less than 2 letters left ,merge them to the current line instead
                 # of creating a new line with just 2 letters
                 if (glyph.class == "complex") {
@@ -256,8 +262,8 @@ break.text.into.segments <- function(label, w, glyph.class, parameters.list, max
         if.long.word <- TRUE
         label.margin <- (font.size)
     }
-    return(list(words.segments = words.segments, label.margin = label.margin, font.size = font.size,
-                if.long.word = if.long.word, nline = nline))
+    return(list(words.segments = words.segments, label.margin = label.margin, 
+                font.size = font.size, if.long.word = if.long.word, nline = nline))
 }
 
 ######################################################################################################### 
@@ -271,7 +277,7 @@ transform = \"rotate(%f %f %f)\"
 "
 
 plot.path <- function(d, id, fill.color, stroke.width, stroke.color, angle = 0, rotate.x = 0, 
-    rotate.y = 0, fill.opacity = 0.6, stroke.opacity = 1, object) {
+                      rotate.y = 0, fill.opacity = 0.6, stroke.opacity = 1, object) {
     
     if ("shape" %in% slotNames(object)) {
         # if we are ploting a glyph(glyph has slot 'shape')
@@ -321,8 +327,9 @@ style=\"fill:%s;fill-opacity:%f;stroke:%s;stroke-width:%f;stroke-opacity:%f\" />
 "
 
 plot.rectangle <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white", 
-    stroke.color = "black", stroke.width = 1, fill.opacity = 0.6, stroke.opacity = 1, 
-    glyph = new("glyph")) {
+                           stroke.color = "black", stroke.width = 1, fill.opacity = 0.6, 
+                           stroke.opacity = 1, glyph = new("glyph")) {
+    
     if (length(glyph@shape$fill.color) > 0) {
         fill.color <- glyph@shape$fill.color
     }
@@ -339,7 +346,7 @@ plot.rectangle <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white",
         stroke.color <- glyph@shape$stroke.color
     }
     svg <- sprintf(template.rectangle, w, h, rx, ry, x, y, id, fill.color, fill.opacity, 
-        stroke.color, stroke.width, stroke.opacity)
+                   stroke.color, stroke.width, stroke.opacity)
     return(svg)
 }
 
@@ -348,6 +355,7 @@ plot.rectangle <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white",
 # content for 'd' command in 'path' the r of the rounded corners can be
 # different(can be set using r1,r2,r3,r4: from top left corner, clockwise)
 generate.d.for.partly.rounded.corner.rect <- function(x, y, w, h, r1, r2, r3, r4) {
+    
     start.and.upperLeft <- paste("M", x, r1 + y, "Q", x, y, x + r1, y, sep = " ")
     top.and.upperRight <- paste("L", x + w - r2, y, "Q", x + w, y, x + w, y + r2, 
         sep = " ")
@@ -370,6 +378,7 @@ transform = \"rotate(%f %f %f)\"
 />
 "
 plot.polygon <- function(object, points, fill.color, rotate.a, rotate.x, rotate.y) {
+    
     if (fill.color == "black") {
         fill.color <- object@edge$tip.fill.color  # if the edge has a filled tip(e.g. production), we can change it to user defined color. If the edge type has an empty tip, we can't change it.
     }
@@ -388,8 +397,10 @@ id=\"%s\"
 style=\"fill:%s;fill-opacity:%f;stroke:%s;stroke-width:%f;stroke-opacity:%f\" />
 "
 
-plot.ellipse <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white", fill.opacity = 1, 
-    stroke.color = "black", stroke.width = 1, stroke.opacity = 1, glyph = new("glyph")) {
+plot.ellipse <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white", 
+                         fill.opacity = 1, stroke.color = "black", stroke.width = 1, 
+                         stroke.opacity = 1, glyph = new("glyph")) {
+    
     if (length(glyph@shape$fill.color) > 0) {
         fill.color <- glyph@shape$fill.color
     }
@@ -410,9 +421,11 @@ plot.ellipse <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white", f
     return(svg)
 }
 
+#########################################################################################################
 plot.ellipse.edge.tip <- function(x, y, h, w, id, rx = 0, ry = 0, fill.color = "white", 
-    fill.opacity = 1, stroke.color = "black", stroke.width = 1, stroke.opacity = 1, 
-    object) {
+                                  fill.opacity = 1, stroke.color = "black", stroke.width = 1, 
+                                  stroke.opacity = 1, object) {
+    
     if (fill.color == "black") {
         fill.color <- object@edge$tip.fill.color  # if the edge has a filled tip(e.g. production), we can change it to user defined color. If the edge type has empty tip fill color, we can't change it.
     }
@@ -430,7 +443,8 @@ style=\"stroke:%s;stroke-width:%f;stroke-opacity:%f\" />
 "
 
 plot.line <- function(LineCoordinates, id, stroke.color = "black", stroke.opacity = 1, 
-    stroke.width = 1, object = NULL) {
+                      stroke.width = 1, object = NULL) {
+    
     if (!is.null(object)) {
         stroke.color <- object@edge$line.stroke.color
         stroke.width <- object@edge$line.width
@@ -442,7 +456,9 @@ plot.line <- function(LineCoordinates, id, stroke.color = "black", stroke.opacit
     return(svg)
 }
 
+#########################################################################################################
 plot.LineWings <- function(x, y, w, h, orientation, id) {
+    
     leftLineCoordinates <- paste("x1=", x - w, " y1=", y, " x2=", x - w/2, " y2=", 
         y, "", sep = "\"")
     rightLineCoordinates <- paste("x1=", x + w/2, " y1=", y, " x2=", x + w, " y2=", 

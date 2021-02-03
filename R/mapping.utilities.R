@@ -1,6 +1,7 @@
 
 #########################################################################################################
 add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
+  
   node.omics.data.id <- glyph.info[sbgn.id.attr]
   # remove complex name from omics.data.id for metacyc
   node.omics.data.id.without.complex <- gsub("_Complex.+:@:", ":@:", node.omics.data.id)
@@ -35,9 +36,10 @@ add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.
 }
 
 #########################################################################################################
-generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg, 
-                              y.margin, sbgn.id.attr, user.data, max.x, global.parameters.list, if.use.number.for.long.label, 
-                              if.plot.annotation.nodes, map.language, long.words.count.list, shorter.label.mapping.list) {
+generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg, y.margin, 
+                              sbgn.id.attr, user.data, max.x, global.parameters.list, 
+                              if.use.number.for.long.label, if.plot.annotation.nodes, map.language, 
+                              long.words.count.list, shorter.label.mapping.list) {
   
   # parse children of the node, get information like label, coordinates, if complex
   # empty etc.
@@ -119,7 +121,8 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
   } else if (node@glyph.class %in% c("process", "uncertain process", "omitted process")) {
     node@if.show.label <- FALSE
   }
-  return(list(node = node, long.words.count.list = long.words.count.list, shorter.label.mapping.list = shorter.label.mapping.list))
+  return(list(node = node, long.words.count.list = long.words.count.list, 
+              shorter.label.mapping.list = shorter.label.mapping.list))
 }
 
 
@@ -127,7 +130,7 @@ generate.node.obj <- function(glyph, glyph.class, glyph.info, node, if.plot.svg,
 # this function is a slightly modified version of mol.sum from pathview (1.30.1/1.31.1). This is a transitional
 # copy and will be merged into pathview for the future. This function replace the old mol.sum.multiple.mapping
 # + merge.molecule.data functions, which are very slow, and affect SBGNview() and many higher level functions.
-mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.db", sum.method=c("sum","mean", "median", "max", "max.abs", "random")[1]){
+mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.db", sum.method=c("sum","mean", "median", "max", "max.abs", "random")[1]) {
   if(is.character(mol.data)){
     gd.names=mol.data
     mol.data=rep(1, length(mol.data))
@@ -205,7 +208,6 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 
 }
 
-
 #########################################################################################################
 #' Change vector of input IDs to another ID type
 #' 
@@ -232,6 +234,7 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 
 changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.pathways = NULL, 
                       org = "hsa", SBGNview.data.folder = "./SBGNview.tmp.data") {
+  
   if (!is.null(limit.to.pathways) & output.type %in% c("pathwayCommons", "metacyc.SBGN")) {
     ids.in.pathways <- sbgnNodes(limit.to.pathways, SBGNview.data.folder = SBGNview.data.folder)
     limit.to.output.ids <- unlist(lapply(ids.in.pathways, function(all.nodes) {
@@ -246,7 +249,6 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
     # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.gene.id.type = output.type, 
     #                                                 output.gene.id.type = input.type, 
     #                                                 species = org, SBGNview.data.folder = SBGNview.data.folder)
-    #### use loadMappingTable
     id.mapping.all.list <- loadMappingTable(input.type = input.type, output.type = output.type,
                                             species = org, cpd.or.gene = "gene", limit.to.ids = input.ids,
                                             SBGNview.data.folder = SBGNview.data.folder)
@@ -255,7 +257,6 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
     # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type = output.type, 
     #                                                 output.cpd.id.type = input.type, 
     #                                                 species = org, SBGNview.data.folder = SBGNview.data.folder)
-    ### use loadMappingTable
     id.mapping.all.list <- loadMappingTable(input.type = input.type, output.type = output.type,
                                             cpd.or.gene = "compound", limit.to.ids = input.ids,
                                             SBGNview.data.folder = SBGNview.data.folder)
@@ -280,7 +281,7 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
   
   message("\nChanged IDs from ", input.type, " to ", output.type)
   
-  ###### checking how many IDs were mapped
+  # checking how many IDs were mapped
   not.mapped.count <- 0
   mapped.count <- 0
   for(idx in seq_along(new.ids)){
@@ -295,7 +296,6 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
     message("**NOTE**: ", mapped.count, " of ", length(new.ids), " in 'input.ids' were mapped to the output type ")
     message("Please check the ouput list for more information")
   }
-  ######
   
   return(new.ids)
 }
@@ -348,12 +348,11 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
 changeDataId <- function(data.input.id, input.type, output.type, sum.method = "sum", 
                          org = "hsa", cpd.or.gene, id.mapping.table = NULL, 
                          SBGNview.data.folder = "./SBGNview.tmp.data") {
+  
   # function: change input data matrix with input/uniprot ID to data matrix with
   # pathwaycommons id if there are multiple input IDs mapped to a node, collapse
   # their values using user specified function(sum.method)
-  
-  #input.type <- gsub("entrez", "ENTREZID", input.type)
-  #output.type <- gsub("entrez", "ENTREZID", output.type)
+
   if(input.type %in% c("entrez", "eg", "entrezid")) input.type = "ENTREZID"
   if(output.type %in% c("entrez", "eg", "entrezid")) output.type = "ENTREZID"
   
@@ -371,12 +370,8 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
       input.ids <- row.names(data.input.id)
     }
     id.map <- loadMappingTable(output.type = output.type, input.type = input.type, 
-                                     species = org, cpd.or.gene = cpd.or.gene, 
-                                     limit.to.ids = input.ids, 
-                                     SBGNview.data.folder = SBGNview.data.folder)
-    
-    #id.map <- mapping.list[[1]][[1]]
-    #id.map <- as.matrix(id.map[, c(input.type, output.type)])
+                               species = org, cpd.or.gene = cpd.or.gene, 
+                               limit.to.ids = input.ids, SBGNview.data.folder = SBGNview.data.folder)
   } else {
     if (!all(c(input.type) %in% colnames(id.mapping.table))) {
       message(input.type, " must be in column names of id.mapping.table!\n")
@@ -395,8 +390,8 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
   message("Changing data IDs")
   in.data.target.id <- mol.sum.multiple.mapping(mol.data = data.input.id, id.map = id.map, 
                                                 sum.method = sum.method)
-#  in.data.target.id <- pathview::mol.sum(mol.data = data.input.id, id.map = id.map,
-#                                                sum.method = sum.method)
+  # in.data.target.id <- pathview::mol.sum(mol.data = data.input.id, id.map = id.map, sum.method = sum.method)
+  
   message("Finished changing data IDs")
   return(in.data.target.id)
 
@@ -406,16 +401,14 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
 change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping.all.list, 
                       show.ids.for.multiHit = NULL) {
   
-  #mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]] 
-  
   if(is.matrix(id.mapping.all.list)){
     mapping.table <- id.mapping.all.list
   } else { # if list
     mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]]
   }
   
-  output.ids <- as.character(mapping.table[mapping.table[, input.type] == input.id, 
-                                           output.type])
+  output.ids <- as.character(mapping.table[mapping.table[, input.type] == input.id, output.type])
+  
   if (any(is.na(output.ids))) {
     print(mapping.table[mapping.table[, input.type] == input.id, ])
     stop("IDs have na")
@@ -435,7 +428,9 @@ change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping
 
 #########################################################################################################
 change.glyph.id <- function(glyph.id, glyph.class, id.mapping.all.list, output.gene.id.type = NA, 
-                            output.cpd.id.type = NA, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, show.ids.for.multiHit = NULL) {
+                            output.cpd.id.type = NA, SBGN.file.cpd.id.type, 
+                            SBGN.file.gene.id.type, show.ids.for.multiHit = NULL) {
+  
   cpd.or.gene <- glyph.class
   if (glyph.class == "macromolecule") {
     cpd.or.gene <- "gene"

@@ -38,6 +38,7 @@
 #' @export
 
 "print.SBGNview" <- function(x, ...) {
+    
     output.file <- NULL
     #SBGNview.obj <- x
     SBGNview.obj <- merge.entity.specific.parameters.list(x)
@@ -121,6 +122,7 @@ fileOutput <- function(obj) {
 #' }
 #' @export
 "outputFile<-" <- function(obj, value) {
+    
     glyphs.arcs.list <- obj$data
     sbgns <- names(glyphs.arcs.list)
     for (s in seq_len(length.out = length(glyphs.arcs.list))) {

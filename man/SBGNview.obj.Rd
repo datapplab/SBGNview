@@ -5,7 +5,16 @@
 \alias{SBGNview.obj}
 \title{Demo SBGNview object}
 \format{
-A SBGNview S3 class object
+A list containing three elements:
+
+          1. data: 
+             A list contains information for all input SBGN pathways. Each element is a list (e.g. 'P00001') holding information of a single SBGN pathway. The information include parsed information of glyphs, arcs and SBGNview parameters passed to SBGNview function
+             
+          2. output.file:
+             A string of the path to the output file. It is the string set by parameter 'output.file' in function SBGNview.
+             
+          3. output.formats:
+             A character vector specifying the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file.
 }
 \usage{
 SBGNview.obj
@@ -21,5 +30,8 @@ This mechanism to allow layer-by-layer graph modification is similar to that of 
 Defining this class as a formal (S4) class will produce an S4 SBGNview object which doesn't work with the binary operator and doesn't allow for layer-by-layer graph modification. 
 Therefore, we decided to go with the S3 implementation of the SBGNview class since it works well with the binary operator making this 
 functionality more intuitive and user friendly.
+}
+\examples{
+data(SBGNview.obj)
 }
 \keyword{datasets}

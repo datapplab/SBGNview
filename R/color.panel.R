@@ -2,6 +2,7 @@
 #########################################################################################################
 # changed function name from 'color.from.01.value' to 'color.from.value'. Function used in plot.utilities.R
 color.from.value <- function(value, gene.or.cpd, global.parameters.list) {
+    
     if (gene.or.cpd == "gene") {
         min.value <- global.parameters.list$min.gene.value
         max.value <- global.parameters.list$max.gene.value
@@ -61,6 +62,7 @@ color.from.value <- function(value, gene.or.cpd, global.parameters.list) {
 #########################################################################################################
 # color.panel(100,100,10)
 color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, if.insert.sbgn.link = TRUE) {
+    
     if (gene.or.cpd == "gene") {
         min.value <- global.parameters.list$min.gene.value
         max.value <- global.parameters.list$max.gene.value
@@ -131,14 +133,15 @@ color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, 
         }
     }
     
-    svg <- paste(svg, svg.text.high, svg.text.low, svg.text.mid, svg.text.link.to.SBGN.panel, 
-        sep = "\n")
+    svg <- paste(svg, svg.text.high, svg.text.low, svg.text.mid, 
+                 svg.text.link.to.SBGN.panel, sep = "\n")
     return(svg)
 }
 
 #########################################################################################################
 find.col.panel.range <- function(user.data, max.gene.value, mid.gene.value, min.gene.value, 
-    max.cpd.value, mid.cpd.value, min.cpd.value) {
+                                 max.cpd.value, mid.cpd.value, min.cpd.value) {
+    
     if (!"max.gene" %in% names(user.data)) {
         user.data[["max.gene"]] <- 1
         user.data[["min.gene"]] <- -1
@@ -169,13 +172,13 @@ find.col.panel.range <- function(user.data, max.gene.value, mid.gene.value, min.
         mid.cpd.value <- signif(median(c(max.cpd.value, min.cpd.value)), 2) + 0.1
     }
     return(list(if.has.gene.data = if.has.gene.data, if.has.cpd.data = if.has.cpd.data, 
-        max.gene.value = max.gene.value, mid.gene.value = mid.gene.value, min.gene.value = min.gene.value, 
-        max.cpd.value = max.cpd.value, mid.cpd.value = mid.cpd.value, min.cpd.value = min.cpd.value))
+                max.gene.value = max.gene.value, mid.gene.value = mid.gene.value, min.gene.value = min.gene.value, 
+                max.cpd.value = max.cpd.value, mid.cpd.value = mid.cpd.value, min.cpd.value = min.cpd.value))
 }
 
 #########################################################################################################
 find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, if.has.gene.data, 
-    if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, min.y) {
+                                             if.has.cpd.data, parse.glyph.out.list, max.x, max.y, min.x, min.y) {
     
     add.scale.factor <- 14
     if(global.parameters.list$if.scale.compartment.font.size) {
@@ -240,8 +243,8 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
         }
     }
     col.panel.svg <- paste(col.panel.svg, col.panel.svg.chemical, sep = "\n")
-    return(list(col.panel.svg = col.panel.svg, col.panel.w = col.panel.w, col.panel.y = col.panel.y, 
-        col.panel.h = col.panel.h))
+    return(list(col.panel.svg = col.panel.svg, col.panel.w = col.panel.w, 
+                col.panel.y = col.panel.y, col.panel.h = col.panel.h))
 }
 
 #########################################################################################################

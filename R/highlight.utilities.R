@@ -2,9 +2,9 @@
 #########################################################################################################
 # needs improvement. Currently, input in a set of nodes, 
 # it will highlight all edges among the input nodes
-highlight.edges <- function(node.set, arcs = NULL,  
-    node.set.id.type = NULL, arc.node.id.type = NULL, cpd.or.gene = NULL, arc.highlight.stroke.color = "red", 
-    arc.highlight.stroke.width = 4, arc.highlight.tip.size = 4) {
+highlight.edges <- function(node.set, arcs = NULL, node.set.id.type = NULL, arc.node.id.type = NULL, 
+                            cpd.or.gene = NULL, arc.highlight.stroke.color = "red", 
+                            arc.highlight.stroke.width = 4, arc.highlight.tip.size = 4) {
     
     if (node.set.id.type != arc.node.id.type) {
         new.ids <- changeIds(input.ids = node.set, input.type = node.set.id.type, 
@@ -73,10 +73,11 @@ highlight.edges <- function(node.set, arcs = NULL,
 #' @export
  
 highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
-    cpd.or.gene = "compound", stroke.color = "black", stroke.width = 10, stroke.opacity = 1, 
-    show.glyph.id = FALSE, select.glyph.class = c(), label.x.shift = 0, label.y.shift = 0, 
-    label.color = "black", label.font.size = NULL, label.spliting.string = NULL, 
-    labels = NULL) {
+                           cpd.or.gene = "compound", stroke.color = "black", stroke.width = 10, stroke.opacity = 1, 
+                           show.glyph.id = FALSE, select.glyph.class = c(), label.x.shift = 0, label.y.shift = 0, 
+                           label.color = "black", label.font.size = NULL, 
+                           label.spliting.string = NULL, labels = NULL) {
+    
     function(SBGNview.obj) {
         glyphs.arcs.list <- SBGNview.obj$data
         sbgns <- names(glyphs.arcs.list)
@@ -98,11 +99,12 @@ highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", 
 }
 
 #########################################################################################################
-highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c(), 
-    glyphs = NULL, pathway.id = NULL, node.set.id.type = NULL, glyphs.id.type = NULL, 
-    cpd.or.gene = NULL, stroke.width = 4, stroke.color = "red", stroke.opacity = 1, 
-    show.glyph.id = FALSE, label.x.shift = 0, label.y.shift = 0, label.color = "black", 
-    label.font.size = NULL, label.spliting.string = NULL, labels = NULL) {
+highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c(), glyphs = NULL, pathway.id = NULL,
+                                      node.set.id.type = NULL, glyphs.id.type = NULL, cpd.or.gene = NULL,
+                                      stroke.width = 4, stroke.color = "red", stroke.opacity = 1, show.glyph.id = FALSE,
+                                      label.x.shift = 0, label.y.shift = 0, label.color = "black", label.font.size = NULL,
+                                      label.spliting.string = NULL, labels = NULL) {
+    
     if (!identical(node.set, "all")) {
         # if we are not interested in all nodes, we need to get the node IDs for input
         # IDs if 1. input id type is not glyph id type, we need to change ids
@@ -216,10 +218,12 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 #' @export
 
 highlightPath <- function(from.node = NULL, to.node = NULL, directed.graph = TRUE, 
-    node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", cpd.or.gene = "compound", 
-    input.node.stroke.width = 10, from.node.color = "red", to.node.color = "blue", 
-    path.node.color = "black", path.node.stroke.width = 10, n.shortest.paths.plot = 1, 
-    shortest.paths.cols = c("purple"), path.stroke.width = 2, tip.size = 4) {
+                          node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
+                          cpd.or.gene = "compound", input.node.stroke.width = 10, from.node.color = "red", 
+                          to.node.color = "blue", path.node.color = "black", path.node.stroke.width = 10, 
+                          n.shortest.paths.plot = 1, shortest.paths.cols = c("purple"), 
+                          path.stroke.width = 2, tip.size = 4) {
+    
     function(SBGNview.obj) {
         glyphs.arcs.list <- SBGNview.obj$data
         sbgns <- names(glyphs.arcs.list)
@@ -285,11 +289,12 @@ shortest.path.from.arcs <- function(arcs, from.node, to.node, directed.graph = T
 }
 
 #########################################################################################################
-highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = NULL, 
-    pathway.id = NULL, directed.graph = TRUE, node.set.id.type = NULL, glyphs.id.type = NULL, 
-    cpd.or.gene = NULL, from.node.color = "red", to.node.color = "blue", input.node.stroke.width = 4, 
-    path.node.color = "black", path.node.stroke.width = 10, n.shortest.paths.plot = 1, 
-    path.stroke.width = 3, shortest.paths.cols = c("purple", "green"), tip.size = 4) {
+highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = NULL, pathway.id = NULL, 
+                                     directed.graph = TRUE, node.set.id.type = NULL, glyphs.id.type = NULL, 
+                                     cpd.or.gene = NULL, from.node.color = "red", to.node.color = "blue", 
+                                     input.node.stroke.width = 4, path.node.color = "black", path.node.stroke.width = 10, 
+                                     n.shortest.paths.plot = 1, path.stroke.width = 3, 
+                                     shortest.paths.cols = c("purple", "green"), tip.size = 4) {
     
     if (node.set.id.type != glyphs.id.type) {
         from.node <- changeIds(input.ids = from.node, input.type = node.set.id.type, 
@@ -358,6 +363,7 @@ highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = N
 #' @export
 
 highlightArcs <- function(class = "all", color = "black", line.width = 2, tip.size = 6) {
+    
     function(SBGNview.obj) {
         glyphs.arcs.list <- SBGNview.obj$data
         sbgns <- names(glyphs.arcs.list)

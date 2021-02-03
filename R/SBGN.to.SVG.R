@@ -80,31 +80,31 @@
 #################################################
 
 renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.formats, 
-        sbgn.id.attr, glyphs.user = list(), arcs.user = list(), arcs.info = "straight", 
-        compartment.layer.info = "original", user.data = matrix("no.user.data", nrow = 1), 
-        if.plot.svg = TRUE, key.pos = "topright", color.panel.scale = 1,  # Control the relative size of color scheme panel
-        color.panel.n.grid = 21,  # how many colors doese the color scheme show
-        col.gene.low = "green", col.gene.high = "red", col.gene.mid = "gray", col.cpd.low = "blue", col.cpd.high = "yellow", 
-        col.cpd.mid = "gray", min.gene.value = -1,  # color panel min value, values smaller than this will have the min.value color
-        max.gene.value = 1, mid.gene.value = 0, min.cpd.value = -1,  # color panel min value, values smaller than this will have the min.value color
-        max.cpd.value = 1, mid.cpd.value = 0, pathway.name = "", pathway.name.font.size = 1, 
-        if.plot.cardinality = FALSE, multimer.margin = 5, compartment.opacity = 1,  # how transparent the compartments are
-        auxiliary.opacity = 1,  # opacity of auxiliary nodes
-        if.plot.annotation.nodes = FALSE,  # Some sbgn files have 'annotation' nodes. By default we don't plot them
-        inhibition.edge.end.shift = 5,  # The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target node's border. We can shift it to prevent the overlap.
-        edge.tip.size = 6, if.use.number.for.long.label = FALSE, 
-        label.spliting.string = c(" ", ":", "-", ";", "/", "_"),  # the regular expression used to spline text to wrape labels. Can be set to '' to split by single letter. The default is space ' '. In some cases the word seperated by ' ' is too long. We can use space or '-'(i.e. '-| ')  to  split the words
-        complex.compartment.label.margin = 8,  # shift the label to the upper direction
-        if.write.shorter.label.mapping = TRUE, font.size = 3, logic.node.font.scale = 3, 
-        status.node.font.scale = 3, node.width.adjust.factor = 2,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        font.size.scale.gene = 3,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        font.size.scale.cpd = 3, # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        font.size.scale.complex = 1.1, font.size.scale.compartment = 1.6, if.scale.complex.font.size = FALSE, 
-        if.scale.compartment.font.size = FALSE, node.width.adjust.factor.compartment = 0.02,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        node.width.adjust.factor.complex = 0.02,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
-        text.length.factor = 2, text.length.factor.macromolecule = 2,  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for how wide the wrapped text should be.
-        text.length.factor.compartment = 2, text.length.factor.complex = 2, space.between.color.panel.and.entity = 100, 
-        global.parameters.list = NULL) {
+                       sbgn.id.attr, glyphs.user = list(), arcs.user = list(), arcs.info = "straight", 
+                       compartment.layer.info = "original", user.data = matrix("no.user.data", nrow = 1), 
+                       if.plot.svg = TRUE, key.pos = "topright", color.panel.scale = 1,  # Control the relative size of color scheme panel
+                       color.panel.n.grid = 21,  # how many colors doese the color scheme show
+                       col.gene.low = "green", col.gene.high = "red", col.gene.mid = "gray", col.cpd.low = "blue", col.cpd.high = "yellow", 
+                       col.cpd.mid = "gray", min.gene.value = -1,  # color panel min value, values smaller than this will have the min.value color
+                       max.gene.value = 1, mid.gene.value = 0, min.cpd.value = -1,  # color panel min value, values smaller than this will have the min.value color
+                       max.cpd.value = 1, mid.cpd.value = 0, pathway.name = "", pathway.name.font.size = 1, 
+                       if.plot.cardinality = FALSE, multimer.margin = 5, compartment.opacity = 1,  # how transparent the compartments are
+                       auxiliary.opacity = 1,  # opacity of auxiliary nodes
+                       if.plot.annotation.nodes = FALSE,  # Some sbgn files have 'annotation' nodes. By default we don't plot them
+                       inhibition.edge.end.shift = 5,  # The tip of 'inhibition' arcs is a line segment. Sometimes it overlaps with target node's border. We can shift it to prevent the overlap.
+                       edge.tip.size = 6, if.use.number.for.long.label = FALSE, 
+                       label.spliting.string = c(" ", ":", "-", ";", "/", "_"),  # the regular expression used to spline text to wrape labels. Can be set to '' to split by single letter. The default is space ' '. In some cases the word seperated by ' ' is too long. We can use space or '-'(i.e. '-| ')  to  split the words
+                       complex.compartment.label.margin = 8,  # shift the label to the upper direction
+                       if.write.shorter.label.mapping = TRUE, font.size = 3, logic.node.font.scale = 3, 
+                       status.node.font.scale = 3, node.width.adjust.factor = 2,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+                       font.size.scale.gene = 3,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+                       font.size.scale.cpd = 3, # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+                       font.size.scale.complex = 1.1, font.size.scale.compartment = 1.6, if.scale.complex.font.size = FALSE, 
+                       if.scale.compartment.font.size = FALSE, node.width.adjust.factor.compartment = 0.02,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+                       node.width.adjust.factor.complex = 0.02,  # change font size according to the node's width, for large compartments, it is better to enlarge font size in proportion to the width
+                       text.length.factor = 2, text.length.factor.macromolecule = 2,  # calculate label length based on number of characters and font size, then the length is compared to the width of node for text wrapping. This factor is used as a scale factor for how wide the wrapped text should be.
+                       text.length.factor.compartment = 2, text.length.factor.complex = 2, space.between.color.panel.and.entity = 100, 
+                       global.parameters.list = NULL) {
     
         col.panel.params <- find.col.panel.range(user.data, max.gene.value, mid.gene.value, 
                                                  min.gene.value, max.cpd.value, mid.cpd.value, min.cpd.value)
@@ -162,7 +162,6 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
             global.parameters.list$col.gene.high <- col.gene.high
             global.parameters.list$col.gene.mid <- col.gene.mid
             
-            # global.parameters.list$col.gene.mid = NA
             global.parameters.list$col.cpd.low <- col.cpd.low
             global.parameters.list$col.cpd.high <- col.cpd.high
             global.parameters.list$col.cpd.mid <- col.cpd.mid
@@ -179,7 +178,6 @@ renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.fo
         xml_attrs(sbgn.xml) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
         
         message("checking graph size and create margin for color panel")
-        #coords.range.list <- find.max.xy(sbgn.xml, arcs.info, color.panel.scale)
         coords.range.list <- find.max.xy(sbgn.xml, arcs.info, color.panel.scale, global.parameters.list)
         max.x <- coords.range.list$max.xw
         max.y <- coords.range.list$max.yh
@@ -284,8 +282,8 @@ fill=\"%s\">
 </text>
 "
 
-add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, template.text.pathway.name,
-                      min.x, max.x, max.y, y.margin) {
+add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template.text, 
+                      template.text.pathway.name, min.x, max.x, max.y, y.margin) {
     
     pathway.name.font <- col.panel.w/global.parameters.list$color.panel.scale/7 * global.parameters.list$pathway.name.font.size
     pathway.name.y <- col.panel.y #- pathway.name.font
@@ -323,7 +321,9 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
 
 
 #########################################################################################################
-get.arcs <- function(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, global.parameters.list, arcs.user) {
+get.arcs <- function(arcs.info, sbgn.xml, glyphs, if.plot.svg, y.margin, 
+                     global.parameters.list, arcs.user) {
+    
     if (arcs.info == "straight") {
         print("using original edges")
         result.list <- parse.arcs(sbgn.xml, glyphs, if.plot.svg = if.plot.svg, y.margin = y.margin, 

@@ -2,6 +2,7 @@
 #########################################################################################################
 ### searches for different id mapping file name combinations in local, SBGNview.data, SBGNhub locations
 ### check local directory for any mapping files, if not found then check SBGNView.data, then SBGNhub
+### returns list containing the mapping file name and the location where its found
 download.mapping.file <- function(input.type, output.type, species = NULL, 
                                   SBGNview.data.folder = "./SBGNview.tmp.data") { 
   
@@ -128,8 +129,6 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene = NULL, 
                              limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") { 
   
-  # input.type = gsub("entrez","ENTREZID",input.type)
-  # output.type = gsub("entrez","ENTREZID",output.type)
   if(input.type %in% c("entrez", "eg", "entrezid")) input.type = "ENTREZID"
   if(output.type %in% c("entrez", "eg", "entrezid")) output.type = "ENTREZID"
   
@@ -145,9 +144,9 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     dir.create(SBGNview.data.folder) 
   }
   
-  ### 'download.mapping.file checks' local, SBGNview.data, SBGNhub for mapping file
-  ### mapping.file.info$location values ("local", "SBGNview.data", "SBGNhub", "pathview")
-  ### mapping.file.info$mapping.file.name (".RData", "name",      ".RData,       "")
+  # 'download.mapping.file checks' local, SBGNview.data, SBGNhub for mapping file
+  # location values ("local", "SBGNview.data", "SBGNhub", "pathview")
+  # local and SBGNhub run location, file names have .RData extension
   mapping.file.info <- download.mapping.file(input.type = input.type,
                                              output.type = output.type,
                                              species = species,
@@ -155,22 +154,16 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   
   if(mapping.file.info$location == "local" || mapping.file.info$location == "SBGNhub"){
     
-    ##### file already in local (SBGNview.data.folder) or
-    ##### file downloaded from SBGNhub to local (SBGNview.data.folder)
-    # need absolute file path
-    path.to.local.file <- paste(SBGNview.data.folder, 
-                                mapping.file.info$mapping.file.name, sep = "/")
+    # read local file or file downloaded from SBGNhub
+    path.to.local.file <- paste(SBGNview.data.folder, mapping.file.info$mapping.file.name, sep = "/")
     var.name <- load(file = path.to.local.file)
     mapping.list <- get(var.name) # mapping.list returned
     message(mapping.file.info$mapping.file.name, " loaded from local")
     
   } else if (mapping.file.info$location == "SBGNview.data"){
-    
-    ##### file in SBGNview.data
-    mapping.list <- get(mapping.file.info$mapping.file.name)
+    mapping.list <- get(mapping.file.info$mapping.file.name) # get data loaded from SBGNview.data
 
-  } else {  ##### Use pathview
-    # mapping.file.info$location == "pathview". mapping.file.info$mapping.file.name == ""
+  } else {  # use pathview
     message("\nGenerating mapping using Pathview")
     if(cpd.or.gene == "gene"){
       # pathway.id used for heterogeneous purposes and mapping gene to pathway
@@ -178,8 +171,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
       # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"
       # ENZYME not in if condition below b/c it can be mapped directly
       if(any(c(input.type,output.type) %in% c("pathwayCommons","metacyc.SBGN","pathway.id")) &
-         !any(c(input.type,output.type) %in% c("KO"))
-      ){ # if input and output don't contain KO
+         !any(c(input.type,output.type) %in% c("KO")) ) { # if input and output don't contain KO
         
         # load mapping table for mapping KO to glyph id
         ko.to.glyph.id = loadMappingTable(input.type = output.type,
@@ -187,7 +179,6 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                           cpd.or.gene = "gene",
                                           species = species,
                                           SBGNview.data.folder = SBGNview.data.folder)
-        #ko.to.glyph.id = ko.to.glyph.id[[1]][[1]]
         
         # load mapping table for mapping user input to KO id
         input.to.ko = loadMappingTable(input.type = input.type,
@@ -196,9 +187,9 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                        limit.to.ids = limit.to.ids,
                                        species = species,
                                        SBGNview.data.folder = SBGNview.data.folder)
-        #input.to.ko = input.to.ko$gene[[1]]
         input.to.glyph.id = merge(input.to.ko, ko.to.glyph.id, all= FALSE)
         id.map = input.to.glyph.id[,c(input.type,output.type)]
+        
       } else {
         message("\nID mapping not pre-generated")
         # if(is.null(limit.to.ids)){
@@ -214,7 +205,8 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
           id.map = as.matrix(t(id.map))
         }
       }
-    } else if(cpd.or.gene == "compound"){
+      
+    } else if(cpd.or.gene == "compound") {
       message("\nID mapping not pre-generated. Using Pathview cpd!")
       if(is.null(limit.to.ids)){
         stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
@@ -231,7 +223,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     mapping.list <- id.map
   }
   
-  #### if mapping.list contains a species column, filter by value of 'species' argument
+  # if mapping.list contains a species column, filter by value of 'species' argument
   if(!identical(species, character(0))) {
     if("species" %in% colnames(mapping.list) & !is.null(mapping.list)) { 
       
@@ -542,8 +534,8 @@ mapping.ko.to.arbitrary.id.type <- function(input.ko.ids = NULL, output.type, sp
 }
 
 #########################################################################################################
-# use keggLink and keggConv to get mapping data and format to a list for generate.ko.mapping.list
-get.keggrest.data <- function(tar, src, link.or.conv, tar.is.species = F, src.is.species = F){
+### use keggLink and keggConv to get mapping data and format to a list for generate.ko.mapping.list
+get.keggrest.data <- function(tar, src, link.or.conv, tar.is.species = F, src.is.species = F) {
   # tar and src should be lower case
   if(link.or.conv == "link"){ # keggLink
     kegg.data <- KEGGREST::keggLink(target = tar, source = src)
@@ -574,11 +566,6 @@ load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gen
   if (!is.null(output.cpd.id.type)) {
     if (SBGN.file.cpd.id.type != output.cpd.id.type) {
       input.cpd.type <- SBGN.file.cpd.id.type
-      ## original
-      # cpd.id.mapping.list <- loadMappingTable(output.type = output.cpd.id.type, 
-      #                                         input.type = input.cpd.type, cpd.or.gene = "compound", species = species, 
-      #                                         SBGNview.data.folder = SBGNview.data.folder)
-      ### package the matrix into a list
       cpd.mapping.table <-  loadMappingTable(output.type = output.cpd.id.type, 
                                              input.type = input.cpd.type, cpd.or.gene = "compound", species = species, 
                                              SBGNview.data.folder = SBGNview.data.folder)
@@ -592,11 +579,6 @@ load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gen
   if (!is.null(output.gene.id.type)) {
     if (SBGN.file.gene.id.type != output.gene.id.type) {
       input.gene.type <- SBGN.file.gene.id.type
-      ## original
-      # gene.id.mapping.list <- loadMappingTable(output.type = output.gene.id.type, 
-      #                                          input.type = input.gene.type, cpd.or.gene = "gene", species = species, 
-      #                                          SBGNview.data.folder = SBGNview.data.folder)
-      ### package the matrix into a list
       gene.mapping.table <- loadMappingTable(output.type = output.gene.id.type, 
                                              input.type = input.gene.type, cpd.or.gene = "gene", species = species, 
                                              SBGNview.data.folder = SBGNview.data.folder)
@@ -671,9 +653,10 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #'   
 #' @export
 
-getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID", 
-                       org = "hsa", cpd.or.gene = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
+getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID", org = "hsa", 
+                       cpd.or.gene = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
                        truncate.name.length = 50, SBGNview.data.folder = "./SBGNview.tmp.data") {
+  
   if (tolower(database) == "metacrop") {
     if (cpd.or.gene == "gene") {
       id.in.pathway <- "ENZYME"
@@ -694,7 +677,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
   # metacrop initial list is using enzyme
   mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
                                    cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
-  ref.to.pathway <- mapping.list #[[1]][[1]]
+  ref.to.pathway <- mapping.list 
   
   if (mol.list.ID.type == id.in.pathway) {
     out.id.to.pathway <- ref.to.pathway
@@ -706,7 +689,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
                                            cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
                                            species = org, SBGNview.data.folder = SBGNview.data.folder)
     
-    out.id.type.to.ref <- out.id.type.to.ref #[[1]][[1]]
+    out.id.type.to.ref <- out.id.type.to.ref 
     # merge KO to pathway and KO to output id
     out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
     out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
@@ -769,6 +752,7 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
 #' @export
 
 downloadSbgnFile <- function(pathway.id, download.folder = "./") {
+  
   if (!file.exists(download.folder)) {
     dir.create(download.folder)
   }
@@ -810,12 +794,10 @@ downloadSbgnFile <- function(pathway.id, download.folder = "./") {
 find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mol.name.match, 
                                       SBGNview.data.folder = "./SBGNview.tmp.data/") {
   if (is.null(keywords)) {
-    pathways <- pathways.info[, c("pathway.id", "pathway.name", "sub.database", 
-                                  "database")]
+    pathways <- pathways.info[, c("pathway.id", "pathway.name", "sub.database", "database")]
   } else if (keyword.type == "pathway.name") {
     keywords <- tolower(keywords)
     pathways.info[, "pathway.name"] <- tolower(pathways.info[, "pathway.name"])
-    
     
     if.selected <- grepl(pattern = keywords[1], ignore.case = TRUE, pathways.info$pathway.name)
     if (length(keywords) > 1) {
@@ -831,8 +813,8 @@ find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mo
         }
       }
     }
-    pathways <- pathways.info[if.selected, c("pathway.id", "pathway.name", "sub.database", 
-                                             "database")]
+    pathways <- pathways.info[if.selected, c("pathway.id", "pathway.name", "sub.database", "database")]
+    
   } else {
     # using IDs to search for pathway type.pair.name =
     # paste(keyword.type,'_pathway.id',sep='')
@@ -845,7 +827,7 @@ find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mo
     }
     mapping.table <- loadMappingTable(input.type = keyword.type, output.type = "pathway.id", 
                                      species = NULL, SBGNview.data.folder = SBGNview.data.folder, cpd.or.gene = cpd.or.gene)
-    #mapping.table <- mapping.list[[1]][[1]]
+
     if (keyword.type == "CompoundName") {
       if (keywords.logic == "and") {
         keywords.logic <- "or"
@@ -884,6 +866,7 @@ find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mo
 # sub-string vectors). It for one name, the function will output the pair with
 # largest similarity score.
 match.names <- function(input.names, output.names, output.file = NULL) {
+  
   input.names <- tolower(input.names)
   output.names <- tolower(output.names)
   input.names <- unique(input.names)
@@ -927,7 +910,9 @@ match.names <- function(input.names, output.names, output.file = NULL) {
 }
 
 #########################################################################################################
-filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways.info.file.folder = "./SBGNview.tmp.data") {
+filter.pathways.by.org <- function(pathways, org, pathway.completeness, 
+                                   pathways.info.file.folder = "./SBGNview.tmp.data") {
+  
   org <- tolower(org)
   data("pathway.species.pct_Mapped")
   if (org == "all") {
@@ -942,13 +927,11 @@ filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways
     message("Using user provided pathway completeness cutoff: the same cutoff for different pathways!\n")
     
     pathway.ids <- pathway.species.pct_Mapped[pathway.species.pct_Mapped$species %in% 
-                                                org & pathway.species.pct_Mapped$pct.mapped.species.pathway >= pathway.completeness, 
-    ]
+                                                org & pathway.species.pct_Mapped$pct.mapped.species.pathway >= pathway.completeness, ]
   } else {
     message("Using pre-generated pathway-specific completeness cutoff: different cutoff for different pathways! Pathway 'exist' and 'not exist' accross all species defined by this cutoff have the largest ANOVA F statistic when comparing completeness between 'exist' and 'not exist' groups. \n")
-    pathway.ids <- pathway.species.pct_Mapped[pathway.species.pct_Mapped$species %in% 
-                                                org, ]
-    data("pathway.completeness.cutoff.info")
+    pathway.ids <- pathway.species.pct_Mapped[pathway.species.pct_Mapped$species %in% org, ]
+    if(!exists("pathway.completeness.cutoff.info")) data("pathway.completeness.cutoff.info")
     pathway.specific.cutoff <- pathway.completeness.cutoff.info$cutoff
     names(pathway.specific.cutoff) <- pathway.completeness.cutoff.info$pathway
     if.pass.cutoff <- pathway.ids$pct.mapped.species.pathway > pathway.specific.cutoff[pathway.ids$pathway]
@@ -978,6 +961,7 @@ filter.pathways.by.org <- function(pathways, org, pathway.completeness, pathways
 
 findPathways <- function(keywords = NULL, keywords.logic = "or", keyword.type = "pathway.name", 
                          org = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") {
+  
   pathway.completeness = NULL
   mol.name.match = c("exact.match", "jaccard", 
                      "presence.of.input-string.in.target-name")[1]
