@@ -70,6 +70,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
         if(!is.null(mapping.file.name)) { # found in SBGNhub
           location <- "SBGNhub"
           message(mapping.file.name, " downloaded from SBGNhub")
+          message("saved to ", SBGNview.data.folder)
           break
         } 
       }
