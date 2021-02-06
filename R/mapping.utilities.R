@@ -1,7 +1,7 @@
 
 #########################################################################################################
 # add input user data to glyph
-add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
+add.omics.data.to.glyph.old <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
   
   node.omics.data.id <- glyph.info[sbgn.id.attr]
   # remove complex name from omics.data.id for metacyc

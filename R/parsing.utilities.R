@@ -95,7 +95,7 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
 #########################################################################################################
 # parse input user data by changing ID tpype to SBGN ID type for gene and compound data
 # keeps record of data ID that are already converted 
-parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
+parse.omics.data.old <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
                              user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, 
                              id.mapping.cpd, node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, 
                              simulate.data, SBGNview.data.folder = "./SBGNview.tmp.data") {

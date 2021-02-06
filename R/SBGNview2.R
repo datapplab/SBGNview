@@ -121,7 +121,7 @@
 #' 
 #' @export
 
-SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, input.sbgn = NULL, 
+SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, input.sbgn = NULL, 
                      sbgn.dir = "./", output.file = "./output.svg", node.sum = "sum", gene.id.type = NA, 
                      cpd.id.type = NA, sbgn.id.attr = "id", sbgn.gene.id.type = NULL, sbgn.cpd.id.type = NA, 
                      id.mapping.gene = NULL, id.mapping.cpd = NULL, org = "hsa", output.formats = c("svg"), 
@@ -129,7 +129,8 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
     
     if (!dir.exists(sbgn.dir)) {
         warning("'sbgn.dir' folder does not exist! Creating: ", sbgn.dir, "\n")
-        dir.create(sbgn.dir)
+#        dir.create(sbgn.dir)
+        system(paste("mkdir -p", sbgn.dir))
     }
     # Parse all files in a folder when no input.sbgn is specified.
     if (is.null(input.sbgn)) {
@@ -140,12 +141,15 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
             stop("Must provide 'input.sbgn' if 'sbgn.dir':", sbgn.dir, " is empty! ")
         }
     }
-    input.sbgn <- unique(as.vector(as.character(input.sbgn)))
-    
+    input.sbgn <- unique(as.character(input.sbgn))
+
+    ts=list()
     user.data.recorded <- list()  # SBGNview can render multiple SBGN-ML files but the input omics data only need to be processed once. Here we record the converted data.
-    SBGNview.obj.data <- sapply(input.sbgn, function(x) NULL)  # pre-allocate the result list
+#    SBGNview.obj.data <- sapply(input.sbgn, function(x) NULL)  # pre-allocate the result list
+    SBGNview.obj.data <- list()
     # parse all SBGN-ML files
     for (i in seq_along(input.sbgn)) {
+        ts[[1]] <- proc.time()
         input.sbgn.i <- input.sbgn[i]
         message("\n\nProcessing pathway: ", input.sbgn.i, "\n")
         # Find related information according to input sbgn
@@ -160,6 +164,8 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
         if.file.in.collection <- parse.sbgn.list$if.file.in.collection
         sbgn.id.attr <- parse.sbgn.list$sbgn.id.attr
         database <- parse.sbgn.list$database
+
+        ts[[2]] <- proc.time() #        t1 <- proc.time()
         
         # Change omics data ID to SBGN-ML glyph ID. Input pathways may come from
         # different databases, so they may have different glyph ID types (e.g.
@@ -173,7 +179,8 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
                                         sbgn.cpd.id.type, simulate.data, SBGNview.data.folder = SBGNview.data.folder)
         user.data <- parsed.data$user.data  # A list holding both gene data and/or cpd data. The names of this list are glyph IDs (for 'macromolecule' and 'simple chemical') in 'input.sbgn'. Each element of 'user.data' is a vector containing omics data of the corresponding gene/macromolecule or compound/simple chemical. 
         user.data.recorded <- parsed.data$user.data.recorded  # Update user data list, recording data with different glyph ID types. The names of this list are glyph ID types. Each element is the list 'user.data'. It was updated if 'input.sbgn' has a new glyph ID type: a new 'user.data' with this new glyph ID type is added.
-        
+#browser()
+        ts[[3]] <- proc.time()  #      t2 <- proc.time()        
         # extract arc information and compartment layer information
         message("reading SBGN-ML file for arcs info: ", input.sbgn.full.path)
         sbgn.xml <- read_xml(input.sbgn.full.path)
@@ -183,7 +190,8 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
         # ensure they are plotted in correct layers so nodes visible are always from
         # upper layer (i.e. no nodes are covered by other compartments)
         compartment.layer.info <- get.compartment.layer(sbgn.xml)
-        
+
+        ts[[4]] <- proc.time() #        t3 <- proc.time()
         message("Rendering SBGN graph")
         sbgn.result.list <- renderSbgn(input.sbgn = input.sbgn.full.path, output.file = output.file.sbgn, 
                                        arcs.info = arcs.info, compartment.layer.info = compartment.layer.info, 
@@ -198,10 +206,15 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
                                                                   user.data = user.data, sbgn.id.attr = sbgn.id.attr, 
                                                                   pathway.name = pathway.name.on.graph)
         SBGNview.obj.data[[input.sbgn.i]] <- sbgn.result.list
+        ts[[5]] <- proc.time() #        t4 <- proc.time()
     }
     
     SBGNview.obj <- createSBGNviewObject(data = SBGNview.obj.data, output.file = output.file,
                                          output.formats = output.formats)
+
+    ts[[6]] <- proc.time() #    t5 <- proc.time()
+
+    for(i in 1:5) print(ts[[i+1]]-ts[[i]])
     
     return(SBGNview.obj)
 }
@@ -235,3 +248,192 @@ createSBGNviewObject <- function(data, output.file, output.formats){
 }
 
 #########################################################################################################
+
+#########################################################################################################
+# parse input user data by changing ID tpype to SBGN ID type for gene and compound data
+# keeps record of data ID that are already converted 
+parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
+                             user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, 
+                             id.mapping.cpd, node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, 
+                             simulate.data, SBGNview.data.folder = "./SBGNview.tmp.data") {
+    
+  
+    if (!is.null(gene.data) & is.null(sbgn.gene.id.type)) {
+        stop("Must provide 'sbgn.gene.id.type'!")
+    }
+    if (!is.null(cpd.data) & is.null(sbgn.cpd.id.type)) {
+        stop("Must provide 'sbgn.cpd.id.type'!")
+    }
+    
+    if (is(gene.data, "SummarizedExperiment")) {
+        gene.data <- SummarizedExperiment::assays(gene.data)$counts
+    }
+    if (is(cpd.data, "SummarizedExperiment")) {
+        cpd.data <- SummarizedExperiment::assays(cpd.data)$counts
+    }
+    if (simulate.data) {
+        gene.data.converted <- simulate.user.data(sbgn.file = input.sbgn.full.path, n.samples = 3)
+#        gene.data.converted <- as.list(as.data.frame(t(gene.data.converted)))
+        mm=range(gene.data.converted, na.rm=TRUE)
+        gene.data.converted <- list(gene.data.converted, max.gene=mm[2], min.gene=mm[1], max.cpd=mm[2], min.cpd=mm[1])
+#        gene.data.converted[["max.gene"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
+#        gene.data.converted[["min.gene"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
+#        gene.data.converted[["max.cpd"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
+#        gene.data.converted[["min.cpd"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
+        cpd.data.converted <- gene.data.converted[1]
+        
+    } else {
+        # convert input IDs to glyph IDs SBGNview can render multiple SBGN-ML files but
+        # the input omics data only need to be processed once for each database(each
+        # glyph ID type)
+        if (database %in% names(user.data.recorded)) {
+            print("Data ID already converted!!")
+            gene.data.converted <- user.data.recorded[[database]][["gene.data"]]
+            cpd.data.converted <- user.data.recorded[[database]][["cpd.data"]]
+        } else {
+            gene.data.converted <- gene.data
+            if (!is.null(gene.data)) {
+                # if user provided gene data, we need its ID type
+                if (is.na(gene.id.type)) {
+                  stop("No omics gene ID type specified. Please set parameter gene.id.type!")
+                }
+                if (is.vector(gene.data)) {
+                  if (is.character(gene.data[1])) {
+                    # if we need to generate count data from input data
+                    gene.data <- as.matrix(table(gene.data))
+                  } else {
+                    gene.data <- as.matrix(gene.data)
+                  }
+                }
+                if (gene.id.type != sbgn.gene.id.type) {
+                  gene.data.converted <- changeDataId(gene.data, input.type = gene.id.type, 
+                    output.type = sbgn.gene.id.type, sum.method = node.sum, cpd.or.gene = "gene", 
+                    org = org, id.mapping.table = id.mapping.gene, SBGNview.data.folder = SBGNview.data.folder)
+                  if (identical(gene.data.converted, "no.id.mapped")) {
+                    warning("no id mapped!")
+                  }
+                }
+#                gene.data.converted <- as.list(as.data.frame(t(gene.data.converted)))
+#                gene.data.converted[["max.gene"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
+#                gene.data.converted[["min.gene"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
+                mm=range(gene.data.converted, na.rm=TRUE)
+                gene.data.converted <- list(gene.data.converted, max.gene=mm[2], min.gene=mm[1])
+            }
+            
+            cpd.data.converted <- cpd.data
+            if (!is.null(cpd.data)) {
+                if (is.na(cpd.id.type)) {
+                  stop("No omics compound ID type specified. Please set parameter cpd.id.type!")
+                } else {
+                  if (is.vector(cpd.data)) {
+                    if (is.character(cpd.data[1])) {
+                      cpd.data.converted <- as.matrix(table(cpd.data))
+                    } else {
+                      cpd.data.converted <- as.matrix(cpd.data)
+                    }
+                  }
+                  if (cpd.id.type != sbgn.cpd.id.type) {
+                    cpd.data.converted <- changeDataId(cpd.data.converted, input.type = cpd.id.type, 
+                      output.type = sbgn.cpd.id.type, sum.method = node.sum, cpd.or.gene = "compound", 
+                      id.mapping.table = id.mapping.cpd, SBGNview.data.folder = SBGNview.data.folder)
+                    if (cpd.data.converted == "no.id.mapped") {
+                      warning("no id mapped!")
+                    }
+                  }
+#                  cpd.data.converted <- as.list(as.data.frame(t(cpd.data.converted)))
+#                  cpd.data.converted[["max.cpd"]] <- max(unlist(cpd.data.converted), 
+#                    na.rm = TRUE)
+#                  cpd.data.converted[["min.cpd"]] <- min(unlist(cpd.data.converted), 
+#                    na.rm = TRUE)
+                  mm=range(cpd.data.converted, na.rm=TRUE)
+                  cpd.data.converted <- list(cpd.data.converted, max.cpd=mm[2], min.cpd=mm[1])
+                }
+            }
+#            user.data.recorded[[database]] <- list()
+#            user.data.recorded[[database]][["gene.data"]] <- gene.data.converted
+#            user.data.recorded[[database]][["cpd.data"]] <- cpd.data.converted
+            user.data.recorded[[database]] <- list(gene.data=gene.data.converted, cpd.data=cpd.data.converted)            
+        }
+    }
+    user.data <- c(gene.data.converted, cpd.data.converted)  # input data is a list, name is sbgn entity id, content is a vector of data values. Therefore the number of values can be different
+#    user.data <- user.data.recorded[[database]]
+    return(list(user.data = user.data, user.data.recorded = user.data.recorded))
+}
+
+
+#########################################################################################################
+# add input user data to glyph
+add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
+  
+  node.omics.data.id <- glyph.info[sbgn.id.attr]
+  # remove complex name from omics.data.id for metacyc
+  node.omics.data.id.without.complex <- gsub("_Complex.+:@:", ":@:", node.omics.data.id)
+  node.omics.data.id.without.complex <- gsub("_Complex_.+", "", node.omics.data.id)
+  
+  if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+    # molecules within a complex sometimes have different ids, so we don't count them
+    # when calculating the mapped nodes
+  }
+  user.data=user.data[[1]]
+  ################################################################ 
+  if (node.omics.data.id %in% rownames(user.data)) {
+    node@user.data <- user.data[node.omics.data.id,] #user.data[[node.omics.data.id]]
+    if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+      # molecules within a complex sometimes have different ids, so we don't count them
+      # when calculating the mapped nodes
+      
+    }
+  } else if (node.omics.data.id.without.complex %in% rownames(user.data)) {
+    node@user.data <- user.data[node.omics.data.id.without.complex,] #[[node.omics.data.id.without.complex]]
+    if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+      # molecules within a complex sometimes have different ids, so we don't count them
+      # when calculating the mapped nodes
+      
+    }
+  } else {
+    node@user.data <- c("no.user.data")
+  }
+  if (length(node@user.data) == 1) {
+    node@user.data <- as.matrix(t(c(node@user.data, node@user.data)))
+  }
+#browser()
+  return(list(node = node))
+}
+
+
+#########################################################################################################
+# add input user data to glyph
+add.omics.data.to.glyph1 <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
+  
+  node.omics.data.id <- glyph.info[sbgn.id.attr]
+  # remove complex name from omics.data.id for metacyc
+  node.omics.data.id.without.complex <- gsub("_Complex.+:@:", ":@:", node.omics.data.id)
+  node.omics.data.id.without.complex <- gsub("_Complex_.+", "", node.omics.data.id)
+  
+  if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+    # molecules within a complex sometimes have different ids, so we don't count them
+    # when calculating the mapped nodes
+  }
+  ################################################################ 
+  if (node.omics.data.id %in% names(user.data)) {
+    node@user.data <- user.data[[node.omics.data.id]]
+    if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+      # molecules within a complex sometimes have different ids, so we don't count them
+      # when calculating the mapped nodes
+      
+    }
+  } else if (node.omics.data.id.without.complex %in% names(user.data)) {
+    node@user.data <- user.data[[node.omics.data.id.without.complex]]
+    if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+      # molecules within a complex sometimes have different ids, so we don't count them
+      # when calculating the mapped nodes
+      
+    }
+  } else {
+    node@user.data <- c("no.user.data")
+  }
+  if (length(node@user.data) == 1) {
+    node@user.data <- as.matrix(t(c(node@user.data, node@user.data)))
+  }
+  return(list(node = node))
+}
