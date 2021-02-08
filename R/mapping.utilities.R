@@ -1,7 +1,7 @@
 
 #########################################################################################################
 # add input user data to glyph
-add.omics.data.to.glyph.old <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
+add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
   
   node.omics.data.id <- glyph.info[sbgn.id.attr]
   # remove complex name from omics.data.id for metacyc
@@ -12,16 +12,17 @@ add.omics.data.to.glyph.old <- function(glyph.info, glyph, node, sbgn.id.attr, u
     # molecules within a complex sometimes have different ids, so we don't count them
     # when calculating the mapped nodes
   }
+  user.data=user.data[[1]]
   ################################################################ 
-  if (node.omics.data.id %in% names(user.data)) {
-    node@user.data <- user.data[[node.omics.data.id]]
+  if (node.omics.data.id %in% rownames(user.data)) {
+    node@user.data <- user.data[node.omics.data.id,] #user.data[[node.omics.data.id]]
     if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
       # molecules within a complex sometimes have different ids, so we don't count them
       # when calculating the mapped nodes
       
     }
-  } else if (node.omics.data.id.without.complex %in% names(user.data)) {
-    node@user.data <- user.data[[node.omics.data.id.without.complex]]
+  } else if (node.omics.data.id.without.complex %in% rownames(user.data)) {
+    node@user.data <- user.data[node.omics.data.id.without.complex,] #[[node.omics.data.id.without.complex]]
     if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
       # molecules within a complex sometimes have different ids, so we don't count them
       # when calculating the mapped nodes
@@ -35,6 +36,7 @@ add.omics.data.to.glyph.old <- function(glyph.info, glyph, node, sbgn.id.attr, u
   }
   return(list(node = node))
 }
+
 
 #########################################################################################################
 # generate glyph objects for glyphs found in sbgn file

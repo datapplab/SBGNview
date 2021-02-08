@@ -121,7 +121,7 @@
 #' 
 #' @export
 
-SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, input.sbgn = NULL, 
+SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, input.sbgn = NULL, 
                      sbgn.dir = "./", output.file = "./output.svg", node.sum = "sum", gene.id.type = NA, 
                      cpd.id.type = NA, sbgn.id.attr = "id", sbgn.gene.id.type = NULL, sbgn.cpd.id.type = NA, 
                      id.mapping.gene = NULL, id.mapping.cpd = NULL, org = "hsa", output.formats = c("svg"), 
@@ -129,21 +129,22 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
     
     if (!dir.exists(sbgn.dir)) {
         warning("'sbgn.dir' folder does not exist! Creating: ", sbgn.dir, "\n")
-        dir.create(sbgn.dir)
+        system(paste("mkdir -p", sbgn.dir))
     }
     # Parse all files in a folder when no input.sbgn is specified.
     if (is.null(input.sbgn)) {
         warning("'input.sbgn' is not provided, using all files in folder 'sbgn.dir':", 
-            sbgn.dir, "\n Please make sure all files in ", sbgn.dir, " are SBGM-ML files.\n")
+                sbgn.dir, "\n Please make sure all files in ", sbgn.dir, " are SBGM-ML files.\n")
         input.sbgn <- list.files(sbgn.dir, full.names = FALSE)
         if (length(input.sbgn) == 0) {
             stop("Must provide 'input.sbgn' if 'sbgn.dir':", sbgn.dir, " is empty! ")
         }
     }
-    input.sbgn <- unique(as.vector(as.character(input.sbgn)))
-    
+    input.sbgn <- unique(as.character(input.sbgn))
+
     user.data.recorded <- list()  # SBGNview can render multiple SBGN-ML files but the input omics data only need to be processed once. Here we record the converted data.
-    SBGNview.obj.data <- sapply(input.sbgn, function(x) NULL)  # pre-allocate the result list
+    SBGNview.obj.data <- list()
+    
     # parse all SBGN-ML files
     for (i in seq_along(input.sbgn)) {
         input.sbgn.i <- input.sbgn[i]
@@ -202,7 +203,6 @@ SBGNview.old <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALS
     
     SBGNview.obj <- createSBGNviewObject(data = SBGNview.obj.data, output.file = output.file,
                                          output.formats = output.formats)
-    
     return(SBGNview.obj)
 }
 

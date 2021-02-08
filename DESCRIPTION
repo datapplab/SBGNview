@@ -43,7 +43,6 @@ Collate:
     plot.utilities.R
     data.R
     SBGNview.R
-    SBGNview2.R
     SBGNview.obj.fun.R
     color.panel.R
     highlight.utilities.R

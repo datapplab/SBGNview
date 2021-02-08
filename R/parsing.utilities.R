@@ -95,10 +95,11 @@ parse.input.sbgn <- function(input.sbgn, output.file, show.pathway.name, sbgn.di
 #########################################################################################################
 # parse input user data by changing ID tpype to SBGN ID type for gene and compound data
 # keeps record of data ID that are already converted 
-parse.omics.data.old <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
+parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database, 
                              user.data.recorded, gene.id.type, cpd.id.type, id.mapping.gene, 
                              id.mapping.cpd, node.sum, org, sbgn.gene.id.type, sbgn.cpd.id.type, 
                              simulate.data, SBGNview.data.folder = "./SBGNview.tmp.data") {
+    
     
     if (!is.null(gene.data) & is.null(sbgn.gene.id.type)) {
         stop("Must provide 'sbgn.gene.id.type'!")
@@ -115,12 +116,9 @@ parse.omics.data.old <- function(gene.data, cpd.data, input.sbgn.full.path, data
     }
     if (simulate.data) {
         gene.data.converted <- simulate.user.data(sbgn.file = input.sbgn.full.path, n.samples = 3)
-        gene.data.converted <- as.list(as.data.frame(t(gene.data.converted)))
-        gene.data.converted[["max.gene"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
-        gene.data.converted[["min.gene"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
-        gene.data.converted[["max.cpd"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
-        gene.data.converted[["min.cpd"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
-        cpd.data.converted <- gene.data.converted
+        mm=range(gene.data.converted, na.rm=TRUE)
+        gene.data.converted <- list(gene.data.converted, max.gene=mm[2], min.gene=mm[1], max.cpd=mm[2], min.cpd=mm[1])
+        cpd.data.converted <- gene.data.converted[1]
         
     } else {
         # convert input IDs to glyph IDs SBGNview can render multiple SBGN-ML files but
@@ -135,59 +133,53 @@ parse.omics.data.old <- function(gene.data, cpd.data, input.sbgn.full.path, data
             if (!is.null(gene.data)) {
                 # if user provided gene data, we need its ID type
                 if (is.na(gene.id.type)) {
-                  stop("No omics gene ID type specified. Please set parameter gene.id.type!")
+                    stop("No omics gene ID type specified. Please set parameter gene.id.type!")
                 }
                 if (is.vector(gene.data)) {
-                  if (is.character(gene.data[1])) {
-                    # if we need to generate count data from input data
-                    gene.data <- as.matrix(table(gene.data))
-                  } else {
-                    gene.data <- as.matrix(gene.data)
-                  }
+                    if (is.character(gene.data[1])) {
+                        # if we need to generate count data from input data
+                        gene.data <- as.matrix(table(gene.data))
+                    } else {
+                        gene.data <- as.matrix(gene.data)
+                    }
                 }
                 if (gene.id.type != sbgn.gene.id.type) {
-                  gene.data.converted <- changeDataId(gene.data, input.type = gene.id.type, 
-                    output.type = sbgn.gene.id.type, sum.method = node.sum, cpd.or.gene = "gene", 
-                    org = org, id.mapping.table = id.mapping.gene, SBGNview.data.folder = SBGNview.data.folder)
-                  if (identical(gene.data.converted, "no.id.mapped")) {
-                    warning("no id mapped!")
-                  }
+                    gene.data.converted <- changeDataId(gene.data, input.type = gene.id.type, 
+                                                        output.type = sbgn.gene.id.type, sum.method = node.sum, cpd.or.gene = "gene", 
+                                                        org = org, id.mapping.table = id.mapping.gene, SBGNview.data.folder = SBGNview.data.folder)
+                    if (identical(gene.data.converted, "no.id.mapped")) {
+                        warning("no id mapped!")
+                    }
                 }
-                gene.data.converted <- as.list(as.data.frame(t(gene.data.converted)))
-                gene.data.converted[["max.gene"]] <- max(unlist(gene.data.converted), na.rm = TRUE)
-                gene.data.converted[["min.gene"]] <- min(unlist(gene.data.converted), na.rm = TRUE)
+                mm=range(gene.data.converted, na.rm=TRUE)
+                gene.data.converted <- list(gene.data.converted, max.gene=mm[2], min.gene=mm[1])
             }
             
             cpd.data.converted <- cpd.data
             if (!is.null(cpd.data)) {
                 if (is.na(cpd.id.type)) {
-                  stop("No omics compound ID type specified. Please set parameter cpd.id.type!")
+                    stop("No omics compound ID type specified. Please set parameter cpd.id.type!")
                 } else {
-                  if (is.vector(cpd.data)) {
-                    if (is.character(cpd.data[1])) {
-                      cpd.data.converted <- as.matrix(table(cpd.data))
-                    } else {
-                      cpd.data.converted <- as.matrix(cpd.data)
+                    if (is.vector(cpd.data)) {
+                        if (is.character(cpd.data[1])) {
+                            cpd.data.converted <- as.matrix(table(cpd.data))
+                        } else {
+                            cpd.data.converted <- as.matrix(cpd.data)
+                        }
                     }
-                  }
-                  if (cpd.id.type != sbgn.cpd.id.type) {
-                    cpd.data.converted <- changeDataId(cpd.data.converted, input.type = cpd.id.type, 
-                      output.type = sbgn.cpd.id.type, sum.method = node.sum, cpd.or.gene = "compound", 
-                      id.mapping.table = id.mapping.cpd, SBGNview.data.folder = SBGNview.data.folder)
-                    if (cpd.data.converted == "no.id.mapped") {
-                      warning("no id mapped!")
+                    if (cpd.id.type != sbgn.cpd.id.type) {
+                        cpd.data.converted <- changeDataId(cpd.data.converted, input.type = cpd.id.type, 
+                                                           output.type = sbgn.cpd.id.type, sum.method = node.sum, cpd.or.gene = "compound", 
+                                                           id.mapping.table = id.mapping.cpd, SBGNview.data.folder = SBGNview.data.folder)
+                        if (cpd.data.converted == "no.id.mapped") {
+                            warning("no id mapped!")
+                        }
                     }
-                  }
-                  cpd.data.converted <- as.list(as.data.frame(t(cpd.data.converted)))
-                  cpd.data.converted[["max.cpd"]] <- max(unlist(cpd.data.converted), 
-                    na.rm = TRUE)
-                  cpd.data.converted[["min.cpd"]] <- min(unlist(cpd.data.converted), 
-                    na.rm = TRUE)
+                    mm=range(cpd.data.converted, na.rm=TRUE)
+                    cpd.data.converted <- list(cpd.data.converted, max.cpd=mm[2], min.cpd=mm[1])
                 }
             }
-            user.data.recorded[[database]] <- list()
-            user.data.recorded[[database]][["gene.data"]] <- gene.data.converted
-            user.data.recorded[[database]][["cpd.data"]] <- cpd.data.converted
+            user.data.recorded[[database]] <- list(gene.data=gene.data.converted, cpd.data=cpd.data.converted)            
         }
     }
     user.data <- c(gene.data.converted, cpd.data.converted)  # input data is a list, name is sbgn entity id, content is a vector of data values. Therefore the number of values can be different
