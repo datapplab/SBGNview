@@ -29,9 +29,9 @@ Luo W, Brouwer C. Pathview: an R/Biocondutor package for pathway-based data inte
 
 Dong X, Vegesna K, Luo W. SBGNview: SBGN for pathway based data analysis, integration and visualization, Submitted, 2020.
 
-## Installation
+# Installation
 
-### Prerequisites
+## Prerequisites
 *SBGNview* depends or imports from the following R packages:
 
 * xml2: parse SBGN-ML files
@@ -62,7 +62,7 @@ External dependencies (outside R):
 sudo apt install libxml2-dev libssl-dev libcurl4-openssl-dev librsvg2-dev
 ```
 
-### Install SBGNview
+## Install SBGNview
 Install SBGNview through Bioconductor: 
 ```{r install, eval = FALSE}
 BiocManager::install(c("SBGNview"))
@@ -96,7 +96,7 @@ print(SBGNview.obj)
 Two image files (a svg file by default and a png file) will be created in the current working directory.
 <img src="inst/app/www/quick.start_P00001.svg">   
 
-## Additional information
+# Additional information
 SBGN website: https://sbgn.github.io/
 
 For any questions, please contact Kovidh Vegesna (kvegesna [AT] uncc.edu) or Weijun Luo (luo_weijun [AT] yahoo.com)
