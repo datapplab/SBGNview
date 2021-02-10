@@ -109,9 +109,13 @@ Use `getwd()` to check the current working directory. The output files from this
 
 ```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(SBGNview)
-# load demo dataset and pathway information of built-in collection of SBGN-ML files. 
+# Load demo dataset and pathway information of built-in collection of SBGN-ML files. 
 # We use a cancer microarray dataset 'gse16837.d' from package 'pathview'
-data("gse16873.d","pathways.info","sbgn.xmls")
+data("gse16873.d","pathways.info") 
+# ***NOTE: loading 'sbgn.xmls' takes a few seconds since is a large data object  
+#          containing the pre-generated SBGN-ML files.  
+data("sbgn.xmls")
+
 # search for pathways with user defined keywords
 input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
 # render SBGN pathway graph and output image files

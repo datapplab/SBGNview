@@ -198,7 +198,8 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0,
         arc.splines <- xml2::xml_find_all(sbgn.xml, ".//edge.spline.info")
         arc.splines <- xml2::xml_find_all(arc.splines[[length(arc.splines)]], ".//arc.spline")  # if there are more than one version of routed edges, we use the latest version
         
-        splines <- rep(NULL, times = length(arc.splines))
+        #splines <- rep(NULL, times = length(arc.splines))
+        splines <- list()
         for (i in seq_along(arc.splines)) {
             arc.spline <- arc.splines[[i]]
             spline.info <- xml2::xml_attrs(arc.spline)  # extract attributes of this glyph
@@ -231,9 +232,9 @@ parse.splines <- function(sbgn.xml, glyphs, if.plot.svg = TRUE, y.margin = 0,
         svg.splines <- ""
         splines.list <- arcs.user
         for (i in seq_len(length.out = length(arcs.user))) {
-            spline.arc <- arcs.user[[i]]
+            #spline.arc <- arcs.user[[i]]
             if (if.plot.svg) {
-                spline.arc.svg <- plot.arc(spline.arc)
+                spline.arc.svg <- plot.arc(arcs.user[[i]])
             } else {
                 spline.arc.svg <- ""
             }
@@ -366,17 +367,15 @@ get.arc.segments <- function(arc, arcs.list, arc.class, y.margin, arc.info, edge
         } else if (xml2::xml_name(child) == "end") {
             arc.line["end.x"] <- coordinates["x"]
             arc.line["end.y"] <- coordinates["y"]
-            if (sum(as.numeric(arc.line[c("start.x", "start.y", "end.x", "end.y")])) == 
-                0) {
+            if (sum(as.numeric(arc.line[c("start.x", "start.y", "end.x", "end.y")])) == 0) {
                 arc.line <- find.arc.coordinates(arc.line, glyphs)
             }
             if (is.na(arc.line["id"])) {
                 arc.line["id"] <- paste(arc.info["source"], arc.info["target"], sep = "->")
             }
-            arc <- new(paste(arc.class, ".sbgn.arc", sep = ""), id = paste(arc.line["id"], 
-                                                                           arc.line["start.x"], sep = "_"), start.x = as.numeric(arc.line["start.x"]), 
-                       start.y = as.numeric(arc.line["start.y"]), end.x = as.numeric(arc.line["end.x"]), 
-                       end.y = as.numeric(arc.line["end.y"]))
+            arc <- new(paste(arc.class, ".sbgn.arc", sep = ""), id = paste(arc.line["id"], arc.line["start.x"], sep = "_"), 
+                       start.x = as.numeric(arc.line["start.x"]), start.y = as.numeric(arc.line["start.y"]), 
+                       end.x = as.numeric(arc.line["end.x"]), end.y = as.numeric(arc.line["end.y"]))
             arc@arc.class <- arc.class
             arc@source <- arc.info["source"]
             arc@target <- arc.info["target"]
@@ -459,10 +458,11 @@ parse.glyph <- function(sbgn.xml, user.data, if.plot.svg = TRUE, y.margin = 0, m
     if.use.number.for.long.label <- global.parameters.list$if.use.number.for.long.label
     # parse glyphs and plot glyphs and ports
     map.language <- xml2::xml_attrs(xml2::xml_find_all(sbgn.xml, ".//map")[[1]])["language"]
-    message("\nMap language is ", map.language, "\n")
     if (is.null(map.language)) {
         map.language <- ""
     }
+    message("\nMap language is ", map.language, "\n")
+    
     # glyph set list
     glyph.names <- c()
     # find plot parameters svg contents
@@ -600,8 +600,7 @@ generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id
             if (is.null(node.set.list[["molecules.with.state.variables"]][[parent.id]])) {
                 node.set.list[["molecules.with.state.variables"]][[parent.id]] <- 1
             } else {
-                node.set.list[["molecules.with.state.variables"]][[parent.id]] <- node.set.list[["molecules.with.state.variables"]][[parent.id]] + 
-                    1
+                node.set.list[["molecules.with.state.variables"]][[parent.id]] <- node.set.list[["molecules.with.state.variables"]][[parent.id]] + 1
             }
             v.i <- node.set.list[["molecules.with.state.variables"]][[parent.id]]
             glyph.id <- paste(parent.id, v.i, sep = ".info.")
@@ -610,8 +609,7 @@ generate.glyph.id <- function(glyph.id, glyph.class, glyph, node.set.list, no.id
             # some nodes don't have id(cardinality), we need to gennerate an id for them
             no.id.node.count.list[[glyph.class]] <- 0
         } else {
-            no.id.node.count.list[[glyph.class]] <- no.id.node.count.list[[glyph.class]] + 
-                1
+            no.id.node.count.list[[glyph.class]] <- no.id.node.count.list[[glyph.class]] + 1
         }
         index.id <- no.id.node.count.list[[glyph.class]]
         glyph.id <- paste(glyph.class, index.id, sep = ":")
@@ -802,7 +800,7 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
                 message("\n", input.sbgn, " does not look like an existing local file.\n Using it as pathway ID in 'pathways.info'\n\n ")
                 database <- pathways.info[pathways.info[, "pathway.id"] == input.sbgn, "database"]
                 input.sbgn <- downloadSbgnFile(pathway.id = input.sbgn, download.folder = sbgn.dir)
-                message("SBGN-ML files downloaded to: ", input.sbgn.full.path)
+                message("SBGN-ML files downloaded to: ", input.sbgn)
             } else {
                 message("\n", input.sbgn, "looks like an existing local file. Using it directly.\n")
                 if (input.sbgn %in% pathways.info[, "file.name"]) {
@@ -828,10 +826,13 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
         message("reading SBGN-ML file for node set: ", input.sbgn)
         sbgn <- xml2::read_xml(input.sbgn)
         xml2::xml_attrs(sbgn) <- NULL  # Remove root node attribute. This is necessary Otherwise xml2 won't find the nodes when using xml_find_all.
-        node.set.list <- get.all.nodes.info(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
-                                            output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
-                                            id.mapping.all.list, show.ids.for.multiHit)
-        result.list[[input.sbgn.original]] <- node.set.list[["all.nodes"]]
+        # node.set.list <- get.all.nodes.info(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
+        #                                     output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
+        #                                     id.mapping.all.list, show.ids.for.multiHit)
+        # result.list[[input.sbgn.original]] <- node.set.list[["all.nodes"]]
+        result.list[[input.sbgn.original]] <- get.all.nodes.info(sbgn, if.other.id.types.available, output.cpd.id.type.use, 
+                                                                 output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
+                                                                 id.mapping.all.list, show.ids.for.multiHit) # returns node.set.matrix
     }
     return(result.list)
 }
@@ -842,7 +843,8 @@ get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.
                                output.gene.id.type.use, SBGN.file.cpd.id.type, SBGN.file.gene.id.type, 
                                id.mapping.all.list, show.ids.for.multiHit) {
     
-    node.set.list <- list(all.nodes = matrix(ncol = 8, nrow = 0))
+    #node.set.list <- list(all.nodes = matrix(ncol = 8, nrow = 0))
+    node.set.matrix <- matrix(ncol = 8, nrow = 0)
     all.glyphs <- xml2::xml_find_all(sbgn, ".//glyph")
     for (i in seq_len(length(all.glyphs))) {
         glyph <- all.glyphs[[i]]
@@ -902,9 +904,11 @@ get.all.nodes.info <- function(sbgn, if.other.id.types.available, output.cpd.id.
             nodes.info["parent.macromolecule"] <- parent.id
         }
         nodes.info[["glyph.id"]] <- glyph.id.original
-        node.set.list[["all.nodes"]] <- rbind(node.set.list[["all.nodes"]], nodes.info)
+        #node.set.list[["all.nodes"]] <- rbind(node.set.list[["all.nodes"]], nodes.info)
+        node.set.matrix <- rbind(node.set.matrix, nodes.info)
     }
-    return(node.set.list)
+    #return(node.set.list)
+    return(node.set.matrix)
 }
 
 #########################################################################################################

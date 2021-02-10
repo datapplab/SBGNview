@@ -849,8 +849,8 @@ find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mo
         sum(if.selected)
         pathways <- mapping.table[if.selected, ]
       } else if (mol.name.match == "jaccard") {
-        best.match <- match.names(input.names = tolower(keywords), output.names = tolower(mapping.table[, 
-                                                                                                        keyword.type]))
+        best.match <- match.names(input.names = tolower(keywords), 
+                                  output.names = tolower(mapping.table[, keyword.type]))
         pathways <- merge(best.match, mapping.table, by.x = "output.name", 
                           by.y = keyword.type)
         names(pathways)[1] <- c("CompoundName")
