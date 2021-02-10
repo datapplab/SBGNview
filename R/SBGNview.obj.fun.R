@@ -55,6 +55,18 @@
             sbgn.parameters.list$output.file <- gsub(SBGNview.obj$output.file, output.file, 
                 sbgn.parameters.list$output.file)
         }
+        
+        # if input sbgn-ml file doesn't exist while printing: download file if in ID in pathways.info, else user's file
+        if(!file.exists(sbgn.parameters.list$input.sbgn)) {
+            if(sbgns[s] %in% pathways.info[, "pathway.id"]) {
+                message(sbgn.parameters.list$input.sbgn, " not in current working directory")
+                message("Downloading SBGN-ML file for pathway.id: ", sbgns[s])
+                downloadSbgnFile(pathway.id = sbgns[s])
+            } else {
+                stop(sbgn.parameters.list$input.sbgn, " not in current working directory.\nPlease make sure SBGN-ML file is in current working directory")
+            }
+        }
+            
         tp <- renderSbgn(input.sbgn = sbgn.parameters.list$input.sbgn, output.file = sbgn.parameters.list$output.file, 
             arcs.info = sbgn.parameters.list$arcs.info, compartment.layer.info = sbgn.parameters.list$compartment.layer.info, 
             user.data = sbgn.parameters.list$user.data, output.formats = SBGNview.obj$output.formats, 
