@@ -8,7 +8,7 @@
 A data.frame
 }
 \usage{
-pathways.info
+data(pathways.info)
 }
 \description{
 Information of collected pathways

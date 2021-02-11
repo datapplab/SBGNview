@@ -50,12 +50,15 @@
 #' @param font.size.scale.cpd Numeric. Default: 3. Scales font size according to the node's width for large compartments. Only affects font size of 'simple chemical' glyphs.
 #' @param logic.node.font.scale Numeric. Default: 3. Controls the size of logical glyphs ('and', 'or', 'not' etc.).
 #' @param node.width.adjust.factor Numeric. Default: 2. Change font size according to the width of its glyph. If the glyph is too large (e.g. compartment), its label may look too small. Then we can enlarge the label in proportion to the width of the glyph. It affects all types of glyphs. 
+#' @param pathway.name List containing two elements: 1. pathway name 2. stamp information. See argument description in \code{\link{SBGNview}} function to change/update pathway name displayed on graph. 
 #' @param pathway.name.font.size Numeric. Default: 1. When pathway names are plotted on graph, this parameter controls their font size.
 #' @param if.scale.complex.font.size Logical. Default: F.  Whether to scale complex font size according to its width. If set to 'T', the 'node.width.adjust.factor.complex' argument can be used to specify the scale factor. 
 #' @param if.scale.compartment.font.size  Logical. Default: F. Whether to scale compartment font size according to its width. If set to 'T', the 'node.width.adjust.factor.compartment' argument can be used to specify the scale factor.   
 #' @param node.width.adjust.factor.compartment Numeric. Default: 0.02. How much the font size should change in proportion to the width of compartment. The font is scaled only if 'if.scale.compartment.font.size' is set to 'T'. To find the best scale factor which works you, start with 0.02 (default) and incrementally increase that value.  
 #' @param node.width.adjust.factor.complex Numeric. Default: 0.02. How much the font size should change in proportion to the width of complex. The font is scaled only if 'if.scale.complex.font.size' is set to 'T'. To find the best scale factor which works you, start with 0.02 (default) and incrementally increase that value. 
 #' @param space.between.color.panel.and.entity Numeric. Default: 100. The minimum space between color panel and any other object in the graph. The function will always try to find a location of the color panel to minimize empty space on the whole graph. This parameter controls how close it can reach a glyph.
+#' @param if.write.files Logical. Default: T. If generate image files. This parameter is for internal use only.
+#' @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file. This parameter is for internal use only.
 #' @return A list of three elements: glyphs.list, arcs.list, global.parameters.list
 #' @examples
 #' \dontrun{
@@ -70,14 +73,6 @@
 #'  }
 #' 
 #' @export
-
-#################################################
-###### Below arguments are removed from documentation because they are not necessary, 
-###### cause error, or mess up the output
-# @param if.write.files Logical. Default: T. If generate image files. ## files will be written when print(obj) is called
-# @param if.plot.svg Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file.
-# @param pathway.name List containing two elements: 1. pathway name 2. stamp information
-#################################################
 
 renderSbgn <- function(input.sbgn, output.file, if.write.files = TRUE, output.formats, 
                        sbgn.id.attr, glyphs.user = list(), arcs.user = list(), arcs.info = "straight", 
@@ -309,6 +304,8 @@ add.stamp <- function(col.panel.w, col.panel.y, global.parameters.list, template
             name.of.pathway <- ""
             db.and.id <- ""
         }
+    } else if (split.name.db[[1]][2] == "user.named.pathway") {
+        db.and.id <- ""
     }
     
     # Using template.text.pathway.name to display in two lines

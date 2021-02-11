@@ -8,7 +8,7 @@
 A matrix
 }
 \usage{
-SBGNhub.id.mapping.tables
+data(SBGNhub.id.mapping.tables)
 }
 \description{
 Mapping tables available in SBGNhub

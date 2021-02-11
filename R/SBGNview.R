@@ -15,6 +15,7 @@
 #' @param simulate.data Logical. SBGNview can simulate a dataset. If set to TRUE, SBGNview will simulate a gene data set and a compound dataset and user input 'gene.data' and 'cpd.data' are ignored.
 #' @param input.sbgn  A character vector. Can be either names of local SBGN files or pathway IDs of our pre-collected pathways. For pre-collected pathway IDs, run 'data(pathways.info)'
 #' @param sbgn.dir  A character string. Default: ".". The path to the folder that holds SBGN-ML files. If 'input.sbgn' is a vector of pathway IDs in data 'pathways.info', the SBGN-ML files will be downloaded into this folder. 
+#' @param org A character string. Default: "hsa". The species of the gene omics data. It is used for species specific gene ID mapping. Currently only supports three letters KEGG code (e.g. hsa, mmu, ath).  For a complete list of KEGG codes, see this page:\cr \href{https://www.genome.jp/kegg/catalog/org_list.html}{KEGG Organisms: Complete Genomes} 
 #' @param output.formats   A character vector. It specifies the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file. SBGNview uses rsvg to convert svg file to other formats. If other 'output.formats' is set but 'rsvg' package is not installed, an error will occur. See this page for how to \href{https://github.com/jeroen/rsvg}{install 'rsvg'}
 #' @param output.file   A character string. Default: "./output.svg". Path to the output image files. Because we often work with multiple pathways, each pathway will have its own image files. Each string in 'input.sbgn' will be added to the end of 'output.file'. Depending on the image format specified by the 'output.formats' parameter, extentions will be added to the end (e.g. .pdf, .png etc.).
 #' @param gene.id.type  A character string. The type of gene ID in 'gene.data'. This parameter is used for ID mapping. It should be one of the IDs in data 'mapped.ids'. For details, run: \code{data('mapped.ids')}
@@ -28,8 +29,8 @@
 #' @param id.mapping.gene A matrix.  Mapping table between gene.id.type and sbgn.gene.id.type. This table is needed if the ID pair of gene.id.type and sbgn.gene.id.type is NOT included in data 'mapped.ids' or not mappable by package 'pathview'. This matrix should have two columns for gene.id.type and sbgn.gene.id.type, respectively.  Column names should be the values of parameters 'sbgn.gene.id.type' and 'gene.id.type'.  See example section for an example.
 #' @param id.mapping.cpd A matrix. See id.mapping.gene.
 #' @param node.sum  A character string. Default: "sum". Sometimes multiple omics genes/compounds are mapped to one SBGN glyph. Therefore multiple values will be mapped to one measurement/slice on the glyph. In this situation, we may need to derive a single value for the slice on the glyph. This function can be any R function that takes a numeric vector as input and output a single numeric value (e.g. 'sum','max','min','mean'). It can also be a User Defined Function (UDF).
+#' @param pathway.name A character string. Change/update pathway name displayed on the output graph. If 'input.sbgn' is a pathway ID in data(pathways.info), the pathway name and database associated with the pathway ID will be displayed on the output graph. If 'input.sbgn' is a SBGN-ML file not part of our pre-generated SBGN-ML files, nothing will be dispalyed for the pathway name unless set using this arugmnet. 
 #' @param show.pathway.name Logical. Default: F. If set to TRUE and 'input.sbgn' are pre-collected pathway IDs, the pathway name will be added to the output file name.
-#' @param org A character string. Default: "hsa". The species of the gene omics data. It is used for species specific gene ID mapping. Currently only supports three letters KEGG code (e.g. hsa, mmu, ath).  For a complete list of KEGG codes, see this page:\cr \href{https://www.genome.jp/kegg/catalog/org_list.html}{KEGG Organisms: Complete Genomes} 
 #' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold temp data files.            
 #' @param ... Other parameters passed to function \code{\link{renderSbgn}}
 #' @return  SBGNview object (S3 class object). 
@@ -102,7 +103,7 @@
 #' ### Use simulated data. Please see vignettes for more examples.
 #' ### Run `browseVignettes(package = "SBGNview")` 
 #' 
-#' # load demo dataset and pathway information of built-in collection of SBGN-ML files
+#' # load demo dataset, SBGN pathway data collection and info, which may take a few seconds
 #' # we use a cancer microarray dataset 'gse16837.d' from package 'pathview'
 #' data("gse16873.d", "pathways.info", "sbgn.xmls")
 #' 
@@ -125,7 +126,8 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
                      sbgn.dir = "./", output.file = "./output.svg", node.sum = "sum", gene.id.type = NA, 
                      cpd.id.type = NA, sbgn.id.attr = "id", sbgn.gene.id.type = NULL, sbgn.cpd.id.type = NA, 
                      id.mapping.gene = NULL, id.mapping.cpd = NULL, org = "hsa", output.formats = c("svg"), 
-                     show.pathway.name = FALSE, SBGNview.data.folder = "./SBGNview.tmp.data", ...) {
+                     pathway.name = NULL, show.pathway.name = FALSE, 
+                     SBGNview.data.folder = "./SBGNview.tmp.data", ...) {
     
     if (!dir.exists(sbgn.dir)) {
         warning("'sbgn.dir' folder does not exist! Creating: ", sbgn.dir, "\n")
@@ -161,6 +163,10 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
         if.file.in.collection <- parse.sbgn.list$if.file.in.collection
         sbgn.id.attr <- parse.sbgn.list$sbgn.id.attr
         database <- parse.sbgn.list$database
+        
+        if(!is.null(pathway.name)) {
+            pathway.name.on.graph$pathway.name.on.graph <- paste(pathway.name, "user.named.pathway", sep = "::")
+        }
         
         # Change omics data ID to SBGN-ML glyph ID. Input pathways may come from
         # different databases, so they may have different glyph ID types (e.g.

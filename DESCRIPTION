@@ -33,7 +33,8 @@ Imports:
     SummarizedExperiment,
     AnnotationDbi,
     httr,
-    KEGGREST
+    KEGGREST,
+    bookdown
 RdMacros: Rdpack
 License: AGPL-3
 LazyData: FALSE

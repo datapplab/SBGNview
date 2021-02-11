@@ -17,7 +17,7 @@ A list containing three elements:
              A character vector specifying the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file.
 }
 \usage{
-SBGNview.obj
+data(SBGNview.obj)
 }
 \description{
 Demo SBGNview object
@@ -30,8 +30,5 @@ This mechanism to allow layer-by-layer graph modification is similar to that of 
 Defining this class as a formal (S4) class will produce an S4 SBGNview object which doesn't work with the binary operator and doesn't allow for layer-by-layer graph modification. 
 Therefore, we decided to go with the S3 implementation of the SBGNview class since it works well with the binary operator making this 
 functionality more intuitive and user friendly.
-}
-\examples{
-data(SBGNview.obj)
 }
 \keyword{datasets}

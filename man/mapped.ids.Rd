@@ -8,7 +8,7 @@
 A list with two elements: A vector of mappable gene ID types (\code{mapped.ids[["gene"]]}), a vector of mappable compound ID types (\code{mapped.ids[["cpd"]]}).
 }
 \usage{
-mapped.ids
+data(mapped.ids)
 }
 \description{
 IDs mappable by SBGNview

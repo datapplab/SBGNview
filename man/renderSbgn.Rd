@@ -69,6 +69,8 @@ renderSbgn(
 
 \item{output.file, output.formats, sbgn.id.attr}{These parameters are the same as the ones in \code{\link{SBGNview}}. Please see \code{\link{SBGNview}} for more details.}
 
+\item{if.write.files}{Logical. Default: T. If generate image files. This parameter is for internal use only.}
+
 \item{glyphs.user}{A list, optional. Each element is a 'glyph' object. The element names are glyph IDs (attribute 'id' of XHTML element 'glyph'). Note this is not affected by parameter 'sbgn.id.attr'. The glyph elements contain glyph meta-data for plotting (e.g. text size, border width, border color etc.). Please see the \code{\link{glyph-class}} documentation for more information. By default, SBGNview will run without this argument and return a glyph list extracted from the SBGN file. User can then customize this glyph list and assign it to 'glyphs.user' in the next SBGNview run to update the graph.}
 
 \item{arcs.user}{A list, optional. Each member is an 'arc' object. The element names are arc IDs (the value of 'id' attribute in XHTML element 'arc' or 'arc.spline' in the SBGN-ML file). Some SBGN-ML files have no arc IDs, in this case SBGNview  will create an arc ID using 'source' and 'target' node IDs). The arc object contains arc meta-data for plotting (e.g. arc line width, line color etc.). Please see the \code{\link{arc-class}} documentation for more information. By default, SBGNview() will run without this argument and return an arc list. User can then customize this arc list and assign it to 'arcs.user' in the next SBGNview() run to update the arcs.}
@@ -78,6 +80,8 @@ renderSbgn(
 \item{compartment.layer.info}{A character vector. It is a vector containing the IDs of all compartment glyphs. It determins the layer arrangement of compartments. Compartments will be drawn following their sequence in this vector. Therefore, a compartment that appears later in the vector will be on the front layer and covers the compartments that are before it in this vector. This is important. In some cases compartments have overlap. This layer information ensures that a glyph laying in the overlapped region belongs to the compartment on the top layer.}
 
 \item{user.data}{A list. It holds both gene/protein data and compound data. Names are gene or compounds, each element is a numeric vector of the omics data of each molecule.}
+
+\item{if.plot.svg}{Logical. Default: T. Whether to generate svg code or only parse SBGN-ML file. This parameter is for internal use only.}
 
 \item{key.pos}{A character string. The position of color panel. Default: 'topright'. Accepts one of 'bottomleft' , 'bottomright', 'topright', or 'topleft'. The ideal position for the color panel is 'topright' or 'bottomright'. If 'topleft' or 'bottomleft' are passed in, the key.pos location will default to 'topright'. If key.pos is set to 'none', the pathway name and color panel won't be plotted.}
 
@@ -108,6 +112,8 @@ renderSbgn(
 \item{max.cpd.value}{Numeric. Default: 1. Color panel's max value for compound data. Values greater than this will have the same color as max value.}
 
 \item{mid.cpd.value}{Numeric. Default: 0. Color panel's mid value for compound data.}
+
+\item{pathway.name}{List containing two elements: 1. pathway name 2. stamp information. See argument description in \code{\link{SBGNview}} function to change/update pathway name displayed on graph.}
 
 \item{pathway.name.font.size}{Numeric. Default: 1. When pathway names are plotted on graph, this parameter controls their font size.}
 

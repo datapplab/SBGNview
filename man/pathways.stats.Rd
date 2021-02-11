@@ -8,7 +8,7 @@
 A data.frame
 }
 \usage{
-pathways.stats
+data(pathways.stats)
 }
 \description{
 Number of pathways collected

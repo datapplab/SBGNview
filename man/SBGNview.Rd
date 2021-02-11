@@ -21,6 +21,7 @@ SBGNview(
   id.mapping.cpd = NULL,
   org = "hsa",
   output.formats = c("svg"),
+  pathway.name = NULL,
   show.pathway.name = FALSE,
   SBGNview.data.folder = "./SBGNview.tmp.data",
   ...
@@ -61,6 +62,8 @@ Accepted values:
 \item{org}{A character string. Default: "hsa". The species of the gene omics data. It is used for species specific gene ID mapping. Currently only supports three letters KEGG code (e.g. hsa, mmu, ath).  For a complete list of KEGG codes, see this page:\cr \href{https://www.genome.jp/kegg/catalog/org_list.html}{KEGG Organisms: Complete Genomes}}
 
 \item{output.formats}{A character vector. It specifies the formats of output image files. The vector should be a subset of c('pdf' , 'ps', 'png'). By default the function will always output a svg file. SBGNview uses rsvg to convert svg file to other formats. If other 'output.formats' is set but 'rsvg' package is not installed, an error will occur. See this page for how to \href{https://github.com/jeroen/rsvg}{install 'rsvg'}}
+
+\item{pathway.name}{A character string. Change/update pathway name displayed on the output graph. If 'input.sbgn' is a pathway ID in data(pathways.info), the pathway name and database associated with the pathway ID will be displayed on the output graph. If 'input.sbgn' is a SBGN-ML file not part of our pre-generated SBGN-ML files, nothing will be dispalyed for the pathway name unless set using this arugmnet.}
 
 \item{show.pathway.name}{Logical. Default: F. If set to TRUE and 'input.sbgn' are pre-collected pathway IDs, the pathway name will be added to the output file name.}
 
@@ -148,7 +151,7 @@ In addition, users can control more graph properties including node/edge attribu
 ### Use simulated data. Please see vignettes for more examples.
 ### Run `browseVignettes(package = "SBGNview")` 
 
-# load demo dataset and pathway information of built-in collection of SBGN-ML files
+# load demo dataset, SBGN pathway data collection and info, which may take a few seconds
 # we use a cancer microarray dataset 'gse16837.d' from package 'pathview'
 data("gse16873.d", "pathways.info", "sbgn.xmls")
 
