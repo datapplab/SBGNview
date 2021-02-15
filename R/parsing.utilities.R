@@ -147,9 +147,9 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
                     gene.data.converted <- changeDataId(gene.data, input.type = gene.id.type, 
                                                         output.type = sbgn.gene.id.type, sum.method = node.sum, cpd.or.gene = "gene", 
                                                         org = org, id.mapping.table = id.mapping.gene, SBGNview.data.folder = SBGNview.data.folder)
-                    if (identical(gene.data.converted, "no.id.mapped")) {
-                        warning("no id mapped!")
-                    }
+                    # if (identical(gene.data.converted, "no.id.mapped")) {
+                    #     warning("no id mapped!")
+                    # }
                 }
                 mm=range(gene.data.converted, na.rm=TRUE)
                 gene.data.converted <- list(gene.data.converted, max.gene=mm[2], min.gene=mm[1])
@@ -171,9 +171,9 @@ parse.omics.data <- function(gene.data, cpd.data, input.sbgn.full.path, database
                         cpd.data.converted <- changeDataId(cpd.data.converted, input.type = cpd.id.type, 
                                                            output.type = sbgn.cpd.id.type, sum.method = node.sum, cpd.or.gene = "compound", 
                                                            id.mapping.table = id.mapping.cpd, SBGNview.data.folder = SBGNview.data.folder)
-                        if (cpd.data.converted == "no.id.mapped") {
-                            warning("no id mapped!")
-                        }
+                        # if (cpd.data.converted == "no.id.mapped") {
+                        #     warning("no id mapped!")
+                        # }
                     }
                     mm=range(cpd.data.converted, na.rm=TRUE)
                     cpd.data.converted <- list(cpd.data.converted, max.cpd=mm[2], min.cpd=mm[1])

@@ -141,6 +141,10 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   if(is.null(cpd.or.gene)) { 
     message("argument \"cpd.or.gene\" is not specified") 
   }
+  if(!cpd.or.gene %in% c("gene", "cpd", "compound")) {
+    stop("'cpd.or.gene' must be 'gene' or 'cpd'/'compound'")
+  }
+  
   if(!file.exists(SBGNview.data.folder)) { 
     dir.create(SBGNview.data.folder) 
   }
@@ -153,7 +157,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
                                              species = species,
                                              SBGNview.data.folder = SBGNview.data.folder)
   
-  if(mapping.file.info$location == "local" || mapping.file.info$location == "SBGNhub"){
+  if(mapping.file.info$location == "local" || mapping.file.info$location == "SBGNhub") {
     
     # read local file or file downloaded from SBGNhub
     path.to.local.file <- paste(SBGNview.data.folder, mapping.file.info$mapping.file.name, sep = "/")
@@ -161,13 +165,13 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     mapping.list <- get(var.name) # mapping.list returned
     message(mapping.file.info$mapping.file.name, " loaded from local")
     
-  } else if (mapping.file.info$location == "SBGNview.data"){
+  } else if (mapping.file.info$location == "SBGNview.data") {
     mapping.list <- get(mapping.file.info$mapping.file.name) # get data loaded from SBGNview.data
-
+    
   } else {  # use pathview
     message("\nGenerating mapping using Pathview")
-    if(cpd.or.gene == "gene"){
-      # pathway.id used for heterogeneous purposes and mapping gene to pathway
+    if(cpd.or.gene == "gene") {
+      # pathway.id used for heterogeneous purposes and mapping gene to pathway.
       # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
       # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"
       # ENZYME not in if condition below b/c it can be mapped directly
@@ -175,54 +179,43 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
          !any(c(input.type,output.type) %in% c("KO")) ) { # if input and output don't contain KO
         
         # load mapping table for mapping KO to glyph id
-        ko.to.glyph.id = loadMappingTable(input.type = output.type,
-                                          output.type = "KO",
-                                          cpd.or.gene = "gene",
-                                          species = species,
-                                          SBGNview.data.folder = SBGNview.data.folder)
-        
+        ko.to.glyph.id <- loadMappingTable(input.type = output.type,
+                                           output.type = "KO",
+                                           cpd.or.gene = "gene",
+                                           species = species,
+                                           SBGNview.data.folder = SBGNview.data.folder)
         # load mapping table for mapping user input to KO id
-        input.to.ko = loadMappingTable(input.type = input.type,
-                                       output.type = "KO",
-                                       cpd.or.gene = "gene",
-                                       limit.to.ids = limit.to.ids,
-                                       species = species,
-                                       SBGNview.data.folder = SBGNview.data.folder)
-        input.to.glyph.id = merge(input.to.ko, ko.to.glyph.id, all= FALSE)
-        id.map = input.to.glyph.id[,c(input.type,output.type)]
+        input.to.ko <- loadMappingTable(input.type = input.type,
+                                        output.type = "KO",
+                                        cpd.or.gene = "gene",
+                                        limit.to.ids = limit.to.ids,
+                                        species = species,
+                                        SBGNview.data.folder = SBGNview.data.folder)
+        input.to.glyph.id <- merge(input.to.ko, ko.to.glyph.id, all = FALSE)
+        mapping.list <- input.to.glyph.id[,c(input.type,output.type)]
         
       } else {
         message("\nID mapping not pre-generated")
         # if(is.null(limit.to.ids)){
         #   stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
         # }
-        id.map = geneannot.map.ko(in.ids = limit.to.ids,
-                                  in.type = input.type,
-                                  out.type = output.type,
-                                  species = species,
-                                  unique.map= FALSE,
-                                  SBGNview.data.folder = SBGNview.data.folder)
-        if(is.vector(id.map)){
-          id.map = as.matrix(t(id.map))
+        mapping.list <- geneannot.map.ko(in.ids = limit.to.ids,
+                                         in.type = input.type,
+                                         out.type = output.type,
+                                         species = species,
+                                         unique.map= FALSE,
+                                         SBGNview.data.folder = SBGNview.data.folder)
+        if(is.vector(mapping.list)) {
+          mapping.list <- as.matrix(t(mapping.list))
         }
       }
       
-    } else if(cpd.or.gene == "compound") {
-      message("\nID mapping not pre-generated. Using Pathview cpd!")
-      if(is.null(limit.to.ids)){
-        stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
-      }
-      message("\nUsing pathview::cpdidmap to map ", input.type, " and ", output.type)
-      id.map =  pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type,
-                                   out.type = output.type)
-    } else {
-      message("\nCouldn't fine ID mapping table between ", input.type, " and ", output.type, "!!!\n")
-      #message("Tried online resource ", online.mapping.file, "\n")
-      message("Please provide ID mapping table using \"id.mapping.table\"!!\n")
-      stop("ID mapping table not provided")
-    }
-    mapping.list <- id.map
-  }
+    } else if(cpd.or.gene %in% c("compound", "cpd")) {
+      mapping.list <- generate.cpd.mapping.table(input.type = input.type, output.type = output.type,
+                                                 limit.to.ids = limit.to.ids)
+    } 
+    
+  } # end else use pathview
   
   # if mapping.list contains a species column, filter by value of 'species' argument
   if(!identical(species, character(0))) {
@@ -251,7 +244,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     } # end if: filter 'species' column
   } # end if !is.null(species)
   
-  mapping.list <- as.matrix(mapping.list)
+  if(!is.matrix(mapping.list)) mapping.list <- as.matrix(mapping.list)
   return(mapping.list)
 }
 
@@ -555,6 +548,74 @@ get.keggrest.data <- function(tar, src, link.or.conv, tar.is.species = F, src.is
   colnames(map.list) <- c(toupper(src), toupper(tar))
   
   return(map.list)
+}
+
+#########################################################################################################
+# used in loadMappingTable function
+# using chebi as bridge ID to map from IDs in data(cpd.simtypes) from pathview to 
+# glyph IDs of pathwayCommons, pathway.id, or metacyc.SBGN
+# if input type and output type in data(cpd.simtypes), use pathview::cpdidmap
+# else map to kegg using pathview::cpd2kegg, kegg to chebi, chebi to glyph ID
+generate.cpd.mapping.table <- function(input.type, output.type, limit.to.ids) {
+  
+  if(!exists("cpd.simtypes")) data("cpd.simtypes", package = "pathview")
+  valid.in.out.types <- c(cpd.simtypes, "pathwayCommons", "pathway.id", "metacyc.SBGN")
+  if(!input.type %in% valid.in.out.types | !output.type %in% valid.in.out.types) {
+    stop("'input.type' needs to be one of values in data(cpd.simtypes). 
+    'output.type' can be one of values in data(cpd.simtypes) or 
+         one of 'pathwayCommons','pathway.id', 'metacyc.SBGN'.")
+  } 
+  if(is.null(limit.to.ids)) {
+    stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
+  }
+  if(input.type %in% c("pathwayCommons", "pathway.id", "metacyc.SBGN") & output.type %in% cpd.simtypes) {
+    temp <- input.type
+    input.type <- output.type
+    output.type <- temp
+  }
+  
+  if(input.type %in% cpd.simtypes & output.type %in% cpd.simtypes) {
+    message("Using pathview::cpdidmap to map ", input.type, " and ", output.type)
+    mapping.list <- pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type,
+                                       out.type = output.type)
+  } else { # map to glyph ID type
+    input.cpd.to.kegg <- limit.to.ids
+    # if input.type not native KEGG, map to kegg ID first
+    if(!input.type %in% c("KEGG COMPOUND accession", "KEGG DRUG accession")) {
+      message("Using pathview::cpd2kegg to map ", input.type, " to KEGG")
+      input.cpd.to.kegg <- pathview::cpd2kegg(in.ids = limit.to.ids, in.type = input.type)
+    } else {
+      # native kegg
+      message("Input is a native KEGG compound ID type")
+      input.cpd.to.kegg <- matrix(input.cpd.to.kegg)
+      colnames(input.cpd.to.kegg) <- c("KEGG")
+      input.type <- "KEGG"
+    }
+    # chebi_kegg.ligand doesn't contain DRUG and COMPOUND accession data
+    # using chebi_kegg that contains both accessions data
+    message("Mapping ", input.type, " to ", output.type)
+    if(!exists("chebi_kegg")) data("chebi_kegg", package = "SBGNview.data")
+    chebi.to.kegg <- as.matrix(get("chebi_kegg"))
+    
+    input.type.to.chebi <- merge(input.cpd.to.kegg, chebi.to.kegg)
+    input.type.to.chebi <- input.type.to.chebi[ , c(input.type, "chebi")]
+    
+    chebi.to.ouput.type.map.table <- paste("chebi_", output.type, sep = "")
+    if(!exists(chebi.to.ouput.type.map.table)) { 
+      data(list = chebi.to.ouput.type.map.table, package = "SBGNview.data") 
+    }
+    chebi.to.output.type <- as.matrix(get(chebi.to.ouput.type.map.table))
+    
+    mapping.list <- merge(input.type.to.chebi, chebi.to.output.type)
+    mapping.list <- mapping.list[, c(input.type, output.type)]
+    
+    if(length(mapping.list) == 0 | dim(mapping.list)[1] == 0) {
+      stop("Mapping from ", input.type, " to ", output.type, " did not work")
+    }
+  } # end else map to glyph ID
+  message("Finished mapping from ", input.type, " to ", output.type)
+  
+  return(mapping.list)
 }
 
 #########################################################################################################
