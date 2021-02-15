@@ -1,6 +1,6 @@
 ---
-title: "SBGNview: Pathway based omics data integration, visualization and analysis"
-author: "Xiaoxi Dong, Weijun Luo"
+title: "SBGNview: data integration, visualization and analysis on SBGN pathways"
+author: "Xiaoxi Dong, Kovidh Vegesna, Weijun Luo"
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
     bookdown::html_document2:
@@ -20,158 +20,39 @@ vignette: >
 ```{r , echo = FALSE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 library(knitr)
 ```
-# About
-SBGNview is a tool set for visualizing omics data on pathway maps and pathway related data analysis. Pathway is rendered with community standard notation: Systems Biology Graphical Notation ([SBGN](http://sbgn.github.io/sbgn))[@le2009systems]. Given an omics data table and a pathway file (SBGN-ML format with layout information), SBGNview can display omics data as colors on glyphs (nodes) and output image files. Currently it maps gene/protein omics data to “macromolecule” glyphs and maps compound omics data to “simple chemical” glyphs. For omics data, SBGNview supports common gene/protein/compound ID types (e.g. Entrez Gene ID, UNIPROT, ChEBI etc.). For pathway files, SBGNview can automatically retrieve SBGN-ML files from common pathway databases (e.g. Reactome, MetaCyc, SMPDB, PANTHER, METACROP etc.). To support visualizing multiple types of data on the same glyph/arc, SBGNview provides extensive options to control glyph and edge features (e.g. color, line width, label color/size etc.). To facilitate pathway based analysis, SBGNview can search for pathways by keywords, extract node information (e.g. gene set, compound set) and highlight shortest path between two nodes etc. 
-
-# Introduction
-Molecular pathways have been widely used in omics data analysis. We previously developed an R/BioConductor package called Pathview, which maps, integrates and visualizes omics data onto KEGG pathway graphs[@luo2013pathview]. Since its publication, Pathview has been widely used in numerous omics studies and analysis tools. Here we introduce the SBGNview package, which adopts Systems Biology Graphical Notation (SBGN)[@le2009systems] and greatly extends the Pathview project by supportting multiple major pathway databases besides KEGG.
-
-Key features:
-
-* Pathway diagram is drawn with SBGN notations 
-
-Pathway maps use different glyphs shapes to represent different types of molecules (e.g. macromolecules, simple chemicals) and different arc shapes to represent different reaction types (e.g. consumption, catalysis). Collectively, they are called graphical notations. SBGN is a community developed notation standard and has been used by major pathway databases (e.g. Reactome, SMPDB, PANTHER pathways, MetaCrop etc.). For details about SBGN, please check [http://sbgn.github.io/sbgn](http://sbgn.github.io/sbgn)
-
-* Supports major pathway databases and user created pathway SBGN-ML files. 
-
-As mentioned above, SBGN is adopted by major pathway databases, including Reactome, Panther, PathwayCommons, MetaCrop etc. We have collected SBGN-ML files from these databases, which can be searched and automatically utilized by **SBGNview** workflow. In additions, molecular biologists often summarize new discoveries or literature knowledge in pathways, and create their own pathway maps. This can be done with SBGN editing tools: https://sbgn.github.io/software and the pathways can be saved as SBGN-ML files. **SBGNview** can process such custom SBGN-ML files as well, given an ID mapping table between omics IDs and SBGN glyph IDs. This makes **SBGNview** much more flexible than other visualization tools such as Pathview and PaintOmics, which only support KEGG pathways.
-
-
-* Extensive choices for graphical control. 
-
-Like **Pathview**, **SBGNview** supports multiple samples for each gene/compound. In addition, it provides rich options to control glyph/arc attributes such as line color/width and text size/color/wrapping/positioning etc. This gives users flexible control over the pathway graphs.
-
-* Pathway related data extraction and analysis
-    + **SBGNview** provides functions to [Search and automatically download](#searchPathways) pathway files from major databases. Keywords can be pathway names or molecule IDs (gene symbol, compound name, UNIPROT, CHEBI, UNICHEM etc.)
-    + Pathway gene/compound set extraction. The gene sets can be used for gene set enrichment analysis.
-
-# Installation
-
-## Installation preparation
-
-SBGNview depends or imports from the following R packages. Note these dependencies will be automatically installed when SBGNview is installed from BioConductor or GitHub. 
-
-* xml2: parse SBGN-ML files
-* rsvg: convert svg files to other formats (pdf, png, ps). librsvg2 is needed to install rsvg. See this page for more details: https://github.com/jeroen/rsvg
-* igraph: find shortest paths
-* httr: search [SBGNhub](https://github.com/datapplab/SBGNhub/tree/master/data/id.mapping.unique.pair.name) for mapping files
-* KEGGREST: generate mapping tables from scratch when needed
-* [pathview](https://bioconductor.org/packages/release/bioc/html/pathview.html): map between different ID types for gene and chemical compound
-* [gage](https://bioconductor.org/packages/release/bioc/html/gage.html): R package for pathway enrichment analysis.
-* [SBGNview.data](https://bioconductor.org/packages/release/data/experiment/html/SBGNview.data.html): demo gene expression datasets for SBGNview package
-* [SummarizedExperiment](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html): main function accepts data as SummarizedExperiment objects
-* AnnotationDbi: filter and select data for mapping between IDs
-
-```{r setup, eval = FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE)){
-     install.packages("BiocManager")
-}
-BiocManager::install(c("xml2", "rsvg", "igraph", "httr", "KEGGREST", "pathview", "gage", "SBGNview.data", "SummarizedExperiment", "AnnotationDbi"))
-```
-
-Prerequisites for Operating Systems:  
-**Windows 10**: none
-
-**Linux (Ubuntu)**: needs additional packages (libxml2-dev, libssl-dev, libcurl4-openssl-dev, librsvg2-dev) to be installed. Run the command below in a terminal to install the necessary packages. The same or similar packages can be found for other distributes of linux.
-```{r depend, eval = FALSE}
-sudo apt install libxml2-dev libssl-dev libcurl4-openssl-dev librsvg2-dev
-```
-
-## Install SBGNview
-Install **SBGNview** through [Bioconductor](https://bioconductor.org/packages/release/bioc/html/SBGNview.html).
-```{r install, eval = FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE)){
-     install.packages("BiocManager")
-}
-BiocManager::install("SBGNview")
-```
-
-Alternatively, install **SBGNview** through [GitHub](https://github.com/datapplab/SBGNview). Requires R (version >= 3.6).
-```{r install-github, eval = FALSE}
-install.packages("devtools")
-devtools::install_github("datapplab/SBGNview")
-```
-
 # Overview
+SBGNview is a tool set for pathway based data visalization, integration and analysis. SBGNview is similar and complementary to the widely used [Pathview](https://www.bioconductor.org/packages/pathview)[@luo2013pathview], with the following key features: 
 
-To visualize omics data on SBGN pathway map, we need two inputs:
+* Pathway definition by the widely adopted [Systems Biology Graphical Notation (SBGN)](https://sbgn.github.io/);
 
-1. A SBGN-ML file containing the pathway information: nodes,edges and their layout (coordidnates).
+* Supports multiple major pathway databases beyond KEGG (Reactome, MetaCyc, SMPDB, PANTHER, METACROP etc) and user defined pathways;
 
-2. An omics data table in which rows are genes/compounds and columns are different measurements. The measurements can be any numeric values, such as fold change, abundance etc.
+* Covers 5,200 reference pathways and over 3,000 species by default;
 
-Given these two inputs, **SBGNview** will parse SBGN-ML file and render a .svg graph with SBGN notation, then displays omics data of each gene/compound on its corresponding glyph on the SBGN map. Each measured value will be displayed as a color corresponding to the value. When there are multiple samples/measurements for each molecule, nodes are divided into multiple slices correspondingly. When multiple omics molecules are mapped to the same glyph (protein isoforms of a gene), a summary statistic can be selected to derive a single value for the glyph (e.g. the average value). The output images can be in SVG, PDF, PNG or PS format.
+* Extensive graphics controls, including glyph and edge attributes, graph layout and sub-pathway highlight;
 
-## A quick example {#quickStart}
-A quick example to visualize a demo gene expression dataset on pathway "Adrenaline and noradrenaline biosynthesis" and highlight several interesting nodes, edges and path.
+* SBGN pathway data manipulation, processing, extraction and analysis.
 
-Use `getwd()` to check the current working directory. The output files from this example will be saved to the current working directory. Use `setwd()` if you would like to save the output files to a different directory. 
+# Citation
 
-```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-library(SBGNview)
-# Load demo dataset and pathway information of built-in collection of SBGN-ML files. 
-# We use a cancer microarray dataset 'gse16837.d' from package 'pathview'
-data("gse16873.d","pathways.info") 
-# ***NOTE: loading 'sbgn.xmls' takes a few seconds since is a large data object  
-#          containing the pre-generated SBGN-ML files.  
-data("sbgn.xmls")
+Please cite the following papers when using this open-source  package. This will help the project and our team:
 
-# search for pathways with user defined keywords
-input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
-# render SBGN pathway graph and output image files
-SBGNview.obj <- SBGNview(gene.data = gse16873.d[,1:3], 
-                         gene.id.type = "entrez",
-                         input.sbgn = input.pathways$pathway.id,
-                         output.file = "quick.start", 
-                         output.formats = c("png")) 
-print(SBGNview.obj)
-```
-Two image files (a .svg file by default and a .png file) will be created in the current working directory:
-```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-list.files(pattern = "quick.start", full.names = TRUE) 
-```
-```{r quickStartFig, echo = FALSE,fig.cap="\\label{fig:quickStartFig}Quick start example: Adrenaline and noradrenaline biosynthesis pathway. "}
-include_graphics("quick.start_P00001.svg")
-```
-[Link to SBGN notation](https://cdn.rawgit.com/sbgn/process-descriptions/b2904462d11bd8d65e9c7a1318d95d468048cb50/templates/PD_L1V1.3.svg)
-
-In this example, the [original pathway SBGN-ML file ](http://apps.pathwaycommons.org/pathways?uri=http%3A%2F%2Fidentifiers.org%2Fpanther.pathway%2FP00001) is from pathwayCommons, with [improved layout](#ourCollection) (node-edge overlaps are avoided by routed edges). 
+Luo W, Brouwer C. Pathview: an R/Biocondutor package for pathway-based data integration and visualization. Bioinformatics, 2013, 29(14):1830-1831, <a href=https://doi.org/10.1093/bioinformatics/btt285>doi: 10.1093/bioinformatics/btt285</a>
 
 
-We can highlight nodes, edges and path:
+Dong X, Vegesna K, Luo W. SBGNview: SBGN for pathway based data analysis, integration and visualization, Submitted, 2020.
 
-**Note:** the output image files from the previous code block will be replaced/overwritten with highlighted nodes, edges and path image files. To keep the previous output image files and save new ones as separate image files, assign the `SBGNview.obj` to a new variable and use the new variable in `outputFile()` and add highlighted nodes, edges and path. 
-
-```{r, echo = TRUE, eval = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-outputFile(SBGNview.obj) <- "quick.start.highlight.elements"
-SBGNview.obj + highlightArcs(class = "production",color = "red") + 
-               highlightArcs(class = "consumption",color = "blue") +
-               highlightNodes(node.set = c("tyrosine", "(+-)-epinephrine"), 
-                              stroke.width = 4, stroke.color = "green") + 
-               highlightPath(from.node = "tyrosine", to.node = "dopamine",
-                             from.node.color = "green",
-                             to.node.color = "blue",
-                             shortest.paths.cols = "purple",
-                             input.node.stroke.width = 6,
-                             path.node.stroke.width = 5,
-                             path.node.color = "purple",
-                             path.stroke.width = 5,
-                             tip.size = 10 )
-```
-```{r quickStartFigModified, echo = FALSE,fig.cap="\\label{fig:quickStartFigModified}Quick start example: Adrenaline and noradrenaline biosynthesis pathway. Highlight nodes and edges."}
-include_graphics("quick.start.highlight.elements_P00001.svg")
-```
-
-The color of consumption arcs and production arcs are set to blue and red, respectively. 
-
-Tyrosine and epinephrine are highlighted by thicker border (stroke width) and green color. Note that there are four nodes mapped to (+-)-epinephrine. 
-
-A shortest path from tyrosine to dopamine is highlighted with purple arcs and nodes. The start (Tyrosine) and end (epinephrine) nodes have thicker border and different colors (green and blue). Since there are multiple dopamines in the map, a random dopamine node is selected.  If user wants a specific node, function *changeIds* can help find the node IDs corresponding to input molecule ID. Then user can run *highlightNodes* and/or *highlightPath* again with "node IDs" instead of "compound name". See [this example](#findNode) for details.
-
+# Installation and quick start
+Please see the [Quick Start tutorial](https://bioconductor.org/packages/devel/bioc/vignettes/SBGNview/inst/doc/SBGNview.quick.start.html) for installation instructions and quick start examples.
 
 # Getting started
 
-*SBGNview* is the main function to overylay omics data on SBGN pathway maps. It extracts node and edge data from SBGN-ML file and creates a SBGN graph in SVG format. Then it maps omics data to the glyphs and renders mapped data as colors. Currently it maps gene/protein omics data to "macromolecule" glyphs and maps compound omics data to "simple chemical" glyphs. Please see the documentation of function *SBGNview* for more details. The *SBGNview* function returns a *SBGNview* object, it contains information necessary to render SBGN graph and can be further modified to change graph features. See [this section](#sbgnviewObj) for more details.
+*SBGNview* is the main function of the package. It takes two major types of inputs: user data (gene and/or compound data) and SBGN pathway data (pathway IDs or SBGN-ML files). *SBGNview* parses the SBGN pathway data, extracts glyph (node) and arc (edge) data from SBGN-ML file, maps and integrates the user data to the glyphs and renders the SBGN graph in SVG formatwith mapped data as pseudo-colors. Currently it maps gene/protein omics data to "macromolecule" glyphs and maps compound omics data to "simple chemical" glyphs. The *SBGNview* function returns a [*SBGNview* object](#sbgnviewObj), which contains data to recreate the rendered SBGN graph or further modified it. Please see the documentation of function *SBGNview* for more details.
+
+## Load the SBGNview package, together with pathview and other dependencies
+```{r , echo = TRUE,   message = FALSE, warning = FALSE}
+library(SBGNview)
+```
 
 ## Accessing help and documentation
 Use `ls("package:SBGNview")` to list all available functions in SBGNview. To learn more about how to use the functions and access their manuals, use `help()` or `?`. For example, `?”SBGNview”` or `help("+.SBGNview")`.
@@ -180,39 +61,34 @@ ls("package:SBGNview")
 ```
 
 ## SBGN pathway file (SBGN-ML)
-SBGN pathway is defined in a special XML format (SBGN-ML file). It contains information of the pathway content (molecules and their reactions) as well as graph layout information. There are two main types of data in SBGN-ML files:
+SBGN pathways are defined in a special XML format (SBGN-ML file). SBGN-ML files describe the pathway elements (molecules and their reactions) and the graph layout (positions and appearances of the pathway elements). There are two major data types ement in SBGN-ML files:
 1. node data (in tag "glyph"), such as node location, width, hight and node class (macromolecule, simple chemical etc.). 
 2. edge data (in tag "arc"), such as arc class, start node and end node.
 For more details, see:
 https://github.com/sbgn/sbgn/wiki/SBGN_ML
 
-### SBGN-ML pathway file from online databases
+### Two tiers of support and two scenarios with SBGN based pathways
+SBGNview provides two tiers of support for SBGN based pathway data, which corresponds to the two common *SBGNview* scenarios:
 
-Several online databases provide SBGN-ML files, such as pathwayCommons, Reactome and MetaCrop. They can be downloaded from their webpage or FTP site.
+* Scenarios 1 or Tier 1{#ourCollection}, direct and deep support to a core collection of pathway data from 5 major pathway databases including Reactome, SMPDB, PANTHER, MetaCyc and MetaCrop, or using SBGNview's pathway collection. Each of these databases covers up to thousands of reference pathways and species (Table 1). SBGNview provides diagram optimization and ID mapping on these pathway databases. In other words, ve prepared a full collection of high quality sbgn pathways from these databases, which can be directly used in data analysis. The pathway data in SBGN-ML format are stored in data **sbgn.xmls** (included in package *SBGNview.data*), which are effectively indexed/accessed by SBGNview pathway IDs. We've also generated ID mapping between SBGN-ML glyph IDs and common molecule IDs, so that user data can be easily mapped to these pathways. 
 
-### SBGNview's SBGN-ML file collection{#ourCollection}
+* Scenarios 2 or Tier 2, indirect support to raw SBGN pathway data from pathway databases, collections and users' custom pathway data. Many major pathway databases provide SBGN-ML files, including Pathway Commons, Reactome and MetaCrop. Their data can be downloaded and directly used by *SBGNview*. Other databases (e.g. PANTHER and BioCyc) use SBML or BioPAX formats, which can be converted to SBGN-ML format using third party tools. Note Pathway Commons collect pathways from Reactome, PANTHER, SMPDB and other primary databases. These data can be used in SBGNview, except diagrams may not be optimized for data visualization, and users need to provided ID mapping or make sure the glyph IDs are commonly use molecule IDs. 
 
-Many pathways from the above databases don't have desirable layout and often have extensive node-node overlaps and node-edge crossings. Thus we refined the layout and removed node-node overlaps. For node-edge crossings, we computed spline edges to resolve this issue and added additional XML elements in the SBGN-ML file to record spline edges. The resulting collection of SBGN-ML files are available in a separate [GitHub repository](https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN). **SBGNview** can automatically search in this pathway collection and download the SBGN-ML files.  Users can further modify the SBGN-ML files using other tools (e.g. [newt editor](http://newteditor.org/)) for desired node layout (note: the routed edges will be lost). 
-The package used to layout nodes and route spline edges is currently under development and will be released in the near future. 
+Note the core collection of pathway databases with tier 1 support includes thousands of pathways and species, which should cover most of the users needs in pathway analysis and data visualization. We are taking the first the default route, i.e. to use the SBGNview's core collection.
 
-#### Information about pre-generated SBGN-ML file collection
+#### Load SBGNview's SBGN-ML pathway data collection
+Because a large amount of pathway data is loaded into R, this step can take up to several second.
+```{r , echo = TRUE,   message = FALSE, warning = FALSE}
+data("sbgn.xmls")
+```
+
+#### Information about the SBGN-ML pathway data collection
 We can check the information of collected pathways using `pathways.info` and number of pathways collected using `pathways.stats`.
 ```{r , echo = TRUE,   message = FALSE, warning = FALSE}
 data("pathways.info", "pathways.stats")
 head(pathways.info)
 pathways.stats
 ```
-
-There are two common scenarios of using *SBGNview*
-
-* Using our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp)
-
-In this scenario, the SBGN-ML file contents are stored in data **sbgn.xmls** (included in package *SBGNview.data*). SBGNview can automatically retrieve SBGN-ML contents from this dataset by pathway IDs. 
-
-* Using SBGN-ML files from other sources.
-
-In this scenario, more parameters and/or ID mapping files (map between omics data IDs and SBGN-ML file glyph IDs) are needed. Please see the documentation of function *SBGNview* for more details.
-
 #### Search for pathways by keywords {#searchPathways}
 SBGNview can search for pathways by keyword and automatically download SBGN-ML files.
 
@@ -235,42 +111,34 @@ head(pathways)
 Researchers may have different tastes for a "good looking" layout. We have created different layouts for each pathway. User can download them from [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) and [try](#tryDifferentLayout).
 
 
-### User customized SBGN-ML file
+### Custom SBGN-ML files
 
-We can also create a SBGN-ML file from scratch. Several tools like [Newt editor](http://newteditor.org/) can let the user draw a pathway diagram and save it as SBGN-ML file. The tools may also able to generate a primitive pathway layout. But these layouts often have too many node-node overlaps and edge-node crossings. Therefore, we recommend the user to use our SBGN-ML file collection [mentioned above](#ourCollection), which have been optimized to solve these problems. 
+USers can also define their own pathways and create custom SBGN-ML files from scratch. Several tools like [Newt editor](http://newteditor.org/) can let the user draw a pathway diagram and save it as SBGN-ML file. The tools may also able to generate a primitive pathway layout. But these layouts are usually not desirable for data visualization with too many node-node overlaps and edge-node crossings. Therefore, we recommend the users to stick to [SBGNview core collection](#ourCollection).
 
 
-## Omics data
+# Basic visualization
 SBGNview can visualize a range of omics data, including both gene (or transcript, protein, enzyme) data and compound (or metabolite, chemical, small molecules) data. 
 
 
 ### Gene expression data
 
-Gene/protein related data will be mapped to "macromolecule" nodes on a SBGN map.
-
-
 ### Chemical compound data
-
-Chemical compound data will be mapped to "simple chemical" nodes on a SBGN map.
-
-Here we simulate a compound dataset.
-```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-cpd.data <- sim.mol.data(mol.type = "cpd", 
-                         id.type = "KEGG COMPOUND accession", 
-                         nmol = 50000, 
-                         nexp = 2)
-head(cpd.data)
-```
 
 
 ## Visualize gene data
-Most of the SBGN-ML files from online resources have their unique ID types and it is different from the ID type in the omics data.
-If the ID types are different, we need to map the omics IDs to the node IDs in the SBGN-ML file.
-In the [quick start example](#quickStart) ("Adrenaline and noradrenaline biosynthesis" pathway), the SBGN-ML file uses pathwayCommons IDs for gene/protein nodes, whereas the omics dataset uses Entrez gene IDs.
-The function *SBGNview* can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) as shown in the [quick start example](#quickStart). We can also do it manually using function *changeDataId*, which is called by *SBGNview* internally to do ID mapping. Supported ID type pairs can be found in *data(mapped.ids)*.  *changeDataId* uses [pre-generated mapping tables](https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping) or **pathview** to do the mapping.
-If the input-output ID type pair is not in *data(mapped.ids)* or can't be mapped by **pathview**, user needs to provide the mapping table explicitly using the "id.mapping.table" argument.
+Gene/protein related data will be mapped to "macromolecule" nodes or glyphs on SBGN maps. Most of online databases or resources have their unique glyph ID types and it is likely different from the ID type in the gene data. We often need to map the omics IDs to the node IDs in the SBGN-ML file.
+In the [quick start example](https://bioconductor.org/packages/devel/bioc/vignettes/SBGNview/inst/doc/SBGNview.quick.start.html#quickexample) ("Adrenaline and noradrenaline biosynthesis" pathway), the SBGN-ML file uses pathwayCommons IDs for gene/protein nodes, whereas the omics dataset uses Entrez gene IDs.
+The function *SBGNview* can automatically map common ID types such as ENTREZ, UniProt etc. to nodes in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) as shown in the [quick start example](https://bioconductor.org/packages/devel/bioc/vignettes/SBGNview/inst/doc/SBGNview.quick.start.html#quickexample). We can also do it manually using function *changeDataId*, which is called by *SBGNview* internally to do ID mapping. Supported ID type pairs can be found in *data(mapped.ids)*.  *changeDataId* uses [pre-generated mapping tables](https://github.com/datapplab/SBGN-ML.files/tree/master/data/id.mapping) or **pathview** to do the mapping.
+If the input-output ID type pair is not in *data(mapped.ids)* or can't be mapped by **SBGNview** automatically, user needs to provide the mapping table explicitly using the "id.mapping.table" argument.
 
-Let's change the IDs in the gene expression omics data.
+
+Firt, load the preprocessed demo gene data.
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+data("gse16873.d")
+head(gse16873.d)
+```
+
+Let's change the IDs in the gene data manually as an demo.
 ```{r , echo = TRUE, message = FALSE, warning = FALSE}
 # select a subset of data for later use
 gse16873 <- gse16873.d[,1:3]
@@ -291,8 +159,7 @@ When multiple genes are mapped to the same glyph ID, we use the sum of their val
 head(gene.data[,1:2])
 ```
 
-
-Now we run *SBGNview*, the main function to overlay omics data on SBGN map.
+Now we run *SBGNview*, the main function to map and render gene data on SBGN map.
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 SBGNview.obj <- SBGNview(gene.data = gene.data,
                          input.sbgn = "P00001",
@@ -301,24 +168,50 @@ SBGNview.obj <- SBGNview(gene.data = gene.data,
                          output.formats =  c("png", "pdf", "ps"))
 SBGNview.obj
 ```
-*SBGNview* will always generate a .svg file. Other formats can be added also.
-In this example, three additional files (pdf, ps, png) will be created in the same folder. 
+*SBGNview* will always generate a .svg file. Other formats can be added also. In this example, three additional files (pdf, ps, png) will be created in the same folder. 
 
 ```{r figGeneData, echo = FALSE,fig.cap="\\label{fig:figGeneData}Visualization of gene expression data."}
 include_graphics("test_output_P00001.svg")
 ```
+## Visualize compound data
+Chemical compound data will be mapped to "simple chemical" nodes on a SBGN map.
 
-## Visualize both gene data and compound data
-Here for demo purpose, we change the kegg compound IDs to pathwayCommons compound IDs. Although *SBGNview* can do this automatically (e.g. in the [quick start example](#quickStart)).
+Here we simulate a compound dataset.
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+cpd.data <- sim.mol.data(mol.type = "cpd", 
+                         id.type = "KEGG COMPOUND accession", 
+                         nmol = 50000, 
+                         nexp = 2)
+head(cpd.data)
+```
+
+Here for demo purpose, we change the KEGG compound IDs to pathwayCommons compound IDs. Although *SBGNview* can do this automatically, see [Visualize both gene data and compound data]{#genecpddata}.
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-cpd.data <- changeDataId(data.input.id = cpd.data,
+cpd.data1 <- changeDataId(data.input.id = cpd.data,
                          input.type = "kegg.ligand",
                          output.type = "pathwayCommons",
                          cpd.or.gene = "compound",
                          sum.method = "sum")
 head(cpd.data)
 ```
+
+Now we run *SBGNview*, the main function to map and render compound data on SBGN map.
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+SBGNview.obj <- SBGNview(cpd.data = cpd.data1,
+                         input.sbgn = "P00001",
+                         output.file = "test_output.cpd",
+                         cpd.id.type = "pathwayCommons",
+                         output.formats =  c("png", "pdf", "ps"))
+SBGNview.obj
+```
+
+```{r figCpdData, echo = FALSE,fig.cap="\\label{fig:figCpdData}Visualization of compound abundance data."}
+include_graphics("test_output.cpd_P00001.svg")
+```
+
+## Visualize both gene data and compound data {#genecpddata}
+
 
 Now we can visualize both gene and compound data. In this example, we use the original gene expression data with "ENTREZ" IDs to show SBGNview's automatic ID mapping ability.
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
@@ -327,7 +220,7 @@ SBGNview.obj <- SBGNview(gene.data = gse16873,
                          input.sbgn = "P00001",
                          output.file = "test_output.gene.compound",
                          gene.id.type = "entrez",
-                         cpd.id.type = "pathwayCommons",
+                         cpd.id.type = "kegg.ligand",
                          output.formats =  c("svg"))
 SBGNview.obj
 ```
@@ -336,9 +229,9 @@ SBGNview.obj
 include_graphics("test_output.gene.compound_P00001.svg")
 ```
 
-## About *SBGNview* object {#sbgnviewObj}
+# Work with *SBGNview* object {#sbgnviewObj}
 **SBGNview** operates in a way similar to **ggplot2**:
-The main function *SBGNview* returns a *SBGNview* object (similar to the *ggplot* object "p" returned by function *ggplot* in **ggplot2**), which contains all information needed to render SBGN graph, and output file name. Make sure the input SBGN-ML files are available in the folder. The `input.sbgn` parameters takes in names of local SBGN files or pathway IDs and `sbgn.dir` specifies the path to local files. Printing this object will render the graph and write output image files. *SBGNview* object can be further modified by several functions to highlight nodes/edges/paths (e.g. *SBGNview.obj* + *highlightNodes()*, similar to *p* + *geom_boxplot()* in **ggplot2**).
+The main function *SBGNview* returns a S3 class *SBGNview* object (similar to the *ggplot* object "p" returned by function *ggplot* in **ggplot2**), which contains information needed to render SBGN graph, and output file name. Make sure the input SBGN-ML files are available in the folder. The `input.sbgn` parameters takes in names of local SBGN files or pathway IDs and `sbgn.dir` specifies the path to local files. Printing this object will render the graph and write output image files. *SBGNview* object can be further modified by several functions to highlight nodes/edges/paths (e.g. *SBGNview.obj* + *highlightNodes()*, similar to *p* + *geom_boxplot()* in **ggplot2**).
 
 * These operations will generate image files
     + The following command `SBGNview(...) + highlightNodes(...)` or `SBGNview.obj + highlightNodes(...)` will return a *SBGNview* object to R console. The returned object is executed as a top-level R expression, thus will be implicitly printed using the `print.SBGNview` function in SBGNview package. For more details, please see the documentation for `print.SBGNview` function.
@@ -348,20 +241,27 @@ The main function *SBGNview* returns a *SBGNview* object (similar to the *ggplot
 * These commands will NOT generate plot files:
     + `SBGNview.obj = SBGNview(...) + highlightNodes(...)`. The assign operation "=" will make the returned object invisible therefore it will not be printed.
           
-### Structure of *SBGNview* object
+## Structure of *SBGNview* object
 The *SBGNview* object is a S3 object defined as a list structure containing 'data' and 'output.file' and 'output.formats' elements. The object is created by the SBGNview S3 class defined within the package. The 'data' element of the object is a list containing information for all input SBGN pathways. Each element in 'data' is a list holding information of a single SBGN pathway. The information includes parsed glyphs, parsed arcs and other parameters to control graph features passed into *SBGNview* function. The 'output.file' element of the object is a string specified for the 'output.file' parameter in *SBGNview* function. The output file name can be modified using *outputFile*. The output formats can be updated by assigning a character vector of supported file formats by *SBGNview* function.  The code chucks below demonstrate how you can access glyphs and arcs information of a *SBGNview* object as well as changing output file name and output formats. A demo *SBGNview* object can be loaded by running `data("SBGNview.obj")`. 
 
-### Extract glyphs and arcs infromation from *SBGNview* object
+## Extract glyphs and arcs infromation from *SBGNview* object
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-result.one.sbgn <- SBGNview.obj$data[[1]]
-names(result.one.sbgn)
-glyphs <- result.one.sbgn$glyphs.list
-arcs <- result.one.sbgn$arcs.list
+pathway.1.data <- SBGNview.obj$data[[1]]
+names(pathway.1.data)
+glyphs <- pathway.1.data$glyphs.list
+arcs <- pathway.1.data$arcs.list
 str(glyphs[[1]])
 str(arcs[[1]])
+global.pars=pathway.1.data$global.parameters.list
+names(global.pars)
 ```
 
-### Change output file name of a *SBGNview* object
+## Modify *SBGNview* object directly
+For each pathway in *SBGNview* object, the 'global.parameters.list' element seen above contains the default graphical parameters controlling the plotting of allelements (glyphs and arcs) of the  pathway. We can modify these default parameters manually when needed.
+Most graphical parameters or features of individual glyphs or arcs can be controlled manually by directly modifying the *SBGNview* object too. For instance, we can modify different slots of *glyphs[[1]]* or *arcs[[1]]* in the code chunk above.
+Please make sure to read the documentation of *SBGNview* S3 class in the Value section fo *SBGNview* function.
+
+## Change output file name and format of *SBGNview* objects
 We can change the name of the output file using built-in function *outputFile*:
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 fileOutput(SBGNview.obj)
@@ -371,49 +271,16 @@ SBGNview.obj
 outputFile(SBGNview.obj) <- "test.print"
 fileOutput(SBGNview.obj)
 print(SBGNview.obj)
+
 ```
-
-### Modify *SBGNview* object directly
-More graph features can be controlled by directly modifying the *SBGNview* object.
-
 We can update or change the output file formats of a *SBGNview* object. Supported output file formats are any combination of "png", "pdf", and "ps". If an empty vector of output file formats are provided, only the SVG file format will be written to current working directory. 
 ```{r , echo = TRUE, eval = FALSE, results = 'hide', message = FALSE, warning = FALSE}
 print(SBGNview.obj$output.formats)
 SBGNview.obj$output.formats <- c("png", "pdf")
 ```
 
-For each input sbgn (pathway IDs from `data("pathways.info")` or local SBGN-ML files) in *SBGNview* object, the 'global.parameters.list' element contains a record of graphical parameters passed from *SBGNview* function to *renderSbgn* function. Run `?"renderSbgn"` for more information. 
-
-# Try different layout for the same pathway{#tryDifferentLayout}
-If the default layout is not ideal, users have two options:
-
-* Modify the layout manually using tools like [newt editor](http://newteditor.org/)
-
-* Download our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) SBGN-ML files with a different layout. Currently there limited pathways with multiple layout. More will be added in the future.
-
-A new layout for P00001 ("Adrenaline and noradrenaline biosynthesis") pathway ID is included as part of the *SBGNview* package. 
-```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-new.layout.file.path <- paste(path.package("SBGNview"), "extdata", sep = "/")
-SBGNview(gene.data = gse16873, 
-         gene.id.type = "entrez",
-         input.sbgn = "P00001.new.layout.sbgn",
-         sbgn.dir =  new.layout.file.path,
-         sbgn.gene.id.type = "pathwayCommons",
-         output.file = "test.different.layout",
-         output.formats =  c("svg"))
-
-```
-```{r differentLayout, echo = FALSE,fig.cap="\\label{fig:differentLayoutFig}Graph with different layout."}
-include_graphics("test.different.layout_P00001.new.layout.sbgn.svg")
-```
-
-
-# Modify graph elements
-It is useful to highlight interesting nodes, edges or paths in a pathway map. This can be done by modifying the *SBGNview* object, which contains all information needed to render a SBGN map.
-
-
-## Built-in functions
-The *SBGNview* object can be further modified by concatenating it with modification functions using binary operator *+* (see [quick start](#quickStart) for example). 
+# Updating & modifying graphs
+It is useful to highlight interesting nodes, edges or paths in a pathway map. One way is to modify the *SBGNview* object directly as we've seen above. The more systematic way is to use the build-in highlight functions. In other words, the *SBGNview* object can be further modified by concatenating it with modification or highlight functions using binary operator *+* (see [quick start](https://bioconductor.org/packages/devel/bioc/vignettes/SBGNview/inst/doc/SBGNview.quick.start.html#quickexample) for example). 
 
 ## Hightlight nodes
 
@@ -541,7 +408,10 @@ mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
 mapping
 ```
 
-We can pick two nodes to highlight and find a shortest path between them.
+## Highlight arcs and paths
+In addition to nodes and their attributes, we may also highlight arcs and paths and modify their attributes. The Quick Start vignette has [one example on highlighting nodes, arcs and paths together](https://bioconductor.org/packages/devel/bioc/vignettes/SBGNview/inst/doc/SBGNview.quick.start.html#quickhighlight).
+
+Here, we can pick two nodes to highlight and find a shortest path between them.
 ```{r, echo =TRUE}
 outputFile(SBGNview.obj) <- "highlight.by.node.id"
 ```
@@ -565,11 +435,35 @@ SBGNview.obj + highlightNodes(node.set = c("tyrosine", "(+-)-epinephrine"),
 include_graphics("highlight.by.node.id_P00001.svg")
 ```
 
+## Different layouts for the same pathway{#tryDifferentLayout}
+If the default layout is not ideal, users have two options:
+
+* Modify the layout manually using tools like [newt editor](http://newteditor.org/)
+
+* Download our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp) SBGN-ML files with a different layout. Currently there limited pathways with multiple layout. More will be added in the future.
+
+A new layout for P00001 ("Adrenaline and noradrenaline biosynthesis") pathway ID is included as part of the *SBGNview* package. 
+```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+new.layout.file.path <- paste(path.package("SBGNview"), "extdata", sep = "/")
+SBGNview(gene.data = gse16873, 
+         gene.id.type = "entrez",
+         input.sbgn = "P00001.new.layout.sbgn",
+         sbgn.dir =  new.layout.file.path,
+         sbgn.gene.id.type = "pathwayCommons",
+         output.file = "test.different.layout",
+         output.formats =  c("svg"))
+
+```
+```{r differentLayout, echo = FALSE,fig.cap="\\label{fig:differentLayoutFig}Graph with different layout."}
+include_graphics("test.different.layout_P00001.new.layout.sbgn.svg")
+```
+
+
 ## SVG Editing Tool
-SBGNview provides extensive graphical control options for adjusting glyph/arc attributes such as line color/width and text size/color/wrapping/positioning. The SBGNview main function outputs SVG file format by default and other (png, pdf, ps) specified file formats. There might be cases where you would like to adjust specific graphical details more easily. In such cases, Inkscape can be used to modify the generated SVG file and save/export the SVG to other file formats provided by Inkscape. [Inkscape](https://inkscape.org/about/) is a free, open source, and easy to use vector graphics editor (like Illustrator) which is available on Linux, Windows and MacOS. Download Inkscape from [here](https://inkscape.org/release/inkscape-1.0.1/). 
+SBGNview provides extensive graphical control options for adjusting glyph/arc attributes such as line color/width and text size/color/wrapping/positioning. The SBGNview main function outputs SVG file format by default and other (png, pdf, ps) specified file formats. There might be cases where you would like to adjust specific graphical details more easily. In such cases, [Inkscape](https://inkscape.org/) can be used to modify the generated SVG file and save/export the SVG to other file formats provided by Inkscape.
 
 # ID mapping
-SBGNview can automatically map common ID types to SBGN-ML glyphs in our [pre-generated SBGN-ML files](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp).  Supported ID types can be accessed as follow:
+SBGNview can automatically map common ID types to SBGN-ML glyphs in our [SBGNview pathway collection](https://github.com/datapplab/SBGNhub/tree/master/data/SBGN.with.stamp).  Supported ID types can be accessed as follow:
 ```{r , echo = TRUE, message = FALSE, warning = FALSE}
 data("mapped.ids")
 ```
