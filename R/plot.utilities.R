@@ -686,7 +686,7 @@ setMethod("plot.glyph", signature("macromolecule.sbgn"), function(object) {
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
             fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                gene.or.cpd = "gene")
+                mol.type = "gene")
             glyph.data.i <- object
             glyph.data.i@fill.color <- fill.color
             glyph.data.i@fill.opacity <- 1
@@ -751,7 +751,7 @@ setMethod("plot.glyph", signature("entity.sbgn"), function(object) {
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
             fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                gene.or.cpd = "gene")
+                mol.type = "gene")
             glyph.data.i <- object
             glyph.data.i@fill.color <- fill.color
             glyph.data.i@user.data <- c("no.user.data")
@@ -940,14 +940,14 @@ setMethod("plot.glyph", signature("unspecified_entity.sbgn"), function(object) {
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
         fill.color <- color.from.value(user.data[1], global.parameters.list = parameters.list, 
-            gene.or.cpd = "gene")
+            mol.type = "gene")
         svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
             fill.color = fill.color, stroke.opacity = 0)
         svg <- paste(svg, svg.ellipse, sep = "\n")
         if (length(user.data) > 1) {
             for (i in 2:length(user.data)) {
                 fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                  gene.or.cpd = "gene")
+                  mol.type = "gene")
                 glyph.data.i <- object
                 glyph.data.i@fill.color <- fill.color
                 glyph.data.i@user.data <- c("no.user.data")
@@ -1386,7 +1386,7 @@ setMethod("plot.glyph", signature("macromolecule_multimer.sbgn"), function(objec
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
             fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                gene.or.cpd = "gene")
+                mol.type = "gene")
             glyph.data.i <- new("macromolecule.sbgn")
             glyph.data.i@fill.color <- fill.color
             glyph.data.i@user.data <- c("no.user.data")
@@ -1472,14 +1472,14 @@ setMethod("plot.glyph", signature("simple_chemical_multimer.sbgn"), function(obj
     if (!identical(user.data[1], "no.user.data")) {
         # if(user.data[1] != 'no.user.data'){
         fill.color <- color.from.value(user.data[1], global.parameters.list = parameters.list, 
-            gene.or.cpd = "compond")
+            mol.type = "cpd")
         svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
             fill.color = fill.color, fill.opacity = 1)
         svg <- paste(svg, svg.ellipse, sep = "\n")
         if (length(user.data) > 1) {
             for (i in 2:length(user.data)) {
                 fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                  gene.or.cpd = "compond")
+                  mol.type = "cpd")
                 glyph.data.i <- object
                 glyph.data.i@fill.color <- fill.color
                 glyph.data.i@user.data <- c("no.user.data")
@@ -1601,7 +1601,7 @@ setMethod("plot.glyph", signature("simple_chemical.sbgn"), function(object) {
     # if(user.data[1] != 'no.user.data'){
     if (!identical(user.data[1], "no.user.data")) {
         fill.color <- color.from.value(user.data[1], global.parameters.list = parameters.list, 
-            gene.or.cpd = "compond")
+            mol.type = "cpd")
         svg.ellipse <- plot.ellipse(glyph = object, x, y, h, w, id, stroke.width = stroke.width, 
             fill.color = fill.color, stroke.opacity = 0.5)
         svg <- paste(svg, svg.ellipse, sep = "\n")
@@ -1609,7 +1609,7 @@ setMethod("plot.glyph", signature("simple_chemical.sbgn"), function(object) {
             svg.sep.data.line <- ""
             for (i in 2:length(user.data)) {
                 fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                  gene.or.cpd = "compond")
+                  mol.type = "cpd")
                 glyph.data.i <- object
                 glyph.data.i@fill.color <- fill.color
                 glyph.data.i@user.data <- c("no.user.data")
@@ -1750,7 +1750,7 @@ setMethod("plot.glyph", signature("nucleic_acid_feature_multimer.sbgn"), functio
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
             fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                gene.or.cpd = "gene")
+                mol.type = "gene")
             glyph.data.i <- new("nucleic_acid_feature.sbgn")
             glyph.data.i@fill.color <- fill.color
             glyph.data.i@user.data <- c("no.user.data")
@@ -1831,7 +1831,7 @@ setMethod("plot.glyph", signature("nucleic_acid_feature.sbgn"), function(object)
     if (!identical(user.data[1], "no.user.data")) {
         for (i in seq_len(length.out = length(user.data))) {
             fill.color <- color.from.value(user.data[i], global.parameters.list = parameters.list, 
-                gene.or.cpd = "gene")
+                mol.type = "gene")
             glyph.data.i <- object
             glyph.data.i@fill.color <- fill.color
             glyph.data.i@fill.opacity <- 1

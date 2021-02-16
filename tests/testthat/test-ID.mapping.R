@@ -18,7 +18,7 @@ test.id.mapping <- function(species, input.types, output.types,
                message("\n\nChecking: ",n," ",mol.type," ",input.type," ",output.type," ",species.run,"\n")
                id.map <- try(loadMappingTable(output.type = output.type,
                                              input.type = input.type,
-                                             cpd.or.gene = mol.type,
+                                             mol.type = mol.type,
                                              species = species.run,
                                              limit.to.ids = example.ids[[input.type]][[species.run]]
                                              )
@@ -61,7 +61,7 @@ test.compound <- function() {
     species = c("cpd")
     input.types = c("chebi","CompoundName","kegg.ligand")
     output.types = c("pathwayCommons","metacyc.SBGN","pathway.id")
-    mol.type = "compound"
+    mol.type = "cpd"
     test.id.mapping(species  = species,
                     input.types  = input.types,
                     output.types = output.types,

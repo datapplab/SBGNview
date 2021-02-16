@@ -10,7 +10,7 @@ test_that("changeDataId for compound", {
   change.cpd.id <- changeDataId(data.input.id = cpd.sim.data,
                                 input.type = "kegg.ligand",
                                 output.type = "pathwayCommons",
-                                cpd.or.gene = "compound",
+                                mol.type = "cpd",
                                 sum.method = "sum")
   
   expect_true(nrow(change.cpd.id) > 0)
@@ -32,7 +32,7 @@ test_that("downloadSbgn", {
 test_that("getMolList", {
   
   mol.list <- getMolList(database = "metacrop",
-                         mol.list.ID.type = "ENZYME",
+                         id.type = "ENZYME",
                          org = "ath",
                          output.pathway.name = FALSE,
                          truncate.name.length = 50)
@@ -47,7 +47,7 @@ test_that("getMolList", {
 #   ci.bta <- changeIds(input.ids = names(gdata.bta),
 #                       input.type = "ENSEMBLPROT",
 #                       output.type = "KO",
-#                       cpd.or.gene = "gene",
+#                       mol.type = "gene",
 #                       org = "bta")
 # 
 #   expect_true(class(ci.bta) == "list")

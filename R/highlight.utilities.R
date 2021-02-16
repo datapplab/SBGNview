@@ -3,7 +3,7 @@
 # needs improvement. Currently, input in a set of nodes, 
 # it will highlight all edges among the input nodes
 highlight.edges <- function(node.set, arcs = NULL, node.set.id.type = NULL, arc.node.id.type = NULL, 
-                            cpd.or.gene = NULL, arc.highlight.stroke.color = "red", 
+                            mol.type = NULL, arc.highlight.stroke.color = "red", 
                             arc.highlight.stroke.width = 4, arc.highlight.tip.size = 4) {
     
     if (node.set.id.type != arc.node.id.type) {
@@ -51,7 +51,7 @@ highlight.edges <- function(node.set, arcs = NULL, node.set.id.type = NULL, arc.
 #' @param node.set A vector of character strings. Default: "all". Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview. 
 #' @param node.set.id.type A character string. Default: "CompoundName". ID type of input nodes.
 #' @param glyphs.id.type A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.
-#' @param cpd.or.gene A character string. One of 'gene' or 'compound' (default). 
+#' @param mol.type A character string. One of 'gene' or 'cpd' (default). 
 #' @param stroke.color A character string. Default: "black". The border color of highlighted nodes.
 #' @param stroke.width Integer. Default: 10. The border stroke width of highlighted nodes.
 #' @param stroke.opacity Numeric. Default: 1. The border stroke opacity of highlighted nodes.
@@ -73,7 +73,7 @@ highlight.edges <- function(node.set, arcs = NULL, node.set.id.type = NULL, arc.
 #' @export
  
 highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
-                           cpd.or.gene = "compound", stroke.color = "black", stroke.width = 10, stroke.opacity = 1, 
+                           mol.type = "cpd", stroke.color = "black", stroke.width = 10, stroke.opacity = 1, 
                            show.glyph.id = FALSE, select.glyph.class = c(), label.x.shift = 0, label.y.shift = 0, 
                            label.color = "black", label.font.size = NULL, 
                            label.spliting.string = NULL, labels = NULL) {
@@ -86,7 +86,7 @@ highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", 
             glyphs <- glyphs.arcs.list[[s]]$glyphs.list
             glyphs <- highlight.nodes.each.sbgn(node.set = node.set, select.glyph.class = select.glyph.class, 
                 glyphs = glyphs, pathway.id = sbgns[s], node.set.id.type = node.set.id.type, 
-                glyphs.id.type = glyphs.id.type, cpd.or.gene = cpd.or.gene, stroke.width = stroke.width, 
+                glyphs.id.type = glyphs.id.type, mol.type = mol.type, stroke.width = stroke.width, 
                 stroke.color = stroke.color, stroke.opacity = stroke.opacity, show.glyph.id = show.glyph.id, 
                 label.x.shift = label.x.shift, label.y.shift = label.y.shift, label.color = label.color, 
                 label.font.size = label.font.size, label.spliting.string = label.spliting.string, 
@@ -100,7 +100,7 @@ highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", 
 
 #########################################################################################################
 highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c(), glyphs = NULL, pathway.id = NULL,
-                                      node.set.id.type = NULL, glyphs.id.type = NULL, cpd.or.gene = NULL,
+                                      node.set.id.type = NULL, glyphs.id.type = NULL, mol.type = NULL,
                                       stroke.width = 4, stroke.color = "red", stroke.opacity = 1, show.glyph.id = FALSE,
                                       label.x.shift = 0, label.y.shift = 0, label.color = "black", label.font.size = NULL,
                                       label.spliting.string = NULL, labels = NULL) {
@@ -110,7 +110,7 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
         # IDs if 1. input id type is not glyph id type, we need to change ids
         if (node.set.id.type != glyphs.id.type) {
             input.to.node.ids <- changeIds(input.ids = node.set, input.type = node.set.id.type, 
-                output.type = glyphs.id.type, cpd.or.gene = cpd.or.gene)
+                output.type = glyphs.id.type, mol.type = mol.type)
             input.to.node.ids
             if (!is.null(labels)) {
                 input.ids <- names(input.to.node.ids)
@@ -197,7 +197,7 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 #' @param directed.graph Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from 'source' node to 'target' node.
 #' @param node.set.id.type A character string. Default: "CompoundName". ID type of input nodes.
 #' @param glyphs.id.type A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.
-#' @param cpd.or.gene A character string. One of 'gene' or 'compound' (default). 
+#' @param mol.type A character string. One of 'gene' or 'cpd' (default). 
 #' @param path.node.color A character string. Default: "black". Border color of nodes in the path.
 #' @param path.node.stroke.width Integer. Default: 10. Adjust stroke width of path between nodes.
 #' @param input.node.stroke.width Integer. Default: 10. Border stroke width of input nodes (affects both from.node and to.node)
@@ -219,7 +219,7 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 
 highlightPath <- function(from.node = NULL, to.node = NULL, directed.graph = TRUE, 
                           node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
-                          cpd.or.gene = "compound", input.node.stroke.width = 10, from.node.color = "red", 
+                          mol.type = "cpd", input.node.stroke.width = 10, from.node.color = "red", 
                           to.node.color = "blue", path.node.color = "black", path.node.stroke.width = 10, 
                           n.shortest.paths.plot = 1, shortest.paths.cols = c("purple"), 
                           path.stroke.width = 2, tip.size = 4) {
@@ -234,7 +234,7 @@ highlightPath <- function(from.node = NULL, to.node = NULL, directed.graph = TRU
             result.list <- highlight.path.each.sbgn(from.node = from.node, to.node = to.node, 
                 glyphs = glyphs, arcs = arcs, pathway.id = sbgns[s], directed.graph = directed.graph, 
                 node.set.id.type = node.set.id.type, glyphs.id.type = glyphs.id.type, 
-                cpd.or.gene = cpd.or.gene, from.node.color = from.node.color, to.node.color = to.node.color, 
+                mol.type = mol.type, from.node.color = from.node.color, to.node.color = to.node.color, 
                 input.node.stroke.width = input.node.stroke.width, path.node.color = path.node.color, 
                 path.node.stroke.width = path.node.stroke.width, n.shortest.paths.plot = n.shortest.paths.plot, 
                 path.stroke.width = path.stroke.width, shortest.paths.cols = shortest.paths.cols, 
@@ -291,17 +291,17 @@ shortest.path.from.arcs <- function(arcs, from.node, to.node, directed.graph = T
 #########################################################################################################
 highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = NULL, pathway.id = NULL, 
                                      directed.graph = TRUE, node.set.id.type = NULL, glyphs.id.type = NULL, 
-                                     cpd.or.gene = NULL, from.node.color = "red", to.node.color = "blue", 
+                                     mol.type = NULL, from.node.color = "red", to.node.color = "blue", 
                                      input.node.stroke.width = 4, path.node.color = "black", path.node.stroke.width = 10, 
                                      n.shortest.paths.plot = 1, path.stroke.width = 3, 
                                      shortest.paths.cols = c("purple", "green"), tip.size = 4) {
     
     if (node.set.id.type != glyphs.id.type) {
         from.node <- changeIds(input.ids = from.node, input.type = node.set.id.type, 
-            output.type = glyphs.id.type, cpd.or.gene = cpd.or.gene)
+            output.type = glyphs.id.type, mol.type = mol.type)
         from.node <- from.node[[1]]
         to.node <- changeIds(input.ids = to.node, input.type = node.set.id.type, 
-            output.type = glyphs.id.type, cpd.or.gene = cpd.or.gene)
+            output.type = glyphs.id.type, mol.type = mol.type)
         to.node <- to.node[[1]]
         from.node
         to.node

@@ -10,7 +10,7 @@ changeDataId(
   output.type,
   sum.method = "sum",
   org = "hsa",
-  cpd.or.gene,
+  mol.type,
   id.mapping.table = NULL,
   SBGNview.data.folder = "./SBGNview.tmp.data"
 )
@@ -26,7 +26,7 @@ changeDataId(
 
 \item{org}{A character string. Default: "hsa". The species source of omics data. 'changeDataId' uses pathview to map between some gene ID types. Please use '?geneannot.map' to check the detail. Pathview needs species information to do the job. This parameter is a two-letter abbreviation of organism name, or KEGG species code, or the common species name, used to determine the gene annotation package. For all potential values check: data(bods); bods. Default org='Hs', and can also be 'hsa' or 'human' (case insensitive).}
 
-\item{cpd.or.gene}{A character string. Either 'compound' or 'gene' -- the type of input omics data.}
+\item{mol.type}{A character string. Either 'cpd' or 'gene' -- the type of input omics data.}
 
 \item{id.mapping.table}{A matrix.  Mapping table between input.type and output.type. This matrix should have two columns for input.type and output.type, respectively.  Column names should be the values of parameters 'input.type' and 'output.type'. See example section for an example.}
 
@@ -66,7 +66,7 @@ mapping.table = data.frame(ENTREZID = c('7157','1032'),
 new.dt = changeDataId(data.input.id = gene.data,
                       output.type = 'SYMBOL',
                       input.type = 'ENTREZID',
-                      cpd.or.gene = 'gene',
+                      mol.type = 'gene',
                       id.mapping.table = mapping.table)
       
 }

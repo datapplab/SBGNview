@@ -8,7 +8,7 @@ loadMappingTable(
   input.type,
   output.type,
   species = NULL,
-  cpd.or.gene = NULL,
+  mol.type = NULL,
   limit.to.ids = NULL,
   SBGNview.data.folder = "./SBGNview.tmp.data"
 )
@@ -20,7 +20,7 @@ loadMappingTable(
 
 \item{species}{A character string. Three letter KEGG species code.}
 
-\item{cpd.or.gene}{A character string. Either 'gene' or 'compound'.}
+\item{mol.type}{A character string. Either 'gene' or 'cpd'.}
 
 \item{limit.to.ids}{Vector. Molecule IDs of 'input.type'.}
 
@@ -38,6 +38,6 @@ This function will check if a mapping table exists in local folder ('SBGNview.da
  entrez.to.pathwayCommons <- loadMappingTable(input.type = 'ENTREZID',
                                               output.type = 'pathwayCommons',
                                               species = 'hsa',
-                                              cpd.or.gene = 'gene')
+                                              mol.type = 'gene')
                              
 }

@@ -221,7 +221,7 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 #' @param input.ids A vector of character strings. Input IDs that need to be converted.
 #' @param input.type A character string. The type of input IDs. Supported ID types can be found in data(mapped.ids)
 #' @param output.type A character string. The type of output IDs. Supported ID types can be found in data(mapped.ids)
-#' @param cpd.or.gene A character string. One of 'gene' or 'compound'. 
+#' @param mol.type A character string. One of 'gene' or 'cpd'. 
 #' @param limit.to.pathways A vector of character strings. A vector of pathways IDs. When 'output.type' is one of 'pathwayCommons' or 'metacyc.SBGN', one input ID (e.g. gene symbol) can map to multiple nodes in different pathways (SBGN-ML files). In this case, we can limit output to the specified pathways. When 'output.type' is NOT one of 'pathwayCommons' or 'metacyc.SBGN', this argument is ignored.
 #' @param org A character string. Default: "hsa". Three letter KEGG species code.
 #' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files. 
@@ -232,12 +232,12 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 #' mapping <- changeIds(input.ids = c(10327, 6652),
 #'                      input.type = 'ENTREZID',
 #'                      output.type = 'pathwayCommons',
-#'                      cpd.or.gene = 'gene',
+#'                      mol.type = 'gene',
 #'                      org = "hsa")
 #' 
 #' @export
 
-changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.pathways = NULL, 
+changeIds <- function(input.ids, input.type, output.type, mol.type, limit.to.pathways = NULL, 
                       org = "hsa", SBGNview.data.folder = "./SBGNview.tmp.data") {
   
   if (!is.null(limit.to.pathways) & output.type %in% c("pathwayCommons", "metacyc.SBGN")) {
@@ -250,27 +250,27 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
   } else {
     limit.to.output.ids <- NULL
   }
-  if (cpd.or.gene == "gene") {
+  if (mol.type == "gene") {
     # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.gene.id.type = output.type, 
     #                                                 output.gene.id.type = input.type, 
     #                                                 species = org, SBGNview.data.folder = SBGNview.data.folder)
     id.mapping.all.list <- loadMappingTable(input.type = input.type, output.type = output.type,
-                                            species = org, cpd.or.gene = "gene", limit.to.ids = input.ids,
+                                            species = org, mol.type = "gene", limit.to.ids = input.ids,
                                             SBGNview.data.folder = SBGNview.data.folder)
     
-  } else if (cpd.or.gene %in% c("cpd", "compound")) {
+  } else if (mol.type == "cpd") {
     # id.mapping.all.list <- load.id.mapping.list.all(SBGN.file.cpd.id.type = output.type, 
     #                                                 output.cpd.id.type = input.type, 
     #                                                 species = org, SBGNview.data.folder = SBGNview.data.folder)
     id.mapping.all.list <- loadMappingTable(input.type = input.type, output.type = output.type,
-                                            cpd.or.gene = "compound", limit.to.ids = input.ids,
+                                            mol.type = "cpd", limit.to.ids = input.ids,
                                             SBGNview.data.folder = SBGNview.data.folder)
     
   } else {
-    stop("cpd.or.gene must be one of 'gene' or 'compound'!!")
+    stop("mol.type must be one of 'gene' or 'cpd'!!")
   }
   new.ids <- sapply(input.ids, function(x) {
-    mapped.ids <- change.id(input.id = x, cpd.or.gene = cpd.or.gene, input.type = input.type, 
+    mapped.ids <- change.id(input.id = x, mol.type = mol.type, input.type = input.type, 
                             output.type = output.type, id.mapping.all.list = id.mapping.all.list)
     mapped.ids
     mapped.ids <- strsplit(mapped.ids, "; ")[[1]]  # one input id can map to multiple glyph ids(from the same pathway or different pathways), we select the ones that are in the glyphs (same pathway).
@@ -315,7 +315,7 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
 #' @param output.type A character string. The type of output IDs. Please check \code{data('mapped.ids')} for supported types. 
 #' @param sum.method  A character string. Default: "sum". In some cases multiple input IDs are mapped to one output ID. In this situation ,we may need to derive only one value from them. This parameter is a function that can derive a single numeric value from a vector of numeric values (e.g. 'sum','max','min','mean'), including a User Defined Function (UDF).
 #' @param org  A character string. Default: "hsa". The species source of omics data. 'changeDataId' uses pathview to map between some gene ID types. Please use '?geneannot.map' to check the detail. Pathview needs species information to do the job. This parameter is a two-letter abbreviation of organism name, or KEGG species code, or the common species name, used to determine the gene annotation package. For all potential values check: data(bods); bods. Default org='Hs', and can also be 'hsa' or 'human' (case insensitive). 
-#' @param cpd.or.gene  A character string. Either 'compound' or 'gene' -- the type of input omics data. 
+#' @param mol.type  A character string. Either 'cpd' or 'gene' -- the type of input omics data. 
 #' @param id.mapping.table A matrix.  Mapping table between input.type and output.type. This matrix should have two columns for input.type and output.type, respectively.  Column names should be the values of parameters 'input.type' and 'output.type'. See example section for an example. 
 #' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files. 
 #' @return A matrix, row names are changed to IDs of 'output.type'. Note the number of rows may be different from input matrix, because multiple input IDs could be collapsed to a single output ID. Also a single input ID could map to multiple output IDs.
@@ -345,13 +345,13 @@ changeIds <- function(input.ids, input.type, output.type, cpd.or.gene, limit.to.
 #' new.dt = changeDataId(data.input.id = gene.data,
 #'                       output.type = 'SYMBOL',
 #'                       input.type = 'ENTREZID',
-#'                       cpd.or.gene = 'gene',
+#'                       mol.type = 'gene',
 #'                       id.mapping.table = mapping.table)
 #'       
 #' @export    
 
 changeDataId <- function(data.input.id, input.type, output.type, sum.method = "sum", 
-                         org = "hsa", cpd.or.gene, id.mapping.table = NULL, 
+                         org = "hsa", mol.type, id.mapping.table = NULL, 
                          SBGNview.data.folder = "./SBGNview.tmp.data") {
   
   # function: change input data matrix with input/uniprot ID to data matrix with
@@ -372,7 +372,7 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
     }
     # get mapping table is user didn't provide one
     id.map <- loadMappingTable(output.type = output.type, input.type = input.type, 
-                               species = org, cpd.or.gene = cpd.or.gene, 
+                               species = org, mol.type = mol.type, 
                                limit.to.ids = input.ids, SBGNview.data.folder = SBGNview.data.folder)
   } else {
     if (!all(c(input.type) %in% colnames(id.mapping.table))) {
@@ -401,13 +401,13 @@ changeDataId <- function(data.input.id, input.type, output.type, sum.method = "s
 
 #########################################################################################################
 # change input id type to output type 
-change.id <- function(input.id, cpd.or.gene, input.type, output.type, id.mapping.all.list, 
+change.id <- function(input.id, mol.type, input.type, output.type, id.mapping.all.list, 
                       show.ids.for.multiHit = NULL) {
   
   if(is.matrix(id.mapping.all.list)){
     mapping.table <- id.mapping.all.list
   } else { # if list
-    mapping.table <- id.mapping.all.list[[cpd.or.gene]][[1]]
+    mapping.table <- id.mapping.all.list[[mol.type]][[1]]
   }
   
   output.ids <- as.character(mapping.table[mapping.table[, input.type] == input.id, output.type])
@@ -436,20 +436,20 @@ change.glyph.id <- function(glyph.id, glyph.class, id.mapping.all.list, output.g
                             output.cpd.id.type = NA, SBGN.file.cpd.id.type, 
                             SBGN.file.gene.id.type, show.ids.for.multiHit = NULL) {
   
-  cpd.or.gene <- glyph.class
+  mol.type <- glyph.class
   if (glyph.class == "macromolecule") {
-    cpd.or.gene <- "gene"
+    mol.type <- "gene"
     output.type <- output.gene.id.type
     input.type <- SBGN.file.gene.id.type
   } else if (glyph.class == "simple chemical") {
-    cpd.or.gene <- "compound"
+    mol.type <- "cpd"
     output.type <- output.cpd.id.type
     input.type <- SBGN.file.cpd.id.type
   }
   if (input.type == output.type) {
     return(glyph.id)
   }
-  glyph.id <- change.id(input.id = glyph.id, cpd.or.gene, input.type, output.type, 
+  glyph.id <- change.id(input.id = glyph.id, mol.type, input.type, output.type, 
                         id.mapping.all.list, show.ids.for.multiHit = show.ids.for.multiHit)
 }
 

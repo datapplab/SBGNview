@@ -150,7 +150,7 @@ head(gene.data[,1:2])
 gene.data <- changeDataId(data.input.id = gene.data,
                           input.type = "entrez",
                           output.type = "pathwayCommons",
-                          cpd.or.gene = "gene",
+                          mol.type = "gene",
                           sum.method = "sum")
 ```
 When multiple genes are mapped to the same glyph ID, we use the sum of their values (sum.method = "sum").
@@ -191,7 +191,7 @@ Here for demo purpose, we change the KEGG compound IDs to pathwayCommons compoun
 cpd.data1 <- changeDataId(data.input.id = cpd.data,
                          input.type = "kegg.ligand",
                          output.type = "pathwayCommons",
-                         cpd.or.gene = "compound",
+                         mol.type = "cpd",
                          sum.method = "sum")
 head(cpd.data)
 ```
@@ -401,7 +401,7 @@ input.pathway.ids = input.pathways$pathway.id
 mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
                      input.type = "CompoundName",
                      output.type = "pathwayCommons",
-                     cpd.or.gene = "compound",
+                     mol.type = "cpd",
                      limit.to.pathways = input.pathway.ids[1])
 ```
 ```{r, echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE}
@@ -475,7 +475,7 @@ Besides *changeDataId* which changes ID for omics data, SBGNview provides functi
 mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
                      input.type = "CompoundName",
                      output.type = "pathwayCommons",
-                     cpd.or.gene = "compound",
+                     mol.type = "cpd",
                      limit.to.pathways = "P00001")
 ```
 ```{r , echo = TRUE,message = FALSE, warning = FALSE }
@@ -485,7 +485,7 @@ head(mapping)
 mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
                      input.type = "CompoundName",
                      output.type = "chebi",
-                     cpd.or.gene = "compound")
+                     mol.type = "cpd")
 ```
 ```{r , echo = TRUE,message = FALSE, warning = FALSE }
 head(mapping)
@@ -493,7 +493,7 @@ head(mapping)
 ## Extract molecule list from pathways {#extractList}
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
 mol.list <- getMolList(database = "metacrop",
-                       mol.list.ID.type = "ENZYME",
+                       id.type = "ENZYME",
                        org = "ath",
                        output.pathway.name = FALSE,
                        truncate.name.length = 50)
@@ -503,7 +503,7 @@ mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
 mol.list <- getMolList(database = "pathwayCommons",
-                       mol.list.ID.type = "ENTREZID",
+                       id.type = "ENTREZID",
                        org = "hsa")
 ```
 ```{r , echo = TRUE, message = FALSE, warning = FALSE }
@@ -511,7 +511,7 @@ mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
 mol.list <- getMolList(database = "pathwayCommons",
-                       mol.list.ID.type = "ENTREZID",
+                       id.type = "ENTREZID",
                        org = "mmu")
 ```
 ```{r , echo = TRUE, message = FALSE, warning = FALSE }
@@ -519,7 +519,7 @@ mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
 mol.list <- getMolList(database = "MetaCyc",
-                       mol.list.ID.type = "KO",
+                       id.type = "KO",
                        org = "eco")
 ```
 ```{r , echo = TRUE, message = FALSE, warning = FALSE }
@@ -527,8 +527,8 @@ mol.list[[3]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
 mol.list <- getMolList(database = "pathwayCommons",
-                       mol.list.ID.type = "chebi",
-                       cpd.or.gene = "compound")
+                       id.type = "chebi",
+                       mol.type = "cpd")
 ```
 ```{r , echo = TRUE, message = FALSE, warning = FALSE }
 mol.list[[2]]

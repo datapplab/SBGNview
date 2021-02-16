@@ -8,7 +8,7 @@ highlightNodes(
   node.set = "all",
   node.set.id.type = "CompoundName",
   glyphs.id.type = "pathwayCommons",
-  cpd.or.gene = "compound",
+  mol.type = "cpd",
   stroke.color = "black",
   stroke.width = 10,
   stroke.opacity = 1,
@@ -29,7 +29,7 @@ highlightNodes(
 
 \item{glyphs.id.type}{A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.}
 
-\item{cpd.or.gene}{A character string. One of 'gene' or 'compound' (default).}
+\item{mol.type}{A character string. One of 'gene' or 'cpd' (default).}
 
 \item{stroke.color}{A character string. Default: "black". The border color of highlighted nodes.}
 

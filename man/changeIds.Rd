@@ -8,7 +8,7 @@ changeIds(
   input.ids,
   input.type,
   output.type,
-  cpd.or.gene,
+  mol.type,
   limit.to.pathways = NULL,
   org = "hsa",
   SBGNview.data.folder = "./SBGNview.tmp.data"
@@ -21,7 +21,7 @@ changeIds(
 
 \item{output.type}{A character string. The type of output IDs. Supported ID types can be found in data(mapped.ids)}
 
-\item{cpd.or.gene}{A character string. One of 'gene' or 'compound'.}
+\item{mol.type}{A character string. One of 'gene' or 'cpd'.}
 
 \item{limit.to.pathways}{A vector of character strings. A vector of pathways IDs. When 'output.type' is one of 'pathwayCommons' or 'metacyc.SBGN', one input ID (e.g. gene symbol) can map to multiple nodes in different pathways (SBGN-ML files). In this case, we can limit output to the specified pathways. When 'output.type' is NOT one of 'pathwayCommons' or 'metacyc.SBGN', this argument is ignored.}
 
@@ -40,7 +40,7 @@ data(mapped.ids)
 mapping <- changeIds(input.ids = c(10327, 6652),
                      input.type = 'ENTREZID',
                      output.type = 'pathwayCommons',
-                     cpd.or.gene = 'gene',
+                     mol.type = 'gene',
                      org = "hsa")
 
 }

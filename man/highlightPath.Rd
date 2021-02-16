@@ -10,7 +10,7 @@ highlightPath(
   directed.graph = TRUE,
   node.set.id.type = "CompoundName",
   glyphs.id.type = "pathwayCommons",
-  cpd.or.gene = "compound",
+  mol.type = "cpd",
   input.node.stroke.width = 10,
   from.node.color = "red",
   to.node.color = "blue",
@@ -33,7 +33,7 @@ highlightPath(
 
 \item{glyphs.id.type}{A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.}
 
-\item{cpd.or.gene}{A character string. One of 'gene' or 'compound' (default).}
+\item{mol.type}{A character string. One of 'gene' or 'cpd' (default).}
 
 \item{input.node.stroke.width}{Integer. Default: 10. Border stroke width of input nodes (affects both from.node and to.node)}
 

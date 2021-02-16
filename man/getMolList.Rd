@@ -6,9 +6,9 @@
 \usage{
 getMolList(
   database = "pathwayCommons",
-  mol.list.ID.type = "ENTREZID",
+  id.type = "ENTREZID",
   org = "hsa",
-  cpd.or.gene = "gene",
+  mol.type = "gene",
   output.pathway.name = TRUE,
   combine.duplicated.set = TRUE,
   truncate.name.length = 50,
@@ -18,11 +18,11 @@ getMolList(
 \arguments{
 \item{database}{A character string. Default: "pathwayCommons". The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.}
 
-\item{mol.list.ID.type}{A character string. Default: "ENTREZID". The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}}
+\item{id.type}{A character string. Default: "ENTREZID". The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}}
 
 \item{org}{A character string. Default: "hsa". The three letter species code used by KEGG. E.g. 'hsa','mmu'}
 
-\item{cpd.or.gene}{A character string. Default: "gene". One of 'gene' or 'compound'}
+\item{mol.type}{A character string. Default: "gene". One of 'gene' or 'cpd'}
 
 \item{output.pathway.name}{Logical. Default: T. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'}
 
@@ -41,7 +41,7 @@ Retrieve gene list or compound list from collected databases
 \examples{
 data(pathways.info)
 mol.list <- getMolList(database = 'pathwayCommons',
-                       mol.list.ID.type = 'ENTREZID',
+                       id.type = 'ENTREZID',
                        org = 'hsa')
   
 }

@@ -114,7 +114,7 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 #' @param input.type A character string. Gene or compound ID type
 #' @param output.type A character string. Gene or compound ID type
 #' @param species A character string. Three letter KEGG species code.
-#' @param cpd.or.gene A character string. Either 'gene' or 'compound'.
+#' @param mol.type A character string. Either 'gene' or 'cpd'.
 #' @param limit.to.ids Vector. Molecule IDs of 'input.type'.
 #' @param SBGNview.data.folder A character string. Default: "./SBGNview.tmp.data". The path to a folder that will hold downloaded ID mapping files and pathway information data files.
 #' @return A list containing the mapping table. 
@@ -123,11 +123,11 @@ search.sbgnhub.id.mapping <- function(try.file.name, SBGNview.data.folder) {
 #'  entrez.to.pathwayCommons <- loadMappingTable(input.type = 'ENTREZID',
 #'                                               output.type = 'pathwayCommons',
 #'                                               species = 'hsa',
-#'                                               cpd.or.gene = 'gene')
+#'                                               mol.type = 'gene')
 #'                              
 #' @export
 
-loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gene = NULL, 
+loadMappingTable <- function(input.type, output.type, species = NULL, mol.type = NULL, 
                              limit.to.ids = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") { 
   
   if(input.type %in% c("entrez", "eg", "entrezid")) input.type = "ENTREZID"
@@ -138,11 +138,11 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
   }
   species = gsub("Hs","hsa",species)
   
-  if(is.null(cpd.or.gene)) { 
-    message("argument \"cpd.or.gene\" is not specified") 
+  if(is.null(mol.type)) { 
+    message("argument \"mol.type\" is not specified") 
   }
-  if(!cpd.or.gene %in% c("gene", "cpd", "compound")) {
-    stop("'cpd.or.gene' must be 'gene' or 'cpd'/'compound'")
+  if(!mol.type %in% c("gene", "cpd")) {
+    stop("'mol.type' must be 'gene' or 'cpd'")
   }
   
   if(!file.exists(SBGNview.data.folder)) { 
@@ -170,7 +170,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
     
   } else {  # use pathview
     message("\nGenerating mapping using Pathview")
-    if(cpd.or.gene == "gene") {
+    if(mol.type == "gene") {
       # pathway.id used for heterogeneous purposes and mapping gene to pathway.
       # pathwayCommons and metacyc.SBGN are databases mentioned in pathways.stats
       # unique(pathways.info$macromolecule.ID.type) returns "pathwayCommons" "metacyc.SBGN"  "ENZYME"
@@ -181,13 +181,13 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
         # load mapping table for mapping KO to glyph id
         ko.to.glyph.id <- loadMappingTable(input.type = output.type,
                                            output.type = "KO",
-                                           cpd.or.gene = "gene",
+                                           mol.type = "gene",
                                            species = species,
                                            SBGNview.data.folder = SBGNview.data.folder)
         # load mapping table for mapping user input to KO id
         input.to.ko <- loadMappingTable(input.type = input.type,
                                         output.type = "KO",
-                                        cpd.or.gene = "gene",
+                                        mol.type = "gene",
                                         limit.to.ids = limit.to.ids,
                                         species = species,
                                         SBGNview.data.folder = SBGNview.data.folder)
@@ -210,7 +210,7 @@ loadMappingTable <- function(input.type, output.type, species = NULL, cpd.or.gen
         }
       }
       
-    } else if(cpd.or.gene %in% c("compound", "cpd")) {
+    } else if(mol.type == "cpd") {
       mapping.list <- generate.cpd.mapping.table(input.type = input.type, output.type = output.type,
                                                  limit.to.ids = limit.to.ids)
     } 
@@ -559,29 +559,34 @@ get.keggrest.data <- function(tar, src, link.or.conv, tar.is.species = F, src.is
 generate.cpd.mapping.table <- function(input.type, output.type, limit.to.ids) {
   
   if(!exists("cpd.simtypes")) data("cpd.simtypes", package = "pathview")
-  valid.in.out.types <- c(cpd.simtypes, "pathwayCommons", "pathway.id", "metacyc.SBGN")
+  # input/output validation
+  valid.in.out.types <- c(cpd.simtypes, "KEGG", "kegg", "pathwayCommons", "pathway.id", "metacyc.SBGN")
   if(!input.type %in% valid.in.out.types | !output.type %in% valid.in.out.types) {
-    stop("'input.type' needs to be one of values in data(cpd.simtypes). 
-    'output.type' can be one of values in data(cpd.simtypes) or 
-         one of 'pathwayCommons','pathway.id', 'metacyc.SBGN'.")
+    stop("'input.type' needs to be one of values in data(cpd.simtypes) or 'KEGG' if input.type is KEGG COMPOUND/DRUG accession. 
+    'output.type' can be one of values in data(cpd.simtypes) or one of 'pathwayCommons','pathway.id', 'metacyc.SBGN'.")
   } 
   if(is.null(limit.to.ids)) {
     stop("\nMust provide input IDs to 'limit.to.ids' argument when using pathview mapping!")
   }
-  if(input.type %in% c("pathwayCommons", "pathway.id", "metacyc.SBGN") & output.type %in% cpd.simtypes) {
+  if(input.type %in% c("pathwayCommons", "pathway.id", "metacyc.SBGN", "KEGG", "kegg") & output.type %in% cpd.simtypes) {
     temp <- input.type
     input.type <- output.type
     output.type <- temp
   }
-  
-  if(input.type %in% cpd.simtypes & output.type %in% cpd.simtypes) {
+  if(input.type %in% c("pathwayCommons", "pathway.id", "metacyc.SBGN") & output.type %in% c("KEGG", "kegg")) {
+    temp <- input.type
+    input.type <- output.type
+    output.type <- temp
+  }
+  # map between IDs in cpd.simtypes
+  if(input.type %in% cpd.simtypes & output.type %in% c(cpd.simtypes, "KEGG", "kegg")) {
     message("Using pathview::cpdidmap to map ", input.type, " and ", output.type)
     mapping.list <- pathview::cpdidmap(in.ids = limit.to.ids, in.type = input.type,
                                        out.type = output.type)
   } else { # map to glyph ID type
     input.cpd.to.kegg <- limit.to.ids
     # if input.type not native KEGG, map to kegg ID first
-    if(!input.type %in% c("KEGG COMPOUND accession", "KEGG DRUG accession")) {
+    if(!input.type %in% c("KEGG COMPOUND accession", "KEGG DRUG accession", "KEGG", "kegg")) {
       message("Using pathview::cpd2kegg to map ", input.type, " to KEGG")
       input.cpd.to.kegg <- pathview::cpd2kegg(in.ids = limit.to.ids, in.type = input.type)
     } else {
@@ -610,7 +615,7 @@ generate.cpd.mapping.table <- function(input.type, output.type, limit.to.ids) {
     mapping.list <- mapping.list[, c(input.type, output.type)]
     
     if(length(mapping.list) == 0 | dim(mapping.list)[1] == 0) {
-      stop("Mapping from ", input.type, " to ", output.type, " did not work")
+      stop("Mapping from ", input.type, " to ", output.type, " did not work. Please check input IDs type and try again.")
     }
   } # end else map to glyph ID
   message("Finished mapping from ", input.type, " to ", output.type)
@@ -629,12 +634,12 @@ load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gen
     if (SBGN.file.cpd.id.type != output.cpd.id.type) {
       input.cpd.type <- SBGN.file.cpd.id.type
       cpd.mapping.table <-  loadMappingTable(output.type = output.cpd.id.type, 
-                                             input.type = input.cpd.type, cpd.or.gene = "compound", species = species, 
+                                             input.type = input.cpd.type, mol.type = "cpd", species = species, 
                                              SBGNview.data.folder = SBGNview.data.folder)
       type.pair.name <- paste(sort(c(input.cpd.type, output.cpd.id.type), method = "radix",
                                    decreasing = TRUE), collapse="_")
-      cpd.id.mapping.list[["compound"]] <- list()
-      cpd.id.mapping.list[["compound"]][[type.pair.name]] <- cpd.mapping.table
+      cpd.id.mapping.list[["cpd"]] <- list()
+      cpd.id.mapping.list[["cpd"]][[type.pair.name]] <- cpd.mapping.table
     }
   }
   
@@ -642,7 +647,7 @@ load.id.mapping.list.all <- function(SBGN.file.cpd.id.type = NULL, SBGN.file.gen
     if (SBGN.file.gene.id.type != output.gene.id.type) {
       input.gene.type <- SBGN.file.gene.id.type
       gene.mapping.table <- loadMappingTable(output.type = output.gene.id.type, 
-                                             input.type = input.gene.type, cpd.or.gene = "gene", species = species, 
+                                             input.type = input.gene.type, mol.type = "gene", species = species, 
                                              SBGNview.data.folder = SBGNview.data.folder)
       type.pair.name <- paste(sort(c(input.gene.type, output.gene.id.type), method = "radix",
                                    decreasing = TRUE), collapse="_")
@@ -701,9 +706,9 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #' Retrieve gene list or compound list from collected databases
 #' 
 #' @param database A character string. Default: "pathwayCommons". The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.
-#' @param mol.list.ID.type A character string. Default: "ENTREZID". The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}
+#' @param id.type A character string. Default: "ENTREZID". The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}
 #' @param org A character string. Default: "hsa". The three letter species code used by KEGG. E.g. 'hsa','mmu'
-#' @param cpd.or.gene A character string. Default: "gene". One of 'gene' or 'compound'
+#' @param mol.type A character string. Default: "gene". One of 'gene' or 'cpd'
 #' @param output.pathway.name Logical. Default: T. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'
 #' @param combine.duplicated.set Logical. Default: T. Some pathways have the same geneset. If this parameter is set to 'TRUE', the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with '||'
 #' @param truncate.name.length Integer. Default: 50. The pathway names will be truncated to at most that length. 
@@ -712,24 +717,24 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #' @examples 
 #' data(pathways.info)
 #' mol.list <- getMolList(database = 'pathwayCommons',
-#'                        mol.list.ID.type = 'ENTREZID',
+#'                        id.type = 'ENTREZID',
 #'                        org = 'hsa')
 #'   
 #' @export
 
-getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID", org = "hsa", 
-                       cpd.or.gene = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
+getMolList <- function(database = "pathwayCommons", id.type = "ENTREZID", org = "hsa", 
+                       mol.type = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
                        truncate.name.length = 50, SBGNview.data.folder = "./SBGNview.tmp.data") {
   
   if (tolower(database) == "metacrop") {
-    if (cpd.or.gene == "gene") {
+    if (mol.type == "gene") {
       id.in.pathway <- "ENZYME"
     } else {
       id.in.pathway <- "CompoundName"
     }
     output.pathways <- subset(pathways.info, database == "MetaCrop", select = "pathway.id")
   } else if (tolower(database) %in% c("pathwaycommons", "metacyc")) {
-    if (cpd.or.gene == "gene") {
+    if (mol.type == "gene") {
       id.in.pathway <- "KO"
     } else {
       id.in.pathway <- "chebi"
@@ -739,33 +744,32 @@ getMolList <- function(database = "pathwayCommons", mol.list.ID.type = "ENTREZID
     stop("'database' argument value is incorrect. Acceptable values are: 'MetaCyc', 'pathwayCommons', 'MetaCrop'")
   }
   # metacrop initial list is using enzyme
-  mapping.list <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
-                                   cpd.or.gene = cpd.or.gene, species = org, SBGNview.data.folder = SBGNview.data.folder)
-  ref.to.pathway <- mapping.list 
-  
-  if (mol.list.ID.type == id.in.pathway) {
+  ref.to.pathway <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
+                                   mol.type = mol.type, species = org, SBGNview.data.folder = SBGNview.data.folder)
+
+  if (id.type == id.in.pathway) {
     out.id.to.pathway <- ref.to.pathway
     # change KO to output id
   } else {
-    message("Mapping ", id.in.pathway, " to ", mol.list.ID.type, "\n")
+    message("Mapping ", id.in.pathway, " to ", id.type, "\n")
     
-    out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = mol.list.ID.type, 
-                                           cpd.or.gene = cpd.or.gene, limit.to.ids = ref.to.pathway[, id.in.pathway], 
+    out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = id.type, 
+                                           mol.type = mol.type, limit.to.ids = ref.to.pathway[, id.in.pathway], 
                                            species = org, SBGNview.data.folder = SBGNview.data.folder)
     
     out.id.type.to.ref <- out.id.type.to.ref 
     # merge KO to pathway and KO to output id
     out.id.to.pathway <- merge(out.id.type.to.ref, ref.to.pathway, all.x = TRUE)
-    out.id.to.pathway <- out.id.to.pathway[, c(mol.list.ID.type, "pathway.id")]
+    out.id.to.pathway <- out.id.to.pathway[, c(id.type, "pathway.id")]
     out.id.to.pathway <- unique(out.id.to.pathway)
     out.id.to.pathway <- out.id.to.pathway[!is.na(out.id.to.pathway[, 2]), ]
   }
   out.id.to.pathway <- unique(out.id.to.pathway)
   out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, "pathway.id"] %in% 
                                            output.pathways$pathway.id, ]
-  out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, mol.list.ID.type] != 
+  out.id.to.pathway <- out.id.to.pathway[out.id.to.pathway[, id.type] != 
                                            "", ]
-  out.id.to.pathway <- split(as.character(out.id.to.pathway[, mol.list.ID.type]), 
+  out.id.to.pathway <- split(as.character(out.id.to.pathway[, id.type]), 
                              out.id.to.pathway[, "pathway.id"])
   out.id.to.pathway <- out.id.to.pathway[!is.na(names(out.id.to.pathway))]
   
@@ -886,12 +890,12 @@ find.pathways.by.keywords <- function(keywords, keyword.type, keywords.logic, mo
     data(mapped.ids)
     # if (keyword.type %in% mapped.ids$gene) {
     if (keyword.type %in% unique(mapped.ids$gene[,2])) {
-      cpd.or.gene <- "gene"
+      mol.type <- "gene"
     } else if (keyword.type %in% mapped.ids$cpd) {
-      cpd.or.gene <- "compound"
+      mol.type <- "cpd"
     }
     mapping.table <- loadMappingTable(input.type = keyword.type, output.type = "pathway.id", 
-                                     species = NULL, SBGNview.data.folder = SBGNview.data.folder, cpd.or.gene = cpd.or.gene)
+                                     species = NULL, SBGNview.data.folder = SBGNview.data.folder, mol.type = mol.type)
 
     if (keyword.type == "CompoundName") {
       if (keywords.logic == "and") {

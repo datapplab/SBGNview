@@ -1,16 +1,16 @@
 
 #########################################################################################################
 # changed function name from 'color.from.01.value' to 'color.from.value'. Function used in plot.utilities.R
-color.from.value <- function(value, gene.or.cpd, global.parameters.list) {
+color.from.value <- function(value, mol.type, global.parameters.list) {
     
-    if (gene.or.cpd == "gene") {
+    if (mol.type == "gene") {
         min.value <- global.parameters.list$min.gene.value
         max.value <- global.parameters.list$max.gene.value
         mid.value <- global.parameters.list$mid.gene.value
         high <- global.parameters.list$col.gene.high
         mid <- global.parameters.list$col.gene.mid
         low <- global.parameters.list$col.gene.low
-    } else if (gene.or.cpd == "compond") {
+    } else if (mol.type == "cpd") {
         min.value <- global.parameters.list$min.cpd.value
         max.value <- global.parameters.list$max.cpd.value
         mid.value <- global.parameters.list$mid.cpd.value
@@ -61,13 +61,13 @@ color.from.value <- function(value, gene.or.cpd, global.parameters.list) {
 
 #########################################################################################################
 # color.panel(100,100,10)
-color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, if.insert.sbgn.link = TRUE) {
+color.panel <- function(x, y, mol.type, col.panel.w, global.parameters.list, if.insert.sbgn.link = TRUE) {
     
-    if (gene.or.cpd == "gene") {
+    if (mol.type == "gene") {
         min.value <- global.parameters.list$min.gene.value
         max.value <- global.parameters.list$max.gene.value
         mid.value <- global.parameters.list$mid.gene.value
-    } else if (gene.or.cpd == "compond") {
+    } else if (mol.type == "cpd") {
         min.value <- global.parameters.list$min.cpd.value
         max.value <- global.parameters.list$max.cpd.value
         mid.value <- global.parameters.list$mid.cpd.value
@@ -88,7 +88,7 @@ color.panel <- function(x, y, gene.or.cpd, col.panel.w, global.parameters.list, 
     svg <- ""
     for (i in seq_len(length.out = length(col.values))) {
         col <- color.from.value(col.values[i], global.parameters.list = global.parameters.list, 
-            gene.or.cpd = gene.or.cpd)
+            mol.type = mol.type)
         x.loc.text <- x - (i - 0.5) * panel.grid.w
         svg.rect <- plot.rectangle(x = x - i * panel.grid.w, y = y, h = col.panel.h, 
             w = panel.grid.w + 1, id = "col.pan", rx = 0, ry = 0, stroke.width = 0, 
@@ -223,19 +223,19 @@ find.col.panel.position.and.plot <- function(y.margin, global.parameters.list, i
         
         # plot color panel
         if (if.has.gene.data & if.has.cpd.data) {
-            col.panel.svg <- color.panel(x = col.panel.x, y = col.panel.y, gene.or.cpd = "gene", 
+            col.panel.svg <- color.panel(x = col.panel.x, y = col.panel.y, mol.type = "gene", 
                                          col.panel.w = col.panel.w, global.parameters.list = global.parameters.list, 
                                          if.insert.sbgn.link = FALSE)
             col.panel.svg.chemical <- color.panel(x = col.panel.x, y = col.panel.y + 
-                                                      col.panel.w * 0.45, gene.or.cpd = "compond", col.panel.w = col.panel.w, 
+                                                      col.panel.w * 0.45, mol.type = "cpd", col.panel.w = col.panel.w, 
                                                   global.parameters.list = global.parameters.list)
         } else if (if.has.cpd.data) {
             col.panel.svg <- ""
             col.panel.svg.chemical <- color.panel(x = col.panel.x, y = col.panel.y, 
-                                                  gene.or.cpd = "compond", col.panel.w = col.panel.w, global.parameters.list = global.parameters.list)
+                                                  mol.type = "cpd", col.panel.w = col.panel.w, global.parameters.list = global.parameters.list)
         } else if (if.has.gene.data) {
             col.panel.svg.chemical <- ""
-            col.panel.svg <- color.panel(x = col.panel.x, y = col.panel.y, gene.or.cpd = "gene", 
+            col.panel.svg <- color.panel(x = col.panel.x, y = col.panel.y, mol.type = "gene", 
                                          col.panel.w = col.panel.w, global.parameters.list = global.parameters.list)
         } else {
             col.panel.svg.chemical <- ""

@@ -64,9 +64,9 @@ ko.cols <- which(IFNg$group == "ko")
 ### Load gene set for mouse with ENSEMBL gene IDs
 ```{r , echo = TRUE , results = 'hide',   message = FALSE, warning = FALSE}
 ensembl.pathway <- getMolList(
-    mol.list.ID.type = "ENSEMBL",
+    id.type = "ENSEMBL",
     org = "mmu",
-    cpd.or.gene = "gene",
+    mol.type = "gene",
     output.pathway.name = TRUE
 )
 head(ensembl.pathway[[2]])

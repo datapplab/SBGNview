@@ -1527,7 +1527,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">SBGNview quick start</h1>
 <h4 class="author">Weijun Luo, Kovidh Vegesna</h4>
-<h4 class="date">10 February, 2021</h4>
+<h4 class="date">16 February, 2021</h4>
 
 </div>
 
@@ -1537,7 +1537,7 @@ div.tocify {
 <p>We previously developed an R/BioConductor package called <a href="https://www.bioconductor.org/packages/pathview">Pathview</a>, which maps, integrates and visualizes a wide range of data onto KEGG pathway graphs. Since its publication, Pathview has been widely used in omics studies and data analyses, and has become the leading tool in its category. Here we introduce the SBGNview package, which adopts <a href="https://sbgn.github.io/">Systems Biology Graphical Notation (SBGN)</a> and greatly extends the Pathview project by supporting multiple major pathway databases beyond KEGG.</p>
 <p>Key features:</p>
 <ul>
-<li><p>Pathway diagram and definition by the widely adopted <a href="https://sbgn.github.io/">SBGN standard formats</a>;</p></li>
+<li><p>Pathway definition by the widely adopted <a href="https://sbgn.github.io/">Systems Biology Graphical Notation (SBGN)</a>;</p></li>
 <li><p>Supports multiple major pathway databases beyond KEGG (Reactome, MetaCyc, SMPDB, PANTHER, METACROP etc) and user defined pathways;</p></li>
 <li><p>Covers 5,200 reference pathways and over 3,000 species by default;</p></li>
 <li><p>Extensive graphics controls, including glyph and edge attributes, graph layout and sub-pathway highlight;</p></li>
@@ -1588,7 +1588,7 @@ devtools::install_github(&quot;datapplab/SBGNview&quot;)</code></pre>
 <pre class="r"><code>git clone https://github.com/datapplab/SBGNview.git</code></pre>
 </div>
 </div>
-<div id="quick-example" class="section level1">
+<div id="quickexample" class="section level1">
 <h1><span class="header-section-number">4</span> Quick example</h1>
 <pre class="r"><code>library(SBGNview)
 # load demo dataset, SBGN pathway data collection and info, which may take a few seconds
@@ -1609,7 +1609,7 @@ print(SBGNview.obj)</code></pre>
 Figure 4.1: Quick start example: Adrenaline and noradrenaline biosynthesis pathway.
 </p>
 </div>
-<p>As a unique and useful feature of SBGNview package, we can highlight nodes, edges and/or paths using the highlight functions. Please read the function documentation and main vignette for details.</p>
+<p>As a unique and useful feature of SBGNview package, we can highlight nodes, edges and/or paths using the highlight functions. Please read the function documentation and main vignette for details.{#quickhighlight}</p>
 <pre class="r"><code>outputFile(SBGNview.obj) &lt;- &quot;quick.start.highlights&quot;
 SBGNview.obj + highlightArcs(class = &quot;production&quot;,color = &quot;red&quot;) + 
                highlightArcs(class = &quot;consumption&quot;,color = &quot;blue&quot;) +
@@ -1665,40 +1665,41 @@ Figure 4.2: Quick start example: Highlight arcs, nodes, and path.
 ## 
 ## other attached packages:
 ## [1] SBGNview_1.5.1        SBGNview.data_0.99.18 pathview_1.30.1      
-## [4] knitr_1.30           
+## [4] knitr_1.31           
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] KEGGREST_1.30.1             SummarizedExperiment_1.20.0
-##  [3] xfun_0.20                   lattice_0.20-41            
-##  [5] vctrs_0.3.6                 htmltools_0.5.1            
+##  [1] SummarizedExperiment_1.20.0 KEGGREST_1.30.1            
+##  [3] xfun_0.21                   lattice_0.20-41            
+##  [5] vctrs_0.3.6                 htmltools_0.5.1.1          
 ##  [7] stats4_4.0.3                yaml_2.2.1                 
 ##  [9] blob_1.2.1                  XML_3.99-0.5               
-## [11] rlang_0.4.10                DBI_1.1.0                  
+## [11] rlang_0.4.10                DBI_1.1.1                  
 ## [13] Rgraphviz_2.34.0            BiocGenerics_0.36.0        
 ## [15] bit64_4.0.5                 GenomeInfoDbData_1.2.4     
-## [17] matrixStats_0.57.0          MatrixGenerics_1.2.0       
+## [17] matrixStats_0.58.0          MatrixGenerics_1.2.1       
 ## [19] stringr_1.4.0               zlibbioc_1.36.0            
 ## [21] Biostrings_2.58.0           evaluate_0.14              
-## [23] memoise_1.1.0               rsvg_2.1                   
+## [23] memoise_2.0.0               rsvg_2.1                   
 ## [25] Biobase_2.50.0              IRanges_2.24.1             
-## [27] GenomeInfoDb_1.26.2         gbRd_0.4-11                
-## [29] parallel_4.0.3              AnnotationDbi_1.52.0       
-## [31] highr_0.8                   Rcpp_1.0.6                 
-## [33] DelayedArray_0.16.0         org.Hs.eg.db_3.12.0        
-## [35] S4Vectors_0.28.1            graph_1.68.0               
-## [37] XVector_0.30.0              bit_4.0.4                  
-## [39] png_0.1-7                   digest_0.6.27              
-## [41] stringi_1.5.3               bookdown_0.21              
-## [43] GenomicRanges_1.42.0        rbibutils_2.0              
-## [45] grid_4.0.3                  Rdpack_2.1                 
-## [47] tools_4.0.3                 bitops_1.0-6               
-## [49] magrittr_2.0.1              RCurl_1.98-1.2             
-## [51] RSQLite_2.2.2               crayon_1.3.4               
-## [53] pkgconfig_2.0.3             Matrix_1.3-2               
-## [55] xml2_1.3.2                  KEGGgraph_1.50.0           
-## [57] rmarkdown_2.6               httr_1.4.2                 
-## [59] R6_2.5.0                    igraph_1.2.6               
-## [61] compiler_4.0.3</code></pre>
+## [27] fastmap_1.1.0               GenomeInfoDb_1.26.2        
+## [29] gbRd_0.4-11                 parallel_4.0.3             
+## [31] AnnotationDbi_1.52.0        highr_0.8                  
+## [33] Rcpp_1.0.6                  DelayedArray_0.16.1        
+## [35] cachem_1.0.3                org.Hs.eg.db_3.12.0        
+## [37] S4Vectors_0.28.1            graph_1.68.0               
+## [39] XVector_0.30.0              bit_4.0.4                  
+## [41] png_0.1-7                   digest_0.6.27              
+## [43] stringi_1.5.3               bookdown_0.21              
+## [45] GenomicRanges_1.42.0        rbibutils_2.0              
+## [47] grid_4.0.3                  Rdpack_2.1                 
+## [49] tools_4.0.3                 bitops_1.0-6               
+## [51] magrittr_2.0.1              RCurl_1.98-1.2             
+## [53] RSQLite_2.2.3               crayon_1.4.1               
+## [55] pkgconfig_2.0.3             Matrix_1.3-2               
+## [57] xml2_1.3.2                  KEGGgraph_1.50.0           
+## [59] rmarkdown_2.6               httr_1.4.2                 
+## [61] R6_2.5.0                    igraph_1.2.6               
+## [63] compiler_4.0.3</code></pre>
 </div>
 
 
