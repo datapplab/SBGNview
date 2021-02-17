@@ -57,7 +57,7 @@ highlightNodes(
 A SBGNview obj
 }
 \description{
-Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function \code{\link{+.SBGNview}}.
+Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function. Run \code{help("+.SBGNview")} for more information.
 }
 \examples{
 \dontrun{

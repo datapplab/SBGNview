@@ -29,11 +29,11 @@ test_that("downloadSbgn", {
 })
 
 ###################################################
-test_that("getMolList", {
+test_that("sbgn.gsets", {
   
-  mol.list <- getMolList(database = "metacrop",
+  mol.list <- sbgn.gsets(database = "metacrop",
                          id.type = "ENZYME",
-                         org = "ath",
+                         species = "ath",
                          output.pathway.name = FALSE,
                          truncate.name.length = 50)
   expect_gte(length(mol.list), 0)

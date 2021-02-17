@@ -1527,7 +1527,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">SBGNview: data integration, visualization and analysis on SBGN pathways</h1>
 <h4 class="author">Xiaoxi Dong, Kovidh Vegesna, Weijun Luo</h4>
-<h4 class="date">16 February, 2021</h4>
+<h4 class="date">17 February, 2021</h4>
 
 </div>
 
@@ -1564,9 +1564,9 @@ div.tocify {
 <h2><span class="header-section-number">4.2</span> Accessing help and documentation</h2>
 <p>Use <code>ls(&quot;package:SBGNview&quot;)</code> to list all available functions in SBGNview. To learn more about how to use the functions and access their manuals, use <code>help()</code> or <code>?</code>. For example, <code>?”SBGNview”</code> or <code>help(&quot;+.SBGNview&quot;)</code>.</p>
 <pre class="r"><code>ls(&quot;package:SBGNview&quot;)</code></pre>
-<pre><code>##  [1] &quot;changeDataId&quot;     &quot;changeIds&quot;        &quot;downloadSbgnFile&quot; &quot;fileOutput&quot;      
-##  [5] &quot;findPathways&quot;     &quot;getMolList&quot;       &quot;highlightArcs&quot;    &quot;highlightNodes&quot;  
-##  [9] &quot;highlightPath&quot;    &quot;loadMappingTable&quot; &quot;outputFile&lt;-&quot;     &quot;renderSbgn&quot;      
+<pre><code>##  [1] &quot;changeDataId&quot;     &quot;changeIds&quot;        &quot;downloadSbgnFile&quot; &quot;findPathways&quot;    
+##  [5] &quot;highlightArcs&quot;    &quot;highlightNodes&quot;   &quot;highlightPath&quot;    &quot;loadMappingTable&quot;
+##  [9] &quot;outputFile&quot;       &quot;outputFile&lt;-&quot;     &quot;renderSbgn&quot;       &quot;sbgn.gsets&quot;      
 ## [13] &quot;sbgnNodes&quot;        &quot;SBGNview&quot;</code></pre>
 </div>
 <div id="sbgn-pathway-file-sbgn-ml" class="section level2">
@@ -1787,7 +1787,7 @@ The main function <em>SBGNview</em> returns a S3 class <em>SBGNview</em> object 
 </ul>
 <div id="structure-of-sbgnview-object" class="section level2">
 <h2><span class="header-section-number">6.1</span> Structure of <em>SBGNview</em> object</h2>
-<p>The <em>SBGNview</em> object is a S3 object defined as a list structure containing ‘data’ and ‘output.file’ and ‘output.formats’ elements. The object is created by the SBGNview S3 class defined within the package. The ‘data’ element of the object is a list containing information for all input SBGN pathways. Each element in ‘data’ is a list holding information of a single SBGN pathway. The information includes parsed glyphs, parsed arcs and other parameters to control graph features passed into <em>SBGNview</em> function. The ‘output.file’ element of the object is a string specified for the ‘output.file’ parameter in <em>SBGNview</em> function. The output file name can be modified using <em>outputFile</em>. The output formats can be updated by assigning a character vector of supported file formats by <em>SBGNview</em> function. The code chucks below demonstrate how you can access glyphs and arcs information of a <em>SBGNview</em> object as well as changing output file name and output formats. A demo <em>SBGNview</em> object can be loaded by running <code>data(&quot;SBGNview.obj&quot;)</code>.</p>
+<p>The <em>SBGNview</em> object is a S3 object defined as a list structure containing ‘data’ and ‘output.file’ and ‘output.formats’ elements. The object is created by the SBGNview S3 class defined within the package. The ‘data’ element of the object is a list containing information for all input SBGN pathways. Each element in ‘data’ is a list holding information of a single SBGN pathway. The information includes parsed glyphs, parsed arcs and other parameters to control graph features passed into <em>SBGNview</em> function. The ‘output.file’ element of the object is a string specified for the ‘output.file’ parameter in <em>SBGNview</em> function. The output file name can be modified using <em>outputFile</em>. The output formats can be updated by assigning a character vector of supported file formats by <em>SBGNview</em> function. The code chucks below demonstrate how you can access glyphs and arcs information of a <em>SBGNview</em> object as well as changing output file name and output formats.</p>
 </div>
 <div id="extract-glyphs-and-arcs-infromation-from-sbgnview-object" class="section level2">
 <h2><span class="header-section-number">6.2</span> Extract glyphs and arcs infromation from <em>SBGNview</em> object</h2>
@@ -1809,12 +1809,12 @@ Please make sure to read the documentation of <em>SBGNview</em> S3 class in the 
 <div id="change-output-file-name-and-format-of-sbgnview-objects" class="section level2">
 <h2><span class="header-section-number">6.4</span> Change output file name and format of <em>SBGNview</em> objects</h2>
 <p>We can change the name of the output file using built-in function <em>outputFile</em>:</p>
-<pre class="r"><code>fileOutput(SBGNview.obj)
+<pre class="r"><code>outputFile(SBGNview.obj)
 outputFile(SBGNview.obj) &lt;- &quot;test.change.output.file&quot;
-fileOutput(SBGNview.obj)
+outputFile(SBGNview.obj)
 SBGNview.obj
 outputFile(SBGNview.obj) &lt;- &quot;test.print&quot;
-fileOutput(SBGNview.obj)
+outputFile(SBGNview.obj)
 print(SBGNview.obj)</code></pre>
 <p>We can update or change the output file formats of a <em>SBGNview</em> object. Supported output file formats are any combination of “png”, “pdf”, and “ps”. If an empty vector of output file formats are provided, only the SVG file format will be written to current working directory.</p>
 <pre class="r"><code>print(SBGNview.obj$output.formats)
@@ -2051,30 +2051,30 @@ Figure 7.8: Graph with different layout.
 </div>
 <div id="extractList" class="section level2">
 <h2><span class="header-section-number">8.2</span> Extract molecule list from pathways</h2>
-<pre class="r"><code>mol.list &lt;- getMolList(database = &quot;metacrop&quot;,
+<pre class="r"><code>mol.list &lt;- sbgn.gsets(database = &quot;metacrop&quot;,
                        id.type = &quot;ENZYME&quot;,
-                       org = &quot;ath&quot;,
+                       species = &quot;ath&quot;,
                        output.pathway.name = FALSE,
                        truncate.name.length = 50)</code></pre>
 <pre class="r"><code>mol.list[[1]]</code></pre>
 <pre><code>## [1] &quot;2.6.1.2&quot;  &quot;2.6.1.44&quot;</code></pre>
-<pre class="r"><code>mol.list &lt;- getMolList(database = &quot;pathwayCommons&quot;,
+<pre class="r"><code>mol.list &lt;- sbgn.gsets(database = &quot;pathwayCommons&quot;,
                        id.type = &quot;ENTREZID&quot;,
-                       org = &quot;hsa&quot;)</code></pre>
+                       species = &quot;hsa&quot;)</code></pre>
 <pre class="r"><code>mol.list[[1]]</code></pre>
 <pre><code>## [1] &quot;217&quot; &quot;219&quot; &quot;224&quot;</code></pre>
-<pre class="r"><code>mol.list &lt;- getMolList(database = &quot;pathwayCommons&quot;,
+<pre class="r"><code>mol.list &lt;- sbgn.gsets(database = &quot;pathwayCommons&quot;,
                        id.type = &quot;ENTREZID&quot;,
-                       org = &quot;mmu&quot;)</code></pre>
+                       species = &quot;mmu&quot;)</code></pre>
 <pre class="r"><code>mol.list[[1]]</code></pre>
 <pre><code>## [1] &quot;11669&quot; &quot;11671&quot; &quot;72535&quot;</code></pre>
-<pre class="r"><code>mol.list &lt;- getMolList(database = &quot;MetaCyc&quot;,
+<pre class="r"><code>mol.list &lt;- sbgn.gsets(database = &quot;MetaCyc&quot;,
                        id.type = &quot;KO&quot;,
-                       org = &quot;eco&quot;)</code></pre>
+                       species = &quot;eco&quot;)</code></pre>
 <pre class="r"><code>mol.list[[3]]</code></pre>
 <pre><code>##  [1] &quot;K00281&quot; &quot;K00287&quot; &quot;K00288&quot; &quot;K00382&quot; &quot;K00560&quot; &quot;K00600&quot; &quot;K00605&quot; &quot;K01934&quot;
 ##  [9] &quot;K02437&quot; &quot;K13403&quot;</code></pre>
-<pre class="r"><code>mol.list &lt;- getMolList(database = &quot;pathwayCommons&quot;,
+<pre class="r"><code>mol.list &lt;- sbgn.gsets(database = &quot;pathwayCommons&quot;,
                        id.type = &quot;chebi&quot;,
                        mol.type = &quot;cpd&quot;)</code></pre>
 <pre class="r"><code>mol.list[[2]]</code></pre>

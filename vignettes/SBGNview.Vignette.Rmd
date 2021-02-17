@@ -242,7 +242,7 @@ The main function *SBGNview* returns a S3 class *SBGNview* object (similar to th
     + `SBGNview.obj = SBGNview(...) + highlightNodes(...)`. The assign operation "=" will make the returned object invisible therefore it will not be printed.
           
 ## Structure of *SBGNview* object
-The *SBGNview* object is a S3 object defined as a list structure containing 'data' and 'output.file' and 'output.formats' elements. The object is created by the SBGNview S3 class defined within the package. The 'data' element of the object is a list containing information for all input SBGN pathways. Each element in 'data' is a list holding information of a single SBGN pathway. The information includes parsed glyphs, parsed arcs and other parameters to control graph features passed into *SBGNview* function. The 'output.file' element of the object is a string specified for the 'output.file' parameter in *SBGNview* function. The output file name can be modified using *outputFile*. The output formats can be updated by assigning a character vector of supported file formats by *SBGNview* function.  The code chucks below demonstrate how you can access glyphs and arcs information of a *SBGNview* object as well as changing output file name and output formats. A demo *SBGNview* object can be loaded by running `data("SBGNview.obj")`. 
+The *SBGNview* object is a S3 object defined as a list structure containing 'data' and 'output.file' and 'output.formats' elements. The object is created by the SBGNview S3 class defined within the package. The 'data' element of the object is a list containing information for all input SBGN pathways. Each element in 'data' is a list holding information of a single SBGN pathway. The information includes parsed glyphs, parsed arcs and other parameters to control graph features passed into *SBGNview* function. The 'output.file' element of the object is a string specified for the 'output.file' parameter in *SBGNview* function. The output file name can be modified using *outputFile*. The output formats can be updated by assigning a character vector of supported file formats by *SBGNview* function.  The code chucks below demonstrate how you can access glyphs and arcs information of a *SBGNview* object as well as changing output file name and output formats. 
 
 ## Extract glyphs and arcs infromation from *SBGNview* object
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
@@ -264,12 +264,12 @@ Please make sure to read the documentation of *SBGNview* S3 class in the Value s
 ## Change output file name and format of *SBGNview* objects
 We can change the name of the output file using built-in function *outputFile*:
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
-fileOutput(SBGNview.obj)
+outputFile(SBGNview.obj)
 outputFile(SBGNview.obj) <- "test.change.output.file"
-fileOutput(SBGNview.obj)
+outputFile(SBGNview.obj)
 SBGNview.obj
 outputFile(SBGNview.obj) <- "test.print"
-fileOutput(SBGNview.obj)
+outputFile(SBGNview.obj)
 print(SBGNview.obj)
 
 ```
@@ -492,9 +492,9 @@ head(mapping)
 ```
 ## Extract molecule list from pathways {#extractList}
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- getMolList(database = "metacrop",
+mol.list <- sbgn.gsets(database = "metacrop",
                        id.type = "ENZYME",
-                       org = "ath",
+                       species = "ath",
                        output.pathway.name = FALSE,
                        truncate.name.length = 50)
 ```
@@ -502,31 +502,31 @@ mol.list <- getMolList(database = "metacrop",
 mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- getMolList(database = "pathwayCommons",
+mol.list <- sbgn.gsets(database = "pathwayCommons",
                        id.type = "ENTREZID",
-                       org = "hsa")
+                       species = "hsa")
 ```
 ```{r , echo = TRUE, message = FALSE, warning = FALSE }
 mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- getMolList(database = "pathwayCommons",
+mol.list <- sbgn.gsets(database = "pathwayCommons",
                        id.type = "ENTREZID",
-                       org = "mmu")
+                       species = "mmu")
 ```
 ```{r , echo = TRUE, message = FALSE, warning = FALSE }
 mol.list[[1]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- getMolList(database = "MetaCyc",
+mol.list <- sbgn.gsets(database = "MetaCyc",
                        id.type = "KO",
-                       org = "eco")
+                       species = "eco")
 ```
 ```{r , echo = TRUE, message = FALSE, warning = FALSE }
 mol.list[[3]]
 ```
 ```{r , echo = TRUE, results='hide', message = FALSE, warning = FALSE }
-mol.list <- getMolList(database = "pathwayCommons",
+mol.list <- sbgn.gsets(database = "pathwayCommons",
                        id.type = "chebi",
                        mol.type = "cpd")
 ```

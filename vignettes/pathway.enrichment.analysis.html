@@ -1527,7 +1527,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Pathway analysis and visualization using SBGNview collected gene set</h1>
 <h4 class="author">Xiaoxi Dong, Weijun Luo</h4>
-<h4 class="date">16 February, 2021</h4>
+<h4 class="date">17 February, 2021</h4>
 
 </div>
 
@@ -1567,12 +1567,11 @@ ko.cols &lt;- which(IFNg$group == &quot;ko&quot;)</code></pre>
 <h2><span class="header-section-number">4.2</span> Gene sets from SBGNview pathway collection</h2>
 <div id="load-gene-set-for-mouse-with-ensembl-gene-ids" class="section level3">
 <h3><span class="header-section-number">4.2.1</span> Load gene set for mouse with ENSEMBL gene IDs</h3>
-<pre class="r"><code>ensembl.pathway &lt;- getMolList(
-    id.type = &quot;ENSEMBL&quot;,
-    org = &quot;mmu&quot;,
-    mol.type = &quot;gene&quot;,
-    output.pathway.name = TRUE
-)
+<pre class="r"><code>ensembl.pathway &lt;- sbgn.gsets(id.type = &quot;ENSEMBL&quot;,
+                              species = &quot;mmu&quot;,
+                              mol.type = &quot;gene&quot;,
+                              output.pathway.name = TRUE
+                              )
 head(ensembl.pathway[[2]])</code></pre>
 </div>
 <div id="pathway-or-gene-set-analysis-using-gage" class="section level3">

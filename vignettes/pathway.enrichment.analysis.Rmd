@@ -63,12 +63,11 @@ ko.cols <- which(IFNg$group == "ko")
 ## Gene sets from SBGNview pathway collection
 ### Load gene set for mouse with ENSEMBL gene IDs
 ```{r , echo = TRUE , results = 'hide',   message = FALSE, warning = FALSE}
-ensembl.pathway <- getMolList(
-    id.type = "ENSEMBL",
-    org = "mmu",
-    mol.type = "gene",
-    output.pathway.name = TRUE
-)
+ensembl.pathway <- sbgn.gsets(id.type = "ENSEMBL",
+                              species = "mmu",
+                              mol.type = "gene",
+                              output.pathway.name = TRUE
+                              )
 head(ensembl.pathway[[2]])
 ```
 

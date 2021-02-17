@@ -57,7 +57,7 @@ highlightPath(
 A SBGNview obj
 }
 \description{
-Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.
+Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted. This function should be used as the second argument to function. Run \code{help("+.SBGNview")} for more information.
 }
 \examples{
 \dontrun{

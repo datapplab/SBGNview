@@ -112,16 +112,15 @@ merge.entity.specific.parameters.list <- function(obj) {
 #########################################################################################################
 #' Retrieve output file information from a SBGNview object
 #' 
-#' @param obj An SBGNview class object.
+#' @param obj A SBGNview class object.
 #' @details This function prints the output file path recorded in a SBGNview object. 
 #' @return A string. The output file information. 
 #' @examples 
 #' \dontrun{
-#' fileOutput(SBGNview.obj) 
+#' outputFile(SBGNview.obj) 
 #' }
 #' @export
-
-fileOutput <- function(obj) {
+outputFile <- function(obj) {
     obj$output.file
 }
 

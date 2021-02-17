@@ -46,7 +46,7 @@ highlight.edges <- function(node.set, arcs = NULL, node.set.id.type = NULL, arc.
 #########################################################################################################
 #' Highlight input nodes
 #' 
-#' Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function \code{\link{+.SBGNview}}. 
+#' Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function. Run \code{help("+.SBGNview")} for more information. 
 #' 
 #' @param node.set A vector of character strings. Default: "all". Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview. 
 #' @param node.set.id.type A character string. Default: "CompoundName". ID type of input nodes.
@@ -190,7 +190,7 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 #########################################################################################################
 #' Highlight shortest path between two nodes
 #' 
-#' Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted.
+#' Given two nodes, find the shortest path between them and highlight the path. Other molecules/nodes and edges involved in reactions in the path are also highlighted. This function should be used as the second argument to function. Run \code{help("+.SBGNview")} for more information.
 #' 
 #' @param from.node A character string. The molecule ID of source node.
 #' @param to.node A character string. The molecule ID of target node.
@@ -349,7 +349,7 @@ highlight.path.each.sbgn <- function(from.node, to.node, glyphs = NULL, arcs = N
 #########################################################################################################
 #' Highlight arcs by arc class
 #' 
-#' This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
+#' This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{+.SBGNview} and modify a SBGNview object. Run \code{help("+.SBGNview")} for more information.
 #' 
 #' @param class A character string. Default: "arc". The arc class to modify.
 #' @param color A character string. Default: "black". The color of arcs with selected 'class'.

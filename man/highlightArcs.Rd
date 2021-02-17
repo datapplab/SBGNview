@@ -19,7 +19,7 @@ highlightArcs(class = "all", color = "black", line.width = 2, tip.size = 6)
 A SBGNview object
 }
 \description{
-This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{\link{+.SBGNview}} and modify a SBGNview object
+This function can modify a SBGNview object's arc. Normally we use it as an argument to \code{+.SBGNview} and modify a SBGNview object. Run \code{help("+.SBGNview")} for more information.
 }
 \examples{
 \dontrun{

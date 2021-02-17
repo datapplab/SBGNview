@@ -705,10 +705,10 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #########################################################################################################
 #' Retrieve gene list or compound list from collected databases
 #' 
-#' @param database A character string. Default: "pathwayCommons". The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.
 #' @param id.type A character string. Default: "ENTREZID". The ID type of output gene list. One of the supported types in \code{data('mapped.ids')}
-#' @param org A character string. Default: "hsa". The three letter species code used by KEGG. E.g. 'hsa','mmu'
 #' @param mol.type A character string. Default: "gene". One of 'gene' or 'cpd'
+#' @param species A character string. Default: "hsa". The three letter species code used by KEGG. E.g. 'hsa','mmu'
+#' @param database A character string. Default: "pathwayCommons". The database where gene list will be extracted. Acceptable values: 'MetaCyc', 'pathwayCommons', 'MetaCrop'. The value is case in-sensitive.
 #' @param output.pathway.name Logical. Default: T. If set to 'TRUE', the names of returned list are in the format: 'pathway.id::pathway.name'. If set to 'FALSE', the format is 'pahtway.id'
 #' @param combine.duplicated.set Logical. Default: T. Some pathways have the same geneset. If this parameter is set to 'TRUE', the output list will combine pathways that have the same gene set. The name in the list will be pathway names concatinated with '||'
 #' @param truncate.name.length Integer. Default: 50. The pathway names will be truncated to at most that length. 
@@ -716,16 +716,17 @@ load.all.ids.mapping <- function(database, all.pairs.id.mapping.list, species, o
 #' @return A list. Each element is a genelist of a pathway.
 #' @examples 
 #' data(pathways.info)
-#' mol.list <- getMolList(database = 'pathwayCommons',
-#'                        id.type = 'ENTREZID',
-#'                        org = 'hsa')
+#' mol.list <- sbgn.gsets(id.type = 'ENTREZID',
+#'                        species = 'hsa',
+#'                        database = 'pathwayCommons')
 #'   
 #' @export
 
-getMolList <- function(database = "pathwayCommons", id.type = "ENTREZID", org = "hsa", 
-                       mol.type = "gene", output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
+sbgn.gsets <- function(id.type = "ENTREZID", mol.type = "gene", species = "hsa", database = "pathwayCommons", 
+                       output.pathway.name = TRUE, combine.duplicated.set = TRUE, 
                        truncate.name.length = 50, SBGNview.data.folder = "./SBGNview.tmp.data") {
   
+  if(id.type %in% c("ENTREZID", "eg", "entrez", "entrezid")) id.type <- "ENTREZID"
   if (tolower(database) == "metacrop") {
     if (mol.type == "gene") {
       id.in.pathway <- "ENZYME"
@@ -745,7 +746,7 @@ getMolList <- function(database = "pathwayCommons", id.type = "ENTREZID", org = 
   }
   # metacrop initial list is using enzyme
   ref.to.pathway <- loadMappingTable(input.type = id.in.pathway, output.type = "pathway.id", 
-                                   mol.type = mol.type, species = org, SBGNview.data.folder = SBGNview.data.folder)
+                                   mol.type = mol.type, species = species, SBGNview.data.folder = SBGNview.data.folder)
 
   if (id.type == id.in.pathway) {
     out.id.to.pathway <- ref.to.pathway
@@ -755,7 +756,7 @@ getMolList <- function(database = "pathwayCommons", id.type = "ENTREZID", org = 
     
     out.id.type.to.ref <- loadMappingTable(input.type = id.in.pathway, output.type = id.type, 
                                            mol.type = mol.type, limit.to.ids = ref.to.pathway[, id.in.pathway], 
-                                           species = org, SBGNview.data.folder = SBGNview.data.folder)
+                                           species = species, SBGNview.data.folder = SBGNview.data.folder)
     
     out.id.type.to.ref <- out.id.type.to.ref 
     # merge KO to pathway and KO to output id
