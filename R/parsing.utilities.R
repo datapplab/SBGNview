@@ -774,7 +774,7 @@ plot.arc.ports <- function(glyph.port.info, node) {
 #' data(pathways.info)
 #' node.list <- sbgnNodes(input.sbgn = 'P00001',
 #'                        output.gene.id.type = 'ENTREZID',
-#'                        output.cpd.id.type = 'CompoundName',
+#'                        output.cpd.id.type = 'compound.name',
 #'                        species = 'hsa')
 #' @export
 
@@ -785,6 +785,10 @@ sbgnNodes <- function(input.sbgn, output.gene.id.type = NA, output.cpd.id.type =
     if (!file.exists(SBGNview.data.folder)) {
         dir.create(SBGNview.data.folder)
     }
+    if(!is.na(output.cpd.id.type)) {
+        if(output.cpd.id.type == "CompoundName") output.cpd.id.type = "compound.name"   
+    }
+    
     result.list <- list()
     input.sbgns <- unique(as.vector(as.character(input.sbgn)))
     all.pairs.id.mapping.list <- list()

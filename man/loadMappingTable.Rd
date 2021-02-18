@@ -5,8 +5,8 @@
 \title{Generate ID mapping table from input and output ID types}
 \usage{
 loadMappingTable(
-  input.type,
-  output.type,
+  input.type = NULL,
+  output.type = NULL,
   species = NULL,
   mol.type = NULL,
   limit.to.ids = NULL,

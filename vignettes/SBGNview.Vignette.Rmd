@@ -119,12 +119,6 @@ USers can also define their own pathways and create custom SBGN-ML files from sc
 # Basic visualization
 SBGNview can visualize a range of omics data, including both gene (or transcript, protein, enzyme) data and compound (or metabolite, chemical, small molecules) data. 
 
-
-### Gene expression data
-
-### Chemical compound data
-
-
 ## Visualize gene data
 Gene/protein related data will be mapped to "macromolecule" nodes or glyphs on SBGN maps. Most of online databases or resources have their unique glyph ID types and it is likely different from the ID type in the gene data. We often need to map the omics IDs to the node IDs in the SBGN-ML file.
 In the [quick start example](https://bioconductor.org/packages/devel/bioc/vignettes/SBGNview/inst/doc/SBGNview.quick.start.html#quickexample) ("Adrenaline and noradrenaline biosynthesis" pathway), the SBGN-ML file uses pathwayCommons IDs for gene/protein nodes, whereas the omics dataset uses Entrez gene IDs.
@@ -189,11 +183,11 @@ Here for demo purpose, we change the KEGG compound IDs to pathwayCommons compoun
 
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 cpd.data1 <- changeDataId(data.input.id = cpd.data,
-                         input.type = "kegg.ligand",
+                         input.type = "kegg",
                          output.type = "pathwayCommons",
                          mol.type = "cpd",
                          sum.method = "sum")
-head(cpd.data)
+head(cpd.data1)
 ```
 
 Now we run *SBGNview*, the main function to map and render compound data on SBGN map.
@@ -212,7 +206,6 @@ include_graphics("test_output.cpd_P00001.svg")
 
 ## Visualize both gene data and compound data {#genecpddata}
 
-
 Now we can visualize both gene and compound data. In this example, we use the original gene expression data with "ENTREZ" IDs to show SBGNview's automatic ID mapping ability.
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
 SBGNview.obj <- SBGNview(gene.data = gse16873,
@@ -220,7 +213,7 @@ SBGNview.obj <- SBGNview(gene.data = gse16873,
                          input.sbgn = "P00001",
                          output.file = "test_output.gene.compound",
                          gene.id.type = "entrez",
-                         cpd.id.type = "kegg.ligand",
+                         cpd.id.type = "kegg",
                          output.formats =  c("svg"))
 SBGNview.obj
 ```
@@ -252,7 +245,7 @@ glyphs <- pathway.1.data$glyphs.list
 arcs <- pathway.1.data$arcs.list
 str(glyphs[[1]])
 str(arcs[[1]])
-global.pars=pathway.1.data$global.parameters.list
+global.pars <- pathway.1.data$global.parameters.list
 names(global.pars)
 ```
 
@@ -397,9 +390,9 @@ include_graphics("test.show.glyph.id_P00001.svg")
 We can find the mapping between input IDs and node IDs:
 ```{r, echo = TRUE, results = 'hide', eval = TRUE, message = FALSE, warning = FALSE}
 input.pathways <- findPathways("Adrenaline and noradrenaline biosynthesis")
-input.pathway.ids = input.pathways$pathway.id
+input.pathway.ids <- input.pathways$pathway.id
 mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
-                     input.type = "CompoundName",
+                     input.type = "compound.name",
                      output.type = "pathwayCommons",
                      mol.type = "cpd",
                      limit.to.pathways = input.pathway.ids[1])
@@ -473,7 +466,7 @@ Besides *changeDataId* which changes ID for omics data, SBGNview provides functi
 
 ```{r , echo = TRUE, results = 'hide',message = FALSE, warning = FALSE }
 mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
-                     input.type = "CompoundName",
+                     input.type = "compound.name",
                      output.type = "pathwayCommons",
                      mol.type = "cpd",
                      limit.to.pathways = "P00001")
@@ -483,7 +476,7 @@ head(mapping)
 ```
 ```{r , echo = TRUE, results = 'hide',message = FALSE, warning = FALSE }
 mapping <- changeIds(input.ids = c("tyrosine", "(+-)-epinephrine"),
-                     input.type = "CompoundName",
+                     input.type = "compound.name",
                      output.type = "chebi",
                      mol.type = "cpd")
 ```

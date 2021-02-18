@@ -47,6 +47,6 @@ data(sbgn.xmls)
 data(pathways.info)
 node.list <- sbgnNodes(input.sbgn = 'P00001',
                        output.gene.id.type = 'ENTREZID',
-                       output.cpd.id.type = 'CompoundName',
+                       output.cpd.id.type = 'compound.name',
                        species = 'hsa')
 }

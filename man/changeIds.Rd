@@ -5,10 +5,10 @@
 \title{Change vector of input IDs to another ID type}
 \usage{
 changeIds(
-  input.ids,
-  input.type,
-  output.type,
-  mol.type,
+  input.ids = NULL,
+  input.type = NULL,
+  output.type = NULL,
+  mol.type = NULL,
   limit.to.pathways = NULL,
   org = "hsa",
   SBGNview.data.folder = "./SBGNview.tmp.data"

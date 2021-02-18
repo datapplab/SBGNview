@@ -23,7 +23,7 @@
 #' @param sbgn.id.attr  A character string. This tells SBGNview where to find the ID of a glyph in SBGN-ML file for ID mapping. This ID is used to map omics data to the glyph. It is normally the name of an attribute in the 'glyph' element . For example : <glyph class='macromolecule' id='p53'> </glyph>. We can specify: sbgn.id.attr = 'id'; sbgn.gene.id.type = 'SYMBOL'. For \href{https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN.with.stamp}{our pre-generated SBGN-ML files}, the ID attribute will be determined automatically thus can be omitted. 
 #'          Accepted values: 
 #'              1. Any attribute name in element 'glyph' For example : <glyph class='macromolecule' id='p53' protein='P04637'> </glyph>. We can specify: sbgn.id.attr = 'protein'; sbgn.gene.id.type = 'UNIPROT', then 'P04637' will be the glyph ID. 
-#'              2. The string 'label', this will make SBGNview use the glyph label as glyph ID. For example: <glyph id='glyph14' class='simple chemical'> <label text='L-alanine'/>  </glyph>. We can specify: sbgn.id.attr = 'label'; sbgn.gene.id.type = 'CompoundName', then 'L-alanine' will be used as glyph ID.
+#'              2. The string 'label', this will make SBGNview use the glyph label as glyph ID. For example: <glyph id='glyph14' class='simple chemical'> <label text='L-alanine'/>  </glyph>. We can specify: sbgn.id.attr = 'label'; sbgn.cpd.id.type = 'compound.name', then 'L-alanine' will be used as glyph ID.
 #' @param sbgn.gene.id.type  A character string.  The ID type of "macromolecule" glyphs in SBGN-ML file (See parameter 'sbgn.id.attr' for more details). This parameter is used for ID mapping, i.e. either use our pre-generated mapping tables or find corresponding columns in user defined mapping tables in 'id.mapping.gene'.  For \href{https://github.com/datapplab/SBGN-ML.files/tree/master/data/SBGN.with.stamp}{our pre-generated SBGN-ML files}, this will be determined automatically according to the pathway IDs thus can be omitted. For user defined SBGN-ML file, this parameter should be one of the column names of the matrix 'id.mapping.gene'.
 #' @param sbgn.cpd.id.type   A character string. Similar to 'sbgn.gene.id.type'. The corresponding glyphs are "simple chemicals"
 #' @param id.mapping.gene A matrix.  Mapping table between gene.id.type and sbgn.gene.id.type. This table is needed if the ID pair of gene.id.type and sbgn.gene.id.type is NOT included in data 'mapped.ids' or not mappable by package 'pathview'. This matrix should have two columns for gene.id.type and sbgn.gene.id.type, respectively.  Column names should be the values of parameters 'sbgn.gene.id.type' and 'gene.id.type'.  See example section for an example.
@@ -149,6 +149,12 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
         warning("'sbgn.dir' folder does not exist! Creating: ", sbgn.dir, "\n")
         system(paste("mkdir -p", sbgn.dir))
     }
+    # using changed mapping file names from CompoundName and compound.name and kegg.ligand to kegg
+    if(!is.na(sbgn.cpd.id.type)) {
+        if(sbgn.cpd.id.type == "CompoundName") sbgn.cpd.id.type = "compound.name"
+        if(sbgn.cpd.id.type %in% c("kegg.ligand", "KEGG")) sbgn.cpd.id.type = "kegg"
+    }
+    
     # Parse all files in a folder when no input.sbgn is specified.
     if (is.null(input.sbgn)) {
         warning("'input.sbgn' is not provided, using all files in folder 'sbgn.dir':", 

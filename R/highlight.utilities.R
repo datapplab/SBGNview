@@ -49,7 +49,7 @@ highlight.edges <- function(node.set, arcs = NULL, node.set.id.type = NULL, arc.
 #' Change node properties such as border color and width to highlight a list of input nodes. This function should be used as the second argument to function. Run \code{help("+.SBGNview")} for more information. 
 #' 
 #' @param node.set A vector of character strings. Default: "all". Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview. 
-#' @param node.set.id.type A character string. Default: "CompoundName". ID type of input nodes.
+#' @param node.set.id.type A character string. Default: "compound.name". ID type of input nodes.
 #' @param glyphs.id.type A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.
 #' @param mol.type A character string. One of 'gene' or 'cpd' (default). 
 #' @param stroke.color A character string. Default: "black". The border color of highlighted nodes.
@@ -72,11 +72,15 @@ highlight.edges <- function(node.set, arcs = NULL, node.set.id.type = NULL, arc.
 #' }
 #' @export
  
-highlightNodes <- function(node.set = "all", node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
+highlightNodes <- function(node.set = "all", node.set.id.type = "compound.name", glyphs.id.type = "pathwayCommons", 
                            mol.type = "cpd", stroke.color = "black", stroke.width = 10, stroke.opacity = 1, 
                            show.glyph.id = FALSE, select.glyph.class = c(), label.x.shift = 0, label.y.shift = 0, 
                            label.color = "black", label.font.size = NULL, 
                            label.spliting.string = NULL, labels = NULL) {
+    
+    # changed mapping file names from CompondName to compound.name and kegg.ligand to kegg
+    if(node.set.id.type == "CompoundName") node.set.id.type = "compound.name"
+    if(node.set.id.type %in% c("kegg.ligand", "KEGG")) node.set.id.type <- "kegg"
     
     function(SBGNview.obj) {
         glyphs.arcs.list <- SBGNview.obj$data
@@ -195,7 +199,7 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 #' @param from.node A character string. The molecule ID of source node.
 #' @param to.node A character string. The molecule ID of target node.
 #' @param directed.graph Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from 'source' node to 'target' node.
-#' @param node.set.id.type A character string. Default: "CompoundName". ID type of input nodes.
+#' @param node.set.id.type A character string. Default: "compound.name". ID type of input nodes.
 #' @param glyphs.id.type A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.
 #' @param mol.type A character string. One of 'gene' or 'cpd' (default). 
 #' @param path.node.color A character string. Default: "black". Border color of nodes in the path.
@@ -218,11 +222,15 @@ highlight.nodes.each.sbgn <- function(node.set = "all", select.glyph.class = c()
 #' @export
 
 highlightPath <- function(from.node = NULL, to.node = NULL, directed.graph = TRUE, 
-                          node.set.id.type = "CompoundName", glyphs.id.type = "pathwayCommons", 
+                          node.set.id.type = "compound.name", glyphs.id.type = "pathwayCommons", 
                           mol.type = "cpd", input.node.stroke.width = 10, from.node.color = "red", 
                           to.node.color = "blue", path.node.color = "black", path.node.stroke.width = 10, 
                           n.shortest.paths.plot = 1, shortest.paths.cols = c("purple"), 
                           path.stroke.width = 2, tip.size = 4) {
+    
+    # changed mapping file names from CompondName to compound.name and kegg.ligand to kegg
+    if(node.set.id.type == "CompoundName") node.set.id.type = "compound.name"
+    if(node.set.id.type %in% c("kegg.ligand", "KEGG")) node.set.id.type <- "kegg"
     
     function(SBGNview.obj) {
         glyphs.arcs.list <- SBGNview.obj$data

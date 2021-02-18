@@ -8,7 +8,7 @@ highlightPath(
   from.node = NULL,
   to.node = NULL,
   directed.graph = TRUE,
-  node.set.id.type = "CompoundName",
+  node.set.id.type = "compound.name",
   glyphs.id.type = "pathwayCommons",
   mol.type = "cpd",
   input.node.stroke.width = 10,
@@ -29,7 +29,7 @@ highlightPath(
 
 \item{directed.graph}{Logical. If treat the SBGN map as a directed graph. If treat it as directed graph, the direction of an arc is determined by the <arc> XML element in the input SBGN-ML file: from 'source' node to 'target' node.}
 
-\item{node.set.id.type}{A character string. Default: "CompoundName". ID type of input nodes.}
+\item{node.set.id.type}{A character string. Default: "compound.name". ID type of input nodes.}
 
 \item{glyphs.id.type}{A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.}
 

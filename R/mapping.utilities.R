@@ -237,8 +237,23 @@ mol.sum.multiple.mapping <-function(mol.data, id.map, gene.annotpkg="org.Hs.eg.d
 #' 
 #' @export
 
-changeIds <- function(input.ids, input.type, output.type, mol.type, limit.to.pathways = NULL, 
-                      org = "hsa", SBGNview.data.folder = "./SBGNview.tmp.data") {
+changeIds <- function(input.ids = NULL, input.type = NULL, output.type = NULL, mol.type = NULL, 
+                      limit.to.pathways = NULL, org = "hsa", SBGNview.data.folder = "./SBGNview.tmp.data") {
+  
+  # validate input
+  if(is.null(input.ids)) stop("'input.ids' argument is required!")
+  if(is.null(input.type) | is.null(output.type)) {
+    stop("Please make sure both 'input.type' and 'output.type' arguments are specified.")
+  }
+  if(is.null(mol.type) | !mol.type %in% c("gene", "cpd")) { 
+    stop("'mol.type' argument must be 'gene' or 'cpd'")
+  }
+  # changed mapping file names from CompondName to compound.name and kegg.ligand to kegg
+  # we handle if input/output is CompoundName/kegg.ligand/KEGG
+  if(input.type == "CompoundName") input.type <- "compound.name"
+  if(input.type %in% c("kegg.ligand", "KEGG")) input.type <- "kegg"
+  if(output.type == "CompoundName") output.type <- "compound.name"
+  if(output.type %in% c("kegg.ligand", "KEGG")) output.type <- "kegg"
   
   if (!is.null(limit.to.pathways) & output.type %in% c("pathwayCommons", "metacyc.SBGN")) {
     ids.in.pathways <- sbgnNodes(limit.to.pathways, SBGNview.data.folder = SBGNview.data.folder)
@@ -350,16 +365,30 @@ changeIds <- function(input.ids, input.type, output.type, mol.type, limit.to.pat
 #'       
 #' @export    
 
-changeDataId <- function(data.input.id, input.type, output.type, sum.method = "sum", 
-                         org = "hsa", mol.type, id.mapping.table = NULL, 
-                         SBGNview.data.folder = "./SBGNview.tmp.data") {
+changeDataId <- function(data.input.id = NULL, input.type = NULL, output.type = NULL, 
+                         sum.method = "sum", org = "hsa", mol.type = NULL, 
+                         id.mapping.table = NULL, SBGNview.data.folder = "./SBGNview.tmp.data") {
   
   # function: change input data matrix with input/uniprot ID to data matrix with
   # pathwaycommons id if there are multiple input IDs mapped to a node, collapse
   # their values using user specified function(sum.method)
 
+  # validate input
+  if(is.null(data.input.id)) stop("'data.input.id' argument is required!")
+  if(is.null(input.type) | is.null(output.type)) {
+    stop("Please make sure both 'input.type' and 'output.type' arguments are specified.")
+  }
+  if(is.null(mol.type) | !mol.type %in% c("gene", "cpd")) { 
+    stop("'mol.type' argument must be 'gene' or 'cpd'")
+  }
   if(input.type %in% c("entrez", "eg", "entrezid")) input.type = "ENTREZID"
   if(output.type %in% c("entrez", "eg", "entrezid")) output.type = "ENTREZID"
+  # changed mapping file names from CompondName to compound.name and kegg.ligand to kegg
+  # we handle if input/output is CompoundName/kegg.ligand/KEGG
+  if(input.type == "CompoundName") input.type <- "compound.name"
+  if(input.type %in% c("kegg.ligand", "KEGG")) input.type <- "kegg"
+  if(output.type == "CompoundName") output.type <- "compound.name"
+  if(output.type %in% c("kegg.ligand", "KEGG")) output.type <- "kegg"
   
   if (is.null(id.mapping.table)) {
     

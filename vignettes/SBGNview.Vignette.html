@@ -1527,7 +1527,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">SBGNview: data integration, visualization and analysis on SBGN pathways</h1>
 <h4 class="author">Xiaoxi Dong, Kovidh Vegesna, Weijun Luo</h4>
-<h4 class="date">17 February, 2021</h4>
+<h4 class="date">18 February, 2021</h4>
 
 </div>
 
@@ -1657,12 +1657,6 @@ head(pathways)</code></pre>
 <div id="basic-visualization" class="section level1">
 <h1><span class="header-section-number">5</span> Basic visualization</h1>
 <p>SBGNview can visualize a range of omics data, including both gene (or transcript, protein, enzyme) data and compound (or metabolite, chemical, small molecules) data.</p>
-<div id="gene-expression-data" class="section level3">
-<h3><span class="header-section-number">5.0.1</span> Gene expression data</h3>
-</div>
-<div id="chemical-compound-data" class="section level3">
-<h3><span class="header-section-number">5.0.2</span> Chemical compound data</h3>
-</div>
 <div id="visualize-gene-data" class="section level2">
 <h2><span class="header-section-number">5.1</span> Visualize gene data</h2>
 <p>Gene/protein related data will be mapped to “macromolecule” nodes or glyphs on SBGN maps. Most of online databases or resources have their unique glyph ID types and it is likely different from the ID type in the gene data. We often need to map the omics IDs to the node IDs in the SBGN-ML file.
@@ -1732,11 +1726,11 @@ Figure 5.1: Visualization of gene expression data.
 head(cpd.data)</code></pre>
 <p>Here for demo purpose, we change the KEGG compound IDs to pathwayCommons compound IDs. Although <em>SBGNview</em> can do this automatically, see <span id="genecpddata">Visualize both gene data and compound data</span>.</p>
 <pre class="r"><code>cpd.data1 &lt;- changeDataId(data.input.id = cpd.data,
-                         input.type = &quot;kegg.ligand&quot;,
+                         input.type = &quot;kegg&quot;,
                          output.type = &quot;pathwayCommons&quot;,
                          mol.type = &quot;cpd&quot;,
                          sum.method = &quot;sum&quot;)
-head(cpd.data)</code></pre>
+head(cpd.data1)</code></pre>
 <p>Now we run <em>SBGNview</em>, the main function to map and render compound data on SBGN map.</p>
 <pre class="r"><code>SBGNview.obj &lt;- SBGNview(cpd.data = cpd.data1,
                          input.sbgn = &quot;P00001&quot;,
@@ -1759,7 +1753,7 @@ Figure 5.2: Visualization of compound abundance data.
                          input.sbgn = &quot;P00001&quot;,
                          output.file = &quot;test_output.gene.compound&quot;,
                          gene.id.type = &quot;entrez&quot;,
-                         cpd.id.type = &quot;kegg.ligand&quot;,
+                         cpd.id.type = &quot;kegg&quot;,
                          output.formats =  c(&quot;svg&quot;))
 SBGNview.obj</code></pre>
 <div class="figure"><span id="fig:figGeneAndCpdData"></span>
@@ -1797,7 +1791,7 @@ glyphs &lt;- pathway.1.data$glyphs.list
 arcs &lt;- pathway.1.data$arcs.list
 str(glyphs[[1]])
 str(arcs[[1]])
-global.pars=pathway.1.data$global.parameters.list
+global.pars &lt;- pathway.1.data$global.parameters.list
 names(global.pars)</code></pre>
 </div>
 <div id="modify-sbgnview-object-directly" class="section level2">
@@ -1949,9 +1943,9 @@ Figure 7.6: Show node IDs of mapped nodes.
 </div>
 <p>We can find the mapping between input IDs and node IDs:</p>
 <pre class="r"><code>input.pathways &lt;- findPathways(&quot;Adrenaline and noradrenaline biosynthesis&quot;)
-input.pathway.ids = input.pathways$pathway.id
+input.pathway.ids &lt;- input.pathways$pathway.id
 mapping &lt;- changeIds(input.ids = c(&quot;tyrosine&quot;, &quot;(+-)-epinephrine&quot;),
-                     input.type = &quot;CompoundName&quot;,
+                     input.type = &quot;compound.name&quot;,
                      output.type = &quot;pathwayCommons&quot;,
                      mol.type = &quot;cpd&quot;,
                      limit.to.pathways = input.pathway.ids[1])</code></pre>
@@ -2026,7 +2020,7 @@ Figure 7.8: Graph with different layout.
 <h2><span class="header-section-number">8.1</span> Map between two types of IDs</h2>
 <p>Besides <em>changeDataId</em> which changes ID for omics data, SBGNview provides functions to map between different types IDs:</p>
 <pre class="r"><code>mapping &lt;- changeIds(input.ids = c(&quot;tyrosine&quot;, &quot;(+-)-epinephrine&quot;),
-                     input.type = &quot;CompoundName&quot;,
+                     input.type = &quot;compound.name&quot;,
                      output.type = &quot;pathwayCommons&quot;,
                      mol.type = &quot;cpd&quot;,
                      limit.to.pathways = &quot;P00001&quot;)</code></pre>
@@ -2039,7 +2033,7 @@ Figure 7.8: Graph with different layout.
 ## [2] &quot;SmallMolecule_7753c3822ee83d806156d21648c931e6&quot;
 ## [3] &quot;SmallMolecule_a25ed355cc2a6a0800babeb708e2cba4&quot;</code></pre>
 <pre class="r"><code>mapping &lt;- changeIds(input.ids = c(&quot;tyrosine&quot;, &quot;(+-)-epinephrine&quot;),
-                     input.type = &quot;CompoundName&quot;,
+                     input.type = &quot;compound.name&quot;,
                      output.type = &quot;chebi&quot;,
                      mol.type = &quot;cpd&quot;)</code></pre>
 <pre class="r"><code>head(mapping)</code></pre>

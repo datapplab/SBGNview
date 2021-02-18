@@ -6,7 +6,7 @@
 \usage{
 highlightNodes(
   node.set = "all",
-  node.set.id.type = "CompoundName",
+  node.set.id.type = "compound.name",
   glyphs.id.type = "pathwayCommons",
   mol.type = "cpd",
   stroke.color = "black",
@@ -25,7 +25,7 @@ highlightNodes(
 \arguments{
 \item{node.set}{A vector of character strings. Default: "all". Input molecule IDs whose nodes are to be highlighted. It can be any ID types supported by SBGNview.}
 
-\item{node.set.id.type}{A character string. Default: "CompoundName". ID type of input nodes.}
+\item{node.set.id.type}{A character string. Default: "compound.name". ID type of input nodes.}
 
 \item{glyphs.id.type}{A character string. Default: "pathwayCommons". ID type of nodes in SBGN-ML file.}
 

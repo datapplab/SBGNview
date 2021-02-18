@@ -5,12 +5,12 @@
 \title{Change the data IDs of input omics data matrix}
 \usage{
 changeDataId(
-  data.input.id,
-  input.type,
-  output.type,
+  data.input.id = NULL,
+  input.type = NULL,
+  output.type = NULL,
   sum.method = "sum",
   org = "hsa",
-  mol.type,
+  mol.type = NULL,
   id.mapping.table = NULL,
   SBGNview.data.folder = "./SBGNview.tmp.data"
 )
