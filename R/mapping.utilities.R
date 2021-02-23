@@ -1,7 +1,51 @@
 
 #########################################################################################################
 # add input user data to glyph
+# add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
+#   
+#   node.omics.data.id <- glyph.info[sbgn.id.attr]
+#   # remove complex name from omics.data.id for metacyc
+#   node.omics.data.id.without.complex <- gsub("_Complex.+:@:", ":@:", node.omics.data.id)
+#   node.omics.data.id.without.complex <- gsub("_Complex_.+", "", node.omics.data.id)
+#   
+#   if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+#     # molecules within a complex sometimes have different ids, so we don't count them
+#     # when calculating the mapped nodes
+#   }
+#   user.data=user.data[[1]]
+#   ################################################################ 
+#   if (node.omics.data.id %in% rownames(user.data)) {
+#     node@user.data <- user.data[node.omics.data.id,] #user.data[[node.omics.data.id]]
+#     if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+#       # molecules within a complex sometimes have different ids, so we don't count them
+#       # when calculating the mapped nodes
+#       
+#     }
+#   } else if (node.omics.data.id.without.complex %in% rownames(user.data)) {
+#     node@user.data <- user.data[node.omics.data.id.without.complex,] #[[node.omics.data.id.without.complex]]
+#     if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+#       # molecules within a complex sometimes have different ids, so we don't count them
+#       # when calculating the mapped nodes
+#       
+#     }
+#   } else {
+#     node@user.data <- c("no.user.data")
+#   }
+#   if (length(node@user.data) == 1) {
+#     node@user.data <- as.matrix(t(c(node@user.data, node@user.data)))
+#   }
+#   return(list(node = node))
+# }
+
+## updated function checks if user.data has gene and/or cpd
+## gets both gene and cpd if both exist and adds omics data to glyphs 
 add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.data) {
+  
+  user.data.1 <- user.data[[1]] # get gene data
+  user.data.2 <- NULL
+  if(length(user.data) > 3) { # contains both converted gene and cpd data matrix
+    user.data.2 <- user.data[[4]] # get cpd data
+  } 
   
   node.omics.data.id <- glyph.info[sbgn.id.attr]
   # remove complex name from omics.data.id for metacyc
@@ -12,31 +56,45 @@ add.omics.data.to.glyph <- function(glyph.info, glyph, node, sbgn.id.attr, user.
     # molecules within a complex sometimes have different ids, so we don't count them
     # when calculating the mapped nodes
   }
-  user.data=user.data[[1]]
-  ################################################################ 
-  if (node.omics.data.id %in% rownames(user.data)) {
-    node@user.data <- user.data[node.omics.data.id,] #user.data[[node.omics.data.id]]
+  
+  if (node.omics.data.id %in% rownames(user.data.1)) {
+    node@user.data <- user.data.1[node.omics.data.id,] #user.data[[node.omics.data.id]]
     if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
       # molecules within a complex sometimes have different ids, so we don't count them
       # when calculating the mapped nodes
-      
     }
-  } else if (node.omics.data.id.without.complex %in% rownames(user.data)) {
-    node@user.data <- user.data[node.omics.data.id.without.complex,] #[[node.omics.data.id.without.complex]]
+  } else if (node.omics.data.id.without.complex %in% rownames(user.data.1)) {
+    node@user.data <- user.data.1[node.omics.data.id.without.complex,] #[[node.omics.data.id.without.complex]]
     if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
       # molecules within a complex sometimes have different ids, so we don't count them
       # when calculating the mapped nodes
-      
     }
+  } else if (!is.null(user.data.2)) { # add data to cpd glyphs
+    
+    if (node.omics.data.id %in% rownames(user.data.2)) {
+      node@user.data <- user.data.2[node.omics.data.id,] #user.data[[node.omics.data.id]]
+      if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+        # molecules within a complex sometimes have different ids, so we don't count them
+        # when calculating the mapped nodes
+      }
+    } else if (node.omics.data.id.without.complex %in% rownames(user.data.2)) {
+      node@user.data <- user.data.2[node.omics.data.id.without.complex,] #[[node.omics.data.id.without.complex]]
+      if (!xml2::xml_attr(xml2::xml_parent(glyph), "class") %in% c("complex", "submap")) {
+        # molecules within a complex sometimes have different ids, so we don't count them
+        # when calculating the mapped nodes
+      }
+    }
+    
   } else {
     node@user.data <- c("no.user.data")
   }
+  
   if (length(node@user.data) == 1) {
     node@user.data <- as.matrix(t(c(node@user.data, node@user.data)))
   }
+  
   return(list(node = node))
 }
-
 
 #########################################################################################################
 # generate glyph objects for glyphs found in sbgn file

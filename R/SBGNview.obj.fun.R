@@ -40,41 +40,70 @@
 #'  print(SBGNview.obj)
 #' @export
 
+# get glyphs and arcs from object and use plot.glyph, plot.arc functions 
+# and other svg code from object and generate output svg and other files
 "print.SBGNview" <- function(x, ...) {
-    
-    output.file <- NULL
-    #SBGNview.obj <- x
+    # reconstruct entity specific parameters.list
     SBGNview.obj <- merge.entity.specific.parameters.list(x)
-    glyphs.arcs.list <- SBGNview.obj$data
-    sbgns <- names(glyphs.arcs.list)
-    for (s in seq_len(length.out = length(glyphs.arcs.list))) {
-        # for each sbgn file
-        data.this.sbgn <- glyphs.arcs.list[[s]]
-        sbgn.parameters.list <- data.this.sbgn$render.sbgn.parameters.list
-        if (!is.null(output.file)) {
-            sbgn.parameters.list$output.file <- gsub(SBGNview.obj$output.file, output.file, 
-                sbgn.parameters.list$output.file)
+    
+    for(i in seq_along(SBGNview.obj$data)) {
+        
+        input.sbgn <- SBGNview.obj$data[[i]]
+        glyphs <- input.sbgn$glyphs.list
+        arcs <- input.sbgn$arcs.list
+        svg.glyphs <- ""
+        svg.arcs <- ""
+        
+        for(glyph in glyphs) {
+            # for plotting ports, check @svg.port slot of glyph and use that svg code for plotting ports
+            # if slot is not empty. Skip if class of glyph is port.
+            if(is(glyph, "port")) next
+            if(!identical(glyph@svg.port, character(0))) {
+                #svg.glyphs <- paste(svg.glyphs, plot.glyph(glyph), sep = "\n")
+                svg.glyphs <- paste(svg.glyphs, glyph@svg.port, sep = "\n")
+            }
+            # plot cardinality glyphs if global.parameters.list$if.plot.cardinality is true
+            # add glyph class is cardinality.sbgn
+            if (input.sbgn$global.parameters.list$if.plot.cardinality == T & is(glyph, "cardinality.sbgn")) {
+                svg.glyphs <- paste(svg.glyphs, plot.glyph(glyph), sep = "\n")
+            } 
+            # plot all other glyphs
+            if(!is(glyph, "cardinality.sbgn")) {
+                svg.glyphs <- paste(svg.glyphs, plot.glyph(glyph), sep = "\n")
+            }
+            
+        } 
+        for(arc in arcs) {
+            svg.arcs <- paste(svg.arcs, plot.arc(arc), sep = "\n")
         }
         
-        # if input sbgn-ml file doesn't exist while printing: download file if in ID in pathways.info, else user's file
-        if(!file.exists(sbgn.parameters.list$input.sbgn)) {
-            if(sbgns[s] %in% pathways.info[, "pathway.id"]) {
-                message(sbgn.parameters.list$input.sbgn, " not in current working directory")
-                message("Downloading SBGN-ML file for pathway.id: ", sbgns[s])
-                downloadSbgnFile(pathway.id = sbgns[s])
-            } else {
-                stop(sbgn.parameters.list$input.sbgn, " not in current working directory.\nPlease make sure SBGN-ML file is in current working directory")
-            }
+        col.panel.svg <- input.sbgn$printing.info$col.panel.svg
+        pathway.name.svg <- input.sbgn$printing.info$pathway.name.svg
+        stamp.svg <- input.sbgn$printing.info$stamp.svg
+        
+        svg.head <- sprintf(svg.header, input.sbgn$svg.dim.x, input.sbgn$svg.dim.y)
+        out.svg <- paste(svg.head, svg.glyphs, svg.arcs, 
+                         col.panel.svg, pathway.name.svg, stamp.svg, 
+                         svg.end)
+        Encoding(out.svg) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
+        
+        output.file <- input.sbgn$render.sbgn.parameters.list$output.file
+        output.svg.file <- paste(output.file, ".svg", sep = "") 
+        write(out.svg, output.svg.file)
+        if ("pdf" %in%  SBGNview.obj$output.formats) {
+            rsvg::rsvg_pdf(output.svg.file, paste(output.file, ".pdf", sep = ""))
         }
-            
-        tp <- renderSbgn(input.sbgn = sbgn.parameters.list$input.sbgn, output.file = sbgn.parameters.list$output.file, 
-            arcs.info = sbgn.parameters.list$arcs.info, compartment.layer.info = sbgn.parameters.list$compartment.layer.info, 
-            user.data = sbgn.parameters.list$user.data, output.formats = SBGNview.obj$output.formats, 
-            sbgn.id.attr = sbgn.parameters.list$sbgn.id.attr, glyphs.user = data.this.sbgn$glyphs.list, 
-            arcs.user = data.this.sbgn$arcs.list, pathway.name = sbgn.parameters.list$pathway.name, 
-            global.parameters.list = data.this.sbgn$global.parameters.list)
-        message("Image files written: ", sbgn.parameters.list$output.file, "\n")
-    }
+        if ("png" %in% SBGNview.obj$output.formats) {
+            rsvg::rsvg_png(output.svg.file, paste(output.file, ".png", sep = ""))
+        }
+        if ("ps" %in% SBGNview.obj$output.formats) {
+            rsvg::rsvg_ps(output.svg.file, paste(output.file, ".ps", sep = ""))
+        }
+        
+        message("Image files written: ", output.file)
+        
+    } # end main for loop
+    
     return(invisible())
 }
 
@@ -150,5 +179,46 @@ outputFile <- function(obj) {
     obj$output.file <- value
     return(obj)
 }
+
+#########################################################################################################
+#### old version of print function that calls renderSbgn()
+#### updated function uses parsed data in SBGNview object to generate output
+# "print.SBGNview" <- function(x, ...) {
+#     
+#     output.file <- NULL
+#     #SBGNview.obj <- x
+#     SBGNview.obj <- merge.entity.specific.parameters.list(x)
+#     glyphs.arcs.list <- SBGNview.obj$data
+#     sbgns <- names(glyphs.arcs.list)
+#     for (s in seq_len(length.out = length(glyphs.arcs.list))) {
+#         # for each sbgn file
+#         data.this.sbgn <- glyphs.arcs.list[[s]]
+#         sbgn.parameters.list <- data.this.sbgn$render.sbgn.parameters.list
+#         if (!is.null(output.file)) {
+#             sbgn.parameters.list$output.file <- gsub(SBGNview.obj$output.file, output.file, 
+#                                                      sbgn.parameters.list$output.file)
+#         }
+#         
+#         # if input sbgn-ml file doesn't exist while printing: download file if in ID in pathways.info, else user's file
+#         if(!file.exists(sbgn.parameters.list$input.sbgn)) {
+#             if(sbgns[s] %in% pathways.info[, "pathway.id"]) {
+#                 message(sbgn.parameters.list$input.sbgn, " not in current working directory")
+#                 message("Downloading SBGN-ML file for pathway.id: ", sbgns[s])
+#                 downloadSbgnFile(pathway.id = sbgns[s])
+#             } else {
+#                 stop(sbgn.parameters.list$input.sbgn, " not in current working directory.\nPlease make sure SBGN-ML file is in current working directory")
+#             }
+#         }
+#         
+#         tp <- renderSbgn(input.sbgn = sbgn.parameters.list$input.sbgn, output.file = sbgn.parameters.list$output.file, 
+#                          arcs.info = sbgn.parameters.list$arcs.info, compartment.layer.info = sbgn.parameters.list$compartment.layer.info, 
+#                          user.data = sbgn.parameters.list$user.data, output.formats = SBGNview.obj$output.formats, 
+#                          sbgn.id.attr = sbgn.parameters.list$sbgn.id.attr, glyphs.user = data.this.sbgn$glyphs.list, 
+#                          arcs.user = data.this.sbgn$arcs.list, pathway.name = sbgn.parameters.list$pathway.name, 
+#                          global.parameters.list = data.this.sbgn$global.parameters.list)
+#         message("Image files written: ", sbgn.parameters.list$output.file, "\n")
+#     }
+#     return(invisible())
+# }
 
 #########################################################################################################

@@ -7,7 +7,6 @@
 renderSbgn(
   input.sbgn,
   output.file,
-  if.write.files = TRUE,
   output.formats,
   sbgn.id.attr,
   glyphs.user = list(),
@@ -68,8 +67,6 @@ renderSbgn(
 \item{input.sbgn}{A character string. The path to a local SBGN-ML file.}
 
 \item{output.file, output.formats, sbgn.id.attr}{These parameters are the same as the ones in \code{\link{SBGNview}}. Please see \code{\link{SBGNview}} for more details.}
-
-\item{if.write.files}{Logical. Default: T. If generate image files. This parameter is for internal use only.}
 
 \item{glyphs.user}{A list, optional. Each element is a 'glyph' object. The element names are glyph IDs (attribute 'id' of XHTML element 'glyph'). Note this is not affected by parameter 'sbgn.id.attr'. The glyph elements contain glyph meta-data for plotting (e.g. text size, border width, border color etc.). Please see the \code{\link{glyph-class}} documentation for more information. By default, SBGNview will run without this argument and return a glyph list extracted from the SBGN file. User can then customize this glyph list and assign it to 'glyphs.user' in the next SBGNview run to update the graph.}
 

@@ -217,7 +217,7 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
         sbgn.result.list <- renderSbgn(input.sbgn = input.sbgn.full.path, output.file = output.file.sbgn, 
                                        arcs.info = arcs.info, compartment.layer.info = compartment.layer.info, 
                                        user.data = user.data, output.formats = output.formats, 
-                                       sbgn.id.attr = sbgn.id.attr, if.write.files = FALSE, pathway.name = pathway.name.on.graph, 
+                                       sbgn.id.attr = sbgn.id.attr, pathway.name = pathway.name.on.graph, 
                                        if.plot.svg = FALSE, ...)
         # record all parameters. They might be used again when we later modify the 'SBGNview' object
         sbgn.result.list[["render.sbgn.parameters.list"]] <- list(input.sbgn = input.sbgn.full.path, 
@@ -231,6 +231,7 @@ SBGNview <- function(gene.data = NULL, cpd.data = NULL, simulate.data = FALSE, i
     
     SBGNview.obj <- createSBGNviewObject(data = SBGNview.obj.data, output.file = output.file,
                                          output.formats = output.formats)
+    message("SBGNview object generated")
     return(SBGNview.obj)
 }
 
