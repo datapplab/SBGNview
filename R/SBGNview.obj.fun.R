@@ -40,17 +40,20 @@
 #'  print(SBGNview.obj)
 #' @export
 
-# get glyphs and arcs from object and use plot.glyph, plot.arc functions 
-# and other svg code from object and generate output svg and other files
+# get glyphs and arcs from object and use using plot.glyph, plot.arc functions 
+# and other svg parameters from object and generate output svg and other files
+# reconstruct entity (glyph/arc) specific parameters list
 "print.SBGNview" <- function(x, ...) {
-    # reconstruct entity specific parameters.list
-    SBGNview.obj <- merge.entity.specific.parameters.list(x)
-    
-    for(i in seq_along(SBGNview.obj$data)) {
+    object <- x
+    for(i in seq_along(object$data)) {
         
-        input.sbgn <- SBGNview.obj$data[[i]]
-        glyphs <- input.sbgn$glyphs.list
-        arcs <- input.sbgn$arcs.list
+        input.sbgn <- object$data[[i]]
+        # reconstruct entity parameters list
+        global.parameters.list <- input.sbgn$global.parameters.list
+        glyphs <- lapply(input.sbgn$glyphs.list, FUN = get.entity.parameter.list, 
+                         global.parameters.list = global.parameters.list)
+        arcs <- lapply(input.sbgn$arcs.list, FUN = get.entity.parameter.list, 
+                       global.parameters.list = global.parameters.list)
         svg.glyphs <- ""
         svg.arcs <- ""
         
@@ -88,15 +91,16 @@
         Encoding(out.svg) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
         
         output.file <- input.sbgn$render.sbgn.parameters.list$output.file
-        output.svg.file <- paste(output.file, ".svg", sep = "") 
+        output.svg.file <- paste(output.file, ".svg", sep = "")
+        output.formats <- object$output.formats
         write(out.svg, output.svg.file)
-        if ("pdf" %in%  SBGNview.obj$output.formats) {
+        if ("pdf" %in%  output.formats) {
             rsvg::rsvg_pdf(output.svg.file, paste(output.file, ".pdf", sep = ""))
         }
-        if ("png" %in% SBGNview.obj$output.formats) {
+        if ("png" %in% output.formats) {
             rsvg::rsvg_png(output.svg.file, paste(output.file, ".png", sep = ""))
         }
-        if ("ps" %in% SBGNview.obj$output.formats) {
+        if ("ps" %in% output.formats) {
             rsvg::rsvg_ps(output.svg.file, paste(output.file, ".ps", sep = ""))
         }
         
@@ -108,34 +112,22 @@
 }
 
 #########################################################################################################
-# function takes an SBGNview object and check the glyph objects parameters.list slot.
-# The entity specific parameters.list can be empty or partial if user has customized the glyph 
-# The function below will return a SBGNview object where the glyph and arc objects' parameters.list slot
-# will be merged with global.parameters.list to create a full list to be used by downstream functions
-merge.entity.specific.parameters.list <- function(obj) {
-    
-    for(i in seq_along(obj$data)) { # for multiple input.sbgn IDs
-        
-        global.parameters.list <- obj$data[[i]]$global.parameters.list
-        glyphs.list <- obj$data[[i]]$glyphs.list
-        #arcs.list <- obj$data[[i]]$arcs.list 
-        
-        for(j in seq_along(glyphs.list)) { # check each glyph's parameter.list slot
-            if(length(glyphs.list[[j]]@parameters.list) == 0) {
-                glyphs.list[[j]]@parameters.list <- global.parameters.list
-            } else {
-                partial.params.list <- glyphs.list[[j]]@parameters.list
-                diff.list.names <- c(setdiff(names(global.parameters.list), names(partial.params.list)))
-                # merged parameters.list
-                glyphs.list[[j]]@parameters.list <- c(partial.params.list, global.parameters.list[diff.list.names]) 
-            }
-        } # end for loop for glyphs.list
-        
-        obj$data[[i]]$glyphs.list <- glyphs.list
-        
-    } # end main for loop
-    
-    return(obj)
+# function to reconstruct entity (glyph/arc) parameter list. 
+# if @parameters.list slot is empty, assign global.parameters.list
+# else @parameters.list contains some parameters specified by user 
+# which need to be merged with the global.parameters.list. 
+# This function used as FUN argument in lapply in print.SBGNview function 
+# for input glyphs and arcs list
+get.entity.parameter.list <- function(entity, global.parameters.list) {
+    if(length(entity@parameters.list) == 0) {
+        entity@parameters.list <- global.parameters.list
+    } else {
+        partial.params.list <- entity@parameters.list
+        diff.list.names <- c(setdiff(names(global.parameters.list), names(partial.params.list)))
+        # merged parameters.list
+        entity@parameters.list <- c(partial.params.list, global.parameters.list[diff.list.names]) 
+    }
+    return(entity)
 }
 
 #########################################################################################################

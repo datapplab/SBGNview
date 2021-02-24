@@ -243,8 +243,7 @@ renderSbgn <- function(input.sbgn, output.file, output.formats, sbgn.id.attr,
     }
     svg.dim.y <- max.y + col.panel.h + y.margin - remove.margin
     
-    # including svg code for print
-    #svg.glyphs <- paste(svg.ports, svg.nodes, svg.nodes.complex, svg.nodes.compartment, svg.cardinality, sep = "\n")
+    # including svg code used by print function
     printing.info <- list(col.panel.svg = col.panel.svg, pathway.name.svg = pathway.name.svg,
                           stamp.svg = stamp.svg)
     
