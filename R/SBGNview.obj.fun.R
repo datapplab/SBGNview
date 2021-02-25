@@ -54,28 +54,49 @@
                          global.parameters.list = global.parameters.list)
         arcs <- lapply(input.sbgn$arcs.list, FUN = get.entity.parameter.list, 
                        global.parameters.list = global.parameters.list)
-        svg.glyphs <- ""
+        svg.nodes.compartment <- ""
+        svg.nodes.complex <- ""
+        svg.nodes <- ""
         svg.arcs <- ""
+        svg.cardinality <- ""
+        svg.ports <- ""
         
+        # plot glyphs
         for(glyph in glyphs) {
-            # for plotting ports, check @svg.port slot of glyph and use that svg code for plotting ports
-            # if slot is not empty. Skip if class of glyph is port.
-            if(is(glyph, "port")) next
-            if(!identical(glyph@svg.port, character(0))) {
-                #svg.glyphs <- paste(svg.glyphs, plot.glyph(glyph), sep = "\n")
-                svg.glyphs <- paste(svg.glyphs, glyph@svg.port, sep = "\n")
-            }
-            # plot cardinality glyphs if global.parameters.list$if.plot.cardinality is true
-            # add glyph class is cardinality.sbgn
-            if (input.sbgn$global.parameters.list$if.plot.cardinality == T & is(glyph, "cardinality.sbgn")) {
-                svg.glyphs <- paste(svg.glyphs, plot.glyph(glyph), sep = "\n")
-            } 
-            # plot all other glyphs
-            if(!is(glyph, "cardinality.sbgn")) {
-                svg.glyphs <- paste(svg.glyphs, plot.glyph(glyph), sep = "\n")
+           
+            # there is no plot.glyph() method signature for port class so skip. 
+            # we plot the port if glyph@port slot contains svg code for plotting port
+            if(is(glyph, "port")) next 
+            
+            # plot different classes of glyphs and store in respective svg variables
+            if (is(glyph, "compartment.sbgn")) {
+                svg.nodes.compartment <- paste(svg.nodes.compartment, plot.glyph(glyph), sep = "\n")
+            } else if (is(glyph, "complex.sbgn")) {
+                svg.nodes.complex <- paste(svg.nodes.complex, plot.glyph(glyph), sep = "\n")
+            } else if (is(glyph, "cardinality.sbgn") | is(glyph, "stoichiometry.sbgn")) {
+                if(input.sbgn$global.parameters.list$if.plot.cardinality) {
+                    svg.cardinality <- paste(svg.cardinality, plot.glyph(glyph), sep = "\n")
+                }
+            } else {
+                # plot all other glyphs
+                svg.nodes <- paste(svg.nodes, plot.glyph(glyph), sep = "\n")
             }
             
-        } 
+            # if glyph contains port, get port svg
+            if(!identical(glyph@svg.port, character(0))) {
+                svg.ports <- paste(svg.ports, glyph@svg.port, sep = "\n")
+            } 
+            # if glyph contains clone, plot clone
+            if(!length(glyph@clone) == 0) {
+                # reconstruct clone glyph parameters.list slot
+                clone.glyphs <- lapply(glyph@clone , FUN = get.entity.parameter.list, 
+                                       global.parameters.list = global.parameters.list)
+                for(i in seq_along(clone.glyphs)) {
+                    svg.nodes <- paste(svg.nodes, plot.glyph(clone.glyphs[[i]]), sep = "\n") 
+                }
+            }
+        }
+        # plot arcs
         for(arc in arcs) {
             svg.arcs <- paste(svg.arcs, plot.arc(arc), sep = "\n")
         }
@@ -85,9 +106,11 @@
         stamp.svg <- input.sbgn$printing.info$stamp.svg
         
         svg.head <- sprintf(svg.header, input.sbgn$svg.dim.x, input.sbgn$svg.dim.y)
-        out.svg <- paste(svg.head, svg.glyphs, svg.arcs, 
-                         col.panel.svg, pathway.name.svg, stamp.svg, 
-                         svg.end)
+        # order of svg code matters: bigger elements (compartment and complex) first
+        out.svg <- paste(svg.head, svg.nodes.compartment, svg.nodes.complex, svg.nodes,
+                         svg.arcs, svg.cardinality, svg.ports, col.panel.svg, pathway.name.svg,
+                         stamp.svg, svg.end, sep = "\n")
+        
         Encoding(out.svg) <- "native.enc"  # This is necessary. Some node labels have special symbols that need native encoding
         
         output.file <- input.sbgn$render.sbgn.parameters.list$output.file
