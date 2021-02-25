@@ -1,6 +1,9 @@
 ---
-title: "Pathway analysis and visualization using SBGNview collected gene set"
-author: "Xiaoxi Dong, Weijun Luo"
+title: "SBGNview Based Pathway Analysis and Visualization Workflow"
+author: 
+  - Xiaoxi Dong
+  - Kovidh Vegesna, kvegesna (AT) uncc.edu
+  - Weijun Luo, luo_weijun (AT) yahoo.com
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
     bookdown::html_document2:
@@ -30,7 +33,6 @@ Please cite the following papers when using the open-source SBGNview package. Th
 
 Luo W, Brouwer C. Pathview: an R/Biocondutor package for pathway-based data integration and visualization. Bioinformatics, 2013, 29(14):1830-1831, <a href=https://doi.org/10.1093/bioinformatics/btt285>doi: 10.1093/bioinformatics/btt285</a>
 
-Dong X, Vegesna K, Luo W. SBGNview: SBGN for pathway based data analysis, integration and visualization, Submitted, 2020.
 
 
 Please also cite the GAGE paper when using the gage package:

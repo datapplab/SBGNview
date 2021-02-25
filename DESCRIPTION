@@ -1,20 +1,21 @@
 Package: SBGNview
-Title: Overlay omics data onto SBGN pathway diagram
+Title: "SBGNview: Data Analysis, Integration and Visualization on SBGN Pathways"
 Description: 
-    SBGNview is a tool set for visualizing omics data on pathway maps and pathway related data analysis.
-    Given an omics data table and a pathway file (SBGN-ML format with layout information), SBGNview 
-    overlays omics data as colors on glyphs (nodes) and output image files.
-    Pathway is rendered with community standard notation: Systems Biology Graphical Notation (SBGN).
-    Currently it maps gene/protein data to “macromolecule” glyphs and maps chemical compound data to “simple chemical” glyphs.
-    For omics data, SBGNview supports common gene/protein/compound ID types (e.g. Entrez Gene ID, UNIPROT, ChEBI etc.).
-    SBGNview can automatically retrieve and use SBGN-ML files from common pathway databases
-    (e.g. Reactome, MetaCyc, SMPDB, PANTHER, METACROP etc.).
-    Extensive options are provided to control glyph and edge features.
-    SBGNview can search for pathways by keywords, extract node information and highlight shortest path between two nodes.  
+   SBGNview is a tool set for pathway based data visalization,
+   integration and analysis. SBGNview is similar and complementary to
+   the widely used Pathview, with the following key features:
+   1. Pathway definition by the widely adopted Systems Biology
+   Graphical Notation (SBGN); 2. Supports multiple major pathway
+   databases beyond KEGG (Reactome, MetaCyc, SMPDB, PANTHER, METACROP)
+   and user defined pathways; 3. Covers 5,200 reference pathways and
+   over 3,000 species by default; 4. Extensive graphics controls,
+   including glyph and edge attributes, graph layout and sub-pathway
+   highlight; 5. SBGN pathway data manipulation, processing,
+   extraction and analysis.
 Version: 1.5.1
 Author:
-    Xiaoxi Dong, Kovidh Vegesna, Weijun Luo
-Maintainer: Kovidh Vegesna <kvegesna@uncc.edu>, Weijun Luo <luo_weijun@yahoo.com>
+    Xiaoxi Dong*, Kovidh Vegesna*, Weijun Luo
+Maintainer: Weijun Luo <luo_weijun@yahoo.com>
 Depends:
     R (>= 3.6),
     pathview,
@@ -40,16 +41,16 @@ License: AGPL-3
 LazyData: FALSE
 Collate:
     SBGN.to.SVG.R
-    parsing.utilities.R
-    plot.utilities.R
-    data.R
     SBGNview.R
     SBGNview.obj.fun.R
     color.panel.R
-    highlight.utilities.R
-    zzz.R
-    mapping.utilities.R
+    data.R
     download.utilities.R
+    highlight.utilities.R
+    mapping.utilities.R
+    parsing.utilities.R
+    plot.utilities.R
+    zzz.R
 RoxygenNote: 7.1.1
 Suggests:
     testthat,

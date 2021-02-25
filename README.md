@@ -12,7 +12,7 @@ Key features:
 
 * Pathway diagram and definition by the widely adopted [SBGN standard formats](https://sbgn.github.io/);
 
-* Supports multiple major pathway databases beyond KEGG (Reactome, MetaCyc, SMPDB, PANTHER, METACROP etc) and user defined pathways;
+* Supports multiple major pathway databases beyond KEGG ([Reactome](https://reactome.org/), [MetaCyc](https://metacyc.org/), [SMPDB](https://smpdb.ca/), [PANTHER](http://www.pantherdb.org/pathway/), [METACROP](https://metacrop.ipk-gatersleben.de/) etc) and user defined pathways;
 
 * Covers 5,200 reference pathways and over 3,000 species by default;
 
@@ -26,8 +26,6 @@ Please cite the following papers when using this open-source  package. This will
 
 Luo W, Brouwer C. Pathview: an R/Biocondutor package for pathway-based data integration and visualization. Bioinformatics, 2013, 29(14):1830-1831, <a href=https://doi.org/10.1093/bioinformatics/btt285>doi: 10.1093/bioinformatics/btt285</a>
 
-
-Dong X, Vegesna K, Luo W. SBGNview: SBGN for pathway based data analysis, integration and visualization, Submitted, 2020.
 
 ## Installation
 
