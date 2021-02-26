@@ -1531,7 +1531,7 @@ div.tocify {
 <h4 class="author">Xiaoxi Dong</h4>
 <h4 class="author">Kovidh Vegesna, kvegesna (AT) uncc.edu</h4>
 <h4 class="author">Weijun Luo, luo_weijun (AT) yahoo.com</h4>
-<h4 class="date">25 February, 2021</h4>
+<h4 class="date">26 February, 2021</h4>
 
 </div>
 
@@ -1579,7 +1579,11 @@ head(ensembl.pathway[[2]])</code></pre>
 </div>
 <div id="pathway-or-gene-set-analysis-using-gage" class="section level3">
 <h3><span class="header-section-number">4.2.2</span> Pathway or gene set analysis using GAGE</h3>
-<pre class="r"><code>library(gage)
+<pre class="r"><code>if(!requireNamespace(&quot;gage&quot;, quietly = TRUE)) {
+  BiocManager::install(&quot;gage&quot;, update = FALSE)
+}
+
+library(gage)
 degs &lt;- gage(exprs = count.data,
            gsets = ensembl.pathway,
            ref = wt.cols,
@@ -1704,20 +1708,20 @@ Figure 4.3: SBGNview of a cancer dataset gse16873
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] knitr_1.31                  gage_2.40.0                
+##  [1] knitr_1.31                  gage_2.40.1                
 ##  [3] SummarizedExperiment_1.20.0 Biobase_2.50.0             
 ##  [5] GenomicRanges_1.42.0        GenomeInfoDb_1.26.2        
 ##  [7] IRanges_2.24.1              S4Vectors_0.28.1           
 ##  [9] BiocGenerics_0.36.0         MatrixGenerics_1.2.1       
 ## [11] matrixStats_0.58.0          SBGNview_1.5.1             
-## [13] SBGNview.data_0.99.18       pathview_1.30.1            
+## [13] SBGNview.data_1.5.1         pathview_1.30.1            
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] KEGGgraph_1.50.0       Rcpp_1.0.6             lattice_0.20-41       
 ##  [4] GO.db_3.12.1           png_0.1-7              rsvg_2.1              
 ##  [7] Biostrings_2.58.0      digest_0.6.27          R6_2.5.0              
-## [10] RSQLite_2.2.3          evaluate_0.14          httr_1.4.2            
-## [13] highr_0.8              Rdpack_2.1             zlibbioc_1.36.0       
+## [10] RSQLite_2.2.3          evaluate_0.14          highr_0.8             
+## [13] httr_1.4.2             Rdpack_2.1             zlibbioc_1.36.0       
 ## [16] rlang_0.4.10           Rgraphviz_2.34.0       blob_1.2.1            
 ## [19] Matrix_1.3-2           rmarkdown_2.6          stringr_1.4.0         
 ## [22] igraph_1.2.6           RCurl_1.98-1.2         bit_4.0.4             
@@ -1726,11 +1730,11 @@ Figure 4.3: SBGNview of a cancer dataset gse16873
 ## [31] GenomeInfoDbData_1.2.4 bookdown_0.21          XML_3.99-0.5          
 ## [34] crayon_1.4.1           bitops_1.0-6           rbibutils_2.0         
 ## [37] grid_4.0.4             DBI_1.1.1              magrittr_2.0.1        
-## [40] graph_1.68.0           stringi_1.5.3          cachem_1.0.3          
+## [40] graph_1.68.0           stringi_1.5.3          cachem_1.0.4          
 ## [43] XVector_0.30.0         xml2_1.3.2             vctrs_0.3.6           
 ## [46] org.Hs.eg.db_3.12.0    tools_4.0.4            bit64_4.0.5           
 ## [49] fastmap_1.1.0          yaml_2.2.1             AnnotationDbi_1.52.0  
-## [52] gbRd_0.4-11            memoise_2.0.0</code></pre>
+## [52] BiocManager_1.30.10    gbRd_0.4-11            memoise_2.0.0</code></pre>
 </div>
 
 

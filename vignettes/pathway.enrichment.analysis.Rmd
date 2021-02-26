@@ -76,6 +76,10 @@ head(ensembl.pathway[[2]])
 
 ### Pathway or gene set analysis using GAGE
 ```{r , echo = TRUE, results = 'hide', message = FALSE, warning = FALSE}
+if(!requireNamespace("gage", quietly = TRUE)) {
+  BiocManager::install("gage", update = FALSE)
+}
+
 library(gage)
 degs <- gage(exprs = count.data,
            gsets = ensembl.pathway,
