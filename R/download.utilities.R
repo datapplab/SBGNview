@@ -39,8 +39,7 @@ download.mapping.file <- function(input.type, output.type, species = NULL,
     
     # try.file.name already exists in environment
     if(exists(try.file.name)) {
-      message("\n", try.file.name, " mapping table already loaded from SBGNview.data")
-      location <- "SBGNview.data"
+      location <- "exists"
       mapping.file.name <- try.file.name
       break
       
@@ -164,7 +163,12 @@ loadMappingTable <- function(input.type = NULL, output.type = NULL, species = NU
                                              species = species,
                                              SBGNview.data.folder = SBGNview.data.folder)
   
-  if(mapping.file.info$location == "local" || mapping.file.info$location == "SBGNhub") {
+  # mapping table object already exists in environment
+  if(mapping.file.info$location == "exists") { 
+    message("\n", mapping.file.info$mapping.file.name, " mapping table exists in environment")
+    mapping.list <- get(mapping.file.info$mapping.file.name)
+    
+  } else if(mapping.file.info$location == "local" || mapping.file.info$location == "SBGNhub") {
     
     # read local file or file downloaded from SBGNhub
     path.to.local.file <- paste(SBGNview.data.folder, mapping.file.info$mapping.file.name, sep = "/")
@@ -280,11 +284,12 @@ geneannot.map.ko <- function(in.ids = NULL, in.type, out.type, species = "hsa", 
                                        species = species, in.ids = in.ids)
     message("\nGenerated mapping list using KEGGREST")
     message("Saving mapping list to current working directory")
-    file.name <- paste(paste(species, toupper(in.type), toupper(out.type), sep = "_"), 
-                       ".RData", sep = "")
-    file.name <- paste(SBGNview.data.folder, file.name, sep = "/")
-    save(id.map, file = file.name)
-    message("\nSaved generated mapping table at: ", file.name)
+    
+    file.name <- paste(species, toupper(in.type), toupper(out.type), sep = "_")
+    file.save.path <- paste(SBGNview.data.folder, paste(file.name, ".RData", sep = ""), sep = "/")
+    assign(file.name, id.map)
+    save(list = file.name, file = file.save.path)
+    message("\nSaved generated mapping table at: ", file.save.path)
     
   } else { # input/output not KO
     if (species == "mmu") {
