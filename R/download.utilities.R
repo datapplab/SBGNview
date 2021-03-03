@@ -133,8 +133,8 @@ loadMappingTable <- function(input.type = NULL, output.type = NULL, species = NU
   if(is.null(input.type) | is.null(output.type)) {
     stop("Please make sure both input.type and output.type arguments are specified.") 
   }
-  if(input.type %in% c("entrez", "eg", "entrezid")) input.type = "ENTREZID"
-  if(output.type %in% c("entrez", "eg", "entrezid")) output.type = "ENTREZID"
+  if(input.type %in% c("entrez", "eg", "entrezid", "ENTREZ")) input.type = "ENTREZID"
+  if(output.type %in% c("entrez", "eg", "entrezid", "ENTREZ")) output.type = "ENTREZID"
   # changed mapping file names from CompondName to compound.name and kegg.ligand to kegg
   # we handle if input/output is CompoundName/kegg.ligand/KEGG
   if(input.type == "CompoundName") input.type <- "compound.name"
