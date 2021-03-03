@@ -1,8 +1,8 @@
 ---
 title: "SBGNview Quick Start"
 author: 
-  - Weijun Luo, luo_weijun (AT) yahoo.com
   - Kovidh Vegesna, kvegesna (AT) uncc.edu
+  - Weijun Luo, luo_weijun (AT) yahoo.com
 date:  "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
     bookdown::html_document2:
